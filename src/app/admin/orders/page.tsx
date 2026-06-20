@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, MapPin, X, Loader2 } from "lucide-react"
+import { Search, Eye, MapPin, X, Loader2, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -257,31 +257,37 @@ export default function AdminOrders() {
                           อัปเดต: {order.created_at ? new Date(order.created_at).toLocaleDateString('th-TH') : '-'}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-right space-x-2">
+                      <td className="px-6 py-4 text-right space-y-2">
                         {order.payments?.some((p: any) => p.status === 'PENDING') && (
                           <Button 
                             size="sm" 
-                            variant="outline" 
-                            className="text-green-600 border-green-200 hover:bg-green-50 cursor-pointer mr-2"
                             onClick={() => handleOpenPaymentModal(order, order.payments.find((p: any) => p.status === 'PENDING'))}
+                            className="bg-amber-500 hover:bg-amber-600 w-full max-w-[120px] mb-2"
                           >
-                            ตรวจสอบชำระเงิน
+                            ตรวจสลิป
                           </Button>
                         )}
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="text-orange-600 border-orange-200 hover:bg-orange-50 cursor-pointer"
+                          className="text-orange-600 border-orange-200 hover:bg-orange-50 cursor-pointer w-full max-w-[120px] mb-2"
                           onClick={() => handleOpenStatusModal(order)}
                         >
                           <MapPin className="h-4 w-4 mr-1" />
                           อัปเดตสถานะ
                         </Button>
-                        <Link href={`/dashboard/orders/${order.order_number}`} target="_blank">
-                          <Button variant="ghost" size="icon" className="cursor-pointer">
-                            <Eye className="h-4 w-4 text-slate-500 hover:text-slate-900" />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="icon" className="cursor-pointer" asChild>
+                            <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank" title="เอกสาร Invoice/Receipt">
+                              <FileText className="h-4 w-4 text-blue-500" />
+                            </Link>
                           </Button>
-                        </Link>
+                          <Button variant="ghost" size="icon" className="cursor-pointer" asChild>
+                            <Link href={`/dashboard/orders/${order.order_number}`} target="_blank" title="ดูรายละเอียด">
+                              <Eye className="h-4 w-4 text-slate-500 hover:text-slate-900" />
+                            </Link>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))
