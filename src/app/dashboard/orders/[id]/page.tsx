@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Timeline, TimelineItem } from "@/components/ui/timeline"
-import { ArrowLeft, FileText, Globe } from "lucide-react"
+import { ArrowLeft, FileText, Globe, Truck } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { PaymentSection } from "./PaymentSection"
@@ -22,6 +22,18 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     status,
     created_at,
     admin_notes,
+    tracking_number,
+    shipping_company,
+    shipping_address_id,
+    address:shipping_address_id (
+      full_name,
+      phone,
+      address_line,
+      subdistrict,
+      district,
+      province,
+      postalCode
+    ),
     quotation:quotation_id (
       id,
       product_cost,
@@ -182,11 +194,53 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   <p className="text-slate-800 italic bg-slate-50 p-3 rounded-lg border border-slate-100">{order.admin_notes}</p>
                 </div>
               )}
+              {order.address && (
+                <div className="pt-4 border-t">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">จัดส่งไปที่</h4>
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <p className="font-semibold text-slate-900">{order.address.full_name}</p>
+                    <p className="text-slate-600 text-xs mb-1">โทร: {order.address.phone}</p>
+                    <p className="text-slate-700 text-sm">{order.address.address_line} ต.{order.address.subdistrict} อ.{order.address.district} จ.{order.address.province} {order.address.postalCode}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 space-y-6">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3 border-b border-slate-100 mb-4">
+              <CardTitle className="flex items-center gap-2">
+                <Truck className="w-5 h-5 text-primary" />
+                ข้อมูลการจัดส่งในไทย
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {order.tracking_number ? (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">บริษัทขนส่ง</h4>
+                    <p className="font-medium text-slate-800">{order.shipping_company || '-'}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">หมายเลขพัสดุ (Tracking)</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md border border-blue-100">
+                        {order.tracking_number}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-slate-400">
+                  <p className="text-sm">ยังไม่มีหมายเลขพัสดุ</p>
+                  <p className="text-xs mt-1">แอดมินจะอัปเดตเมื่อสินค้าถึงไทย</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="shadow-sm sticky top-6">
             <CardHeader>
               <CardTitle>การติดตามสถานะ (Timeline)</CardTitle>

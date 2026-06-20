@@ -17,6 +17,7 @@ import {
   AlertTriangle 
 } from "lucide-react"
 import Link from "next/link"
+import { AddressSelectionModal } from "./AddressSelectionModal"
 
 interface InquiryListProps {
   initialInquiries: any[]
@@ -29,14 +30,24 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
   const [activeTab, setActiveTab] = useState("ALL")
   const [approvingQuotationId, setApprovingQuotationId] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState("")
+  const [addressModalOpen, setAddressModalOpen] = useState(false)
+  const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null)
 
   const formatCurrency = (amount: any) => {
     return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  const handleConfirmOrder = async (quotationId: string) => {
+  const openAddressModal = (quotationId: string) => {
+    setSelectedQuotationId(quotationId)
+    setAddressModalOpen(true)
+  }
+
+  const handleConfirmOrder = async (addressId: string) => {
+    if (!selectedQuotationId) return
+    
     try {
-      setApprovingQuotationId(quotationId)
+      setAddressModalOpen(false)
+      setApprovingQuotationId(selectedQuotationId)
       setErrorMsg("")
       
       const res = await fetch("/api/order", {
@@ -44,7 +55,8 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer_id: customerId,
-          quotation_id: quotationId
+          quotation_id: selectedQuotationId,
+          shipping_address_id: addressId
         })
       })
 
@@ -181,7 +193,7 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
               key={inq.id}
               inq={inq}
               customerId={customerId}
-              handleConfirmOrder={handleConfirmOrder}
+              openAddressModal={openAddressModal}
               approvingQuotationId={approvingQuotationId}
               formatCurrency={formatCurrency}
             />
@@ -198,6 +210,12 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
           </div>
         )}
       </div>
+
+      <AddressSelectionModal 
+        isOpen={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        onConfirm={handleConfirmOrder}
+      />
     </div>
   )
 }
@@ -205,12 +223,12 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
 interface InquiryCardProps {
   inq: any
   customerId: string
-  handleConfirmOrder: (quotationId: string) => Promise<void>
+  openAddressModal: (quotationId: string) => void
   approvingQuotationId: string | null
   formatCurrency: (amount: any) => string
 }
 
-function InquiryCard({ inq, customerId, handleConfirmOrder, approvingQuotationId, formatCurrency }: InquiryCardProps) {
+function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, formatCurrency }: InquiryCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const quotation = inq.quotations?.[0]
   const order = quotation?.orders?.[0]
@@ -358,7 +376,7 @@ function InquiryCard({ inq, customerId, handleConfirmOrder, approvingQuotationId
                     </div>
                   ) : (
                     <Button 
-                      onClick={() => handleConfirmOrder(quotation.id)}
+                      onClick={() => openAddressModal(quotation.id)}
                       disabled={approvingQuotationId === quotation.id}
                       variant="orange"
                       className="cursor-pointer shadow-md shadow-orange-600/10 font-bold px-6"

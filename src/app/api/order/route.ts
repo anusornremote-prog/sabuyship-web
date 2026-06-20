@@ -25,7 +25,8 @@ export async function POST(request: Request) {
         customer_id: body.customer_id,
         quotation_id: body.quotation_id,
         status: "NEW",
-        admin_notes: body.admin_notes || null
+        admin_notes: body.admin_notes || null,
+        shipping_address_id: body.shipping_address_id || null
       })
       .select()
       .single()

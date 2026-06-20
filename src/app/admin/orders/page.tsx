@@ -42,6 +42,13 @@ export default function AdminOrders() {
             full_name,
             phone
           ),
+          address:shipping_address_id (
+            address_line,
+            subdistrict,
+            district,
+            province,
+            postalCode
+          ),
           quotation:quotation_id (
             total_price
           ),
@@ -227,7 +234,13 @@ export default function AdminOrders() {
                       <td className="px-6 py-4 font-semibold text-primary">{order.order_number}</td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-slate-900">{order.customer?.full_name || '-'}</p>
-                        <p className="text-xs text-slate-500">{order.customer?.phone || '-'}</p>
+                        <p className="text-xs text-slate-500 mb-1">{order.customer?.phone || '-'}</p>
+                        {order.address && (
+                          <div className="text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100 max-w-[200px] line-clamp-2" title={`${order.address.address_line} ต.${order.address.subdistrict} อ.${order.address.district} จ.${order.address.province} ${order.address.postalCode}`}>
+                            <MapPin className="inline w-3 h-3 mr-1 text-slate-400" />
+                            {order.address.province} {order.address.postalCode}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <p className="font-semibold text-slate-900">
