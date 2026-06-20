@@ -80,11 +80,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <ArrowLeft className="w-4 h-4" /> กลับหน้าออเดอร์
         </Link>
         <button 
-          onClick="window.print()" 
+          id="print-btn"
           className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md font-semibold flex items-center gap-2 shadow-sm transition-colors"
           style={{ cursor: 'pointer' }}
-          // We can't use onClick directly in a Server Component without 'use client', 
-          // so we'll just use a small inline script wrapper below for the print functionality
         >
           <Printer className="w-4 h-4" /> พิมพ์เอกสาร / Save PDF
         </button>
@@ -96,7 +94,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         {/* Print Button Script Workaround for Server Component */}
         <script dangerouslySetInnerHTML={{
           __html: `
-            document.querySelector('button').addEventListener('click', function() {
+            document.getElementById('print-btn')?.addEventListener('click', function() {
               window.print();
             });
           `
