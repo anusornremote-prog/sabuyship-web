@@ -71,6 +71,9 @@ CREATE TABLE orders (
   quotation_id UUID REFERENCES quotations(id) ON DELETE RESTRICT,
   status order_status DEFAULT 'NEW',
   admin_notes TEXT,
+  tracking_number TEXT,
+  shipping_company TEXT,
+  shipping_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

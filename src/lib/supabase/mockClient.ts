@@ -42,6 +42,9 @@ const defaultOrders = [
     quotation_id: "mock-quotation-id-1",
     status: "SHIPPING",
     admin_notes: "ลูกค้าแจ้งให้จัดส่งขนส่ง นิ่มซี่เส็ง เมื่อสินค้าถึงไทย",
+    tracking_number: "TH1234567890",
+    shipping_company: "Flash Express",
+    shipping_address_id: "mock-address-id-1",
     created_at: "2026-06-17T10:00:00Z"
   }
 ]
