@@ -215,9 +215,9 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                 <div className="pt-4 border-t">
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">จัดส่งไปที่</h4>
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <p className="font-semibold text-slate-900">{order.address.full_name}</p>
-                    <p className="text-slate-600 text-xs mb-1">โทร: {order.address.phone}</p>
-                    <p className="text-slate-700 text-sm">{order.address.address_line} ต.{order.address.subdistrict} อ.{order.address.district} จ.{order.address.province} {order.address.postalCode}</p>
+                    <p className="font-semibold text-slate-900">{(Array.isArray(order.address) ? order.address[0] : order.address)?.full_name}</p>
+                    <p className="text-slate-600 text-xs mb-1">โทร: {(Array.isArray(order.address) ? order.address[0] : order.address)?.phone}</p>
+                    <p className="text-slate-700 text-sm">{(Array.isArray(order.address) ? order.address[0] : order.address)?.address_line} ต.{(Array.isArray(order.address) ? order.address[0] : order.address)?.subdistrict} อ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.district} จ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.province} {(Array.isArray(order.address) ? order.address[0] : order.address)?.postalCode}</p>
                   </div>
                 </div>
               )}
