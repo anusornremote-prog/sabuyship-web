@@ -18,37 +18,20 @@ export default async function DashboardOverview() {
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || "ลูกค้า Sabuy Ship"
 
-  // Fetch real order stats
-  const { count: totalOrders } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("customer_id", user?.id)
-
-  const { count: pendingOrders } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("customer_id", user?.id)
-    .neq("status", "DELIVERED")
-
-  const { count: completedOrders } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("customer_id", user?.id)
-    .eq("status", "DELIVERED")
-
-  const { count: waitingPayment } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("customer_id", user?.id)
-    .eq("status", "WAITING_PAYMENT")
-
-  // Fetch recent orders
-  const { data: recentOrders } = await supabase
-    .from("orders")
-    .select("id, order_number, status, created_at")
-    .eq("customer_id", user?.id)
-    .order("created_at", { ascending: false })
-    .limit(5)
+  // Fetch real order stats concurrently
+  const [
+    { count: totalOrders },
+    { count: pendingOrders },
+    { count: completedOrders },
+    { count: waitingPayment },
+    { data: recentOrders }
+  ] = await Promise.all([
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).neq("status", "DELIVERED"),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).eq("status", "DELIVERED"),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).eq("status", "WAITING_PAYMENT"),
+    supabase.from("orders").select("id, order_number, status, created_at").eq("customer_id", user?.id).order("created_at", { ascending: false }).limit(5)
+  ])
 
   const getStatusBadge = (status: string) => {
     switch (status) {

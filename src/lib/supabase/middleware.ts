@@ -32,14 +32,16 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let role = 'CUSTOMER'
-  if (user) {
+  
+  // Only query the profile role if we need to make a routing decision based on it
+  if (user && (pathname.startsWith('/admin') || pathname === '/login' || pathname === '/register')) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
     
-    if (profileError) {
+    if (profileError && profileError.code !== 'PGRST116') {
       console.error("Middleware Profile Query Error:", profileError)
     }
     
