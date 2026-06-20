@@ -20,7 +20,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     customer:customer_id (
       full_name,
       phone,
-      email
+      line_id
     ),
     address:shipping_address_id (
       full_name,
@@ -139,7 +139,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <h3 className="font-bold text-slate-800 mb-2 border-b pb-1">ลูกค้า (Customer)</h3>
             <p className="font-semibold text-slate-900 mt-2">{customer?.full_name}</p>
             <p className="text-slate-600 mt-1">โทร: {customer?.phone || '-'}</p>
-            <p className="text-slate-600 mt-1">อีเมล: {customer?.email || '-'}</p>
+            <p className="text-slate-600 mt-1">LINE: {customer?.line_id || '-'}</p>
           </div>
           
           {address && (
