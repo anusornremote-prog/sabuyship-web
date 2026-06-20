@@ -32,7 +32,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       subdistrict,
       district,
       province,
-      postalCode
+      postal_code
     ),
     quotation:quotation_id (
       id,
@@ -217,7 +217,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                     <p className="font-semibold text-slate-900">{(Array.isArray(order.address) ? order.address[0] : order.address)?.full_name}</p>
                     <p className="text-slate-600 text-xs mb-1">โทร: {(Array.isArray(order.address) ? order.address[0] : order.address)?.phone}</p>
-                    <p className="text-slate-700 text-sm">{(Array.isArray(order.address) ? order.address[0] : order.address)?.address_line} ต.{(Array.isArray(order.address) ? order.address[0] : order.address)?.subdistrict} อ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.district} จ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.province} {(Array.isArray(order.address) ? order.address[0] : order.address)?.postalCode}</p>
+                    <p className="text-slate-700 text-sm">{(Array.isArray(order.address) ? order.address[0] : order.address)?.address_line} ต.{(Array.isArray(order.address) ? order.address[0] : order.address)?.subdistrict} อ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.district} จ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.province} {(Array.isArray(order.address) ? order.address[0] : order.address)?.postal_code}</p>
                   </div>
                 </div>
               )}

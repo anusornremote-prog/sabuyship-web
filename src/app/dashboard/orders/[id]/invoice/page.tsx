@@ -29,7 +29,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       subdistrict,
       district,
       province,
-      postalCode
+      postal_code
     ),
     quotation:quotation_id (
       id,
@@ -149,7 +149,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <p className="text-slate-600 mt-1">โทร: {address.phone}</p>
               <p className="text-slate-600 mt-1">
                 {address.address_line} ต.{address.subdistrict} อ.{address.district} <br/>
-                จ.{address.province} {address.postalCode}
+                จ.{address.province} {address.postal_code}
               </p>
             </div>
           )}
