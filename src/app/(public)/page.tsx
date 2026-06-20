@@ -1,0 +1,102 @@
+"use client"
+
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Ship, ShieldCheck, Clock, MapPin } from "lucide-react"
+import { useTranslation } from "@/components/providers/language-provider"
+
+export default function Home() {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="bg-blue-50 py-20 px-4 md:px-8">
+        <div className="container max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
+          <div className="flex-1 space-y-8 text-center md:text-left">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+              {t.heroTitle} <span className="text-primary">{t.heroTitleHighlight}</span>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto md:mx-0">
+              {t.heroSub}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <Link href="/inquiry">
+                <Button size="lg" variant="orange" className="w-full sm:w-auto text-lg px-8 h-14 cursor-pointer">
+                  {t.heroBtnSend}
+                </Button>
+              </Link>
+              <Link href="/track">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-14 bg-white cursor-pointer">
+                  {t.heroBtnTrack}
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="flex-1 w-full max-w-xl">
+            {/* Mascot Hero Illustration */}
+            <div className="relative w-full aspect-square mx-auto">
+              <div className="absolute inset-0 bg-blue-200 rounded-full blur-3xl opacity-50 mix-blend-multiply dark:bg-blue-900/20"></div>
+              <div className="absolute -inset-4 bg-orange-100 rounded-full blur-3xl opacity-30 mix-blend-multiply dark:bg-orange-900/10"></div>
+              <div className="relative h-full w-full flex items-center justify-center">
+                <img 
+                  src="/mascod.png" 
+                  alt="Sabuy Ship Mascot" 
+                  className="w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-out"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <section className="py-20 px-4 md:px-8 bg-white">
+        <div className="container max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">{t.whyTitle}</h2>
+            <p className="text-slate-600">{t.whySub}</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-2xl bg-blue-50 border border-blue-100 text-center">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Clock className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">{t.cardSpeedTitle}</h3>
+              <p className="text-slate-600">{t.cardSpeedDesc}</p>
+            </div>
+            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative md:-top-4">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <ShieldCheck className="w-8 h-8 text-accent" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">{t.cardSafeTitle}</h3>
+              <p className="text-slate-600">{t.cardSafeDesc}</p>
+            </div>
+            <div className="p-8 rounded-2xl bg-blue-50 border border-blue-100 text-center">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <MapPin className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">{t.cardTrackTitle}</h3>
+              <p className="text-slate-600">{t.cardTrackDesc}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Simple CTA */}
+      <section className="py-24 px-4 md:px-8 bg-slate-900 text-white text-center">
+        <div className="container max-w-4xl mx-auto space-y-8">
+          <h2 className="text-3xl md:text-5xl font-bold">{t.ctaTitle}</h2>
+          <p className="text-xl text-slate-300">{t.ctaSub}</p>
+          <div className="pt-4">
+             <Link href="/inquiry">
+                <Button size="lg" variant="orange" className="text-lg px-12 h-14 rounded-full shadow-lg hover:shadow-xl transition-all cursor-pointer">
+                  {t.ctaBtn}
+                </Button>
+              </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

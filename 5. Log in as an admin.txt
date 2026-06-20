@@ -1,0 +1,14 @@
+5. Log in as an admin:
+   - Enter email: admin@sabaiship.com
+   - Enter password: admin123
+   - Click the submit button 'เข้าสู่ระบบ'.
+   - Confirm redirect to http://localhost:3000/admin and the title 'ภาพรวมระบบ (Admin Dashboard)' is visible.
+6. Click the logout button in the admin sidebar.
+7. Test registration:
+   - Go to http://localhost:3000/register.
+   - Enter Full Name: Test Signup
+   - Enter Email: test@sabaiship.com
+   - Enter Password: testpassword
+   - Click the submit button 'สมัครสมาชิก'.
+   - Confirm redirect to http://localhost:3000/dashboard.
+Report on whether all steps pass.
