@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { getMockClient, isMockEnabled } from './mockClient'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -9,40 +8,6 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // 1. Handle Mock Mode
-  if (isMockEnabled()) {
-    const sessionCookie = request.cookies.get('sb-session')?.value
-    const mockClient = getMockClient(sessionCookie)
-    const { data: { user } } = await mockClient.auth.getUser()
-    const role = user?.role || 'CUSTOMER'
-
-    // Route Guards for Mock Mode
-    if (pathname.startsWith('/dashboard')) {
-      if (!user) {
-        return NextResponse.redirect(new URL('/login', request.url))
-      }
-    }
-
-    if (pathname.startsWith('/admin')) {
-      if (!user) {
-        return NextResponse.redirect(new URL('/login', request.url))
-      }
-      if (role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-      }
-    }
-
-    if (pathname === '/login' || pathname === '/register') {
-      if (user) {
-        const dest = role === 'ADMIN' ? '/admin' : '/dashboard'
-        return NextResponse.redirect(new URL(dest, request.url))
-      }
-    }
-
-    return supabaseResponse
-  }
-
-  // 2. Handle Real Supabase Mode
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -74,8 +39,6 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
     
-    console.log("Middleware Auth User ID:", user.id)
-    console.log("Middleware Profile Data:", profile)
     if (profileError) {
       console.error("Middleware Profile Query Error:", profileError)
     }
@@ -83,7 +46,7 @@ export async function updateSession(request: NextRequest) {
     role = profile?.role || 'CUSTOMER'
   }
 
-  // Route Guards for Real Mode
+  // Route Guards
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))

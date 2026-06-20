@@ -67,53 +67,6 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
 
       const order = result.data
 
-      // Check if we are running in local mock mode
-      const isMockEnabled = 
-        !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')
-
-      if (isMockEnabled && order) {
-        // 1. Sync orders in mock local storage
-        const localOrders = JSON.parse(localStorage.getItem('sb-mock-orders') || '[]')
-        localOrders.push(order)
-        localStorage.setItem('sb-mock-orders', JSON.stringify(localOrders))
-
-        // 2. Sync tracking logs in mock local storage
-        const localLogs = JSON.parse(localStorage.getItem('sb-mock-tracking_logs') || '[]')
-        const newLog = {
-          id: 'log-' + Math.random().toString(36).substr(2, 9),
-          order_id: order.id,
-          status: 'NEW',
-          notes: 'คำสั่งซื้อเข้าระบบเรียบร้อยแล้ว',
-          created_at: new Date().toISOString()
-        }
-        localLogs.push(newLog)
-        localStorage.setItem('sb-mock-tracking_logs', JSON.stringify(localLogs))
-
-        // 3. Update quotation status to ACCEPTED
-        const localQuotations = JSON.parse(localStorage.getItem('sb-mock-quotations') || '[]')
-        const updatedQuotations = localQuotations.map((q: any) => 
-          q.id === quotationId ? { ...q, status: 'ACCEPTED' } : q
-        )
-        localStorage.setItem('sb-mock-quotations', JSON.stringify(updatedQuotations))
-
-        // 4. Sync local client changes back to server in-memory database
-        await fetch('/api/mock-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'orders', data: localOrders })
-        })
-        await fetch('/api/mock-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'tracking_logs', data: localLogs })
-        })
-        await fetch('/api/mock-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'quotations', data: updatedQuotations })
-        })
-      }
 
       // Redirect immediately to order detail page
       router.push(`/dashboard/orders/${order.order_number}`)

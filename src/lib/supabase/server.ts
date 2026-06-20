@@ -1,13 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { getMockClient, isMockEnabled } from './mockClient'
 
 export async function createClient() {
   const cookieStore = await cookies()
-
-  if (isMockEnabled()) {
-    return getMockClient(cookieStore.get('sb-session')?.value) as any
-  }
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

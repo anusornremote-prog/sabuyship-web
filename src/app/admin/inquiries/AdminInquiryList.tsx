@@ -75,38 +75,6 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
         throw new Error(result.error || "Failed to create quotation")
       }
 
-      // Mock Local Storage synchronization
-      const isMockEnabled = 
-        !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')
-
-      if (isMockEnabled && result.data) {
-        const quotation = result.data
-
-        // 1. Sync quotations in mock storage
-        const localQuotations = JSON.parse(localStorage.getItem('sb-mock-quotations') || '[]')
-        localQuotations.push(quotation)
-        localStorage.setItem('sb-mock-quotations', JSON.stringify(localQuotations))
-
-        // 2. Update status of the inquiry in mock inquiries to QUOTED
-        const localInquiries = JSON.parse(localStorage.getItem('sb-mock-inquiries') || '[]')
-        const updatedInquiries = localInquiries.map((inq: any) => 
-          inq.id === selectedInquiry.id ? { ...inq, status: 'QUOTED' } : inq
-        )
-        localStorage.setItem('sb-mock-inquiries', JSON.stringify(updatedInquiries))
-
-        // 3. Sync to in-memory databases via API
-        await fetch('/api/mock-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'quotations', data: localQuotations })
-        })
-        await fetch('/api/mock-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'inquiries', data: updatedInquiries })
-        })
-      }
 
       setIsQuotingOpen(false)
       router.refresh()
@@ -123,24 +91,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
 
     try {
       // Direct supabase client implementation if needed or update via API (using REST update logic)
-      // Since we already have a mockClient we can perform this directly or call standard API.
-      // For simplicity, we can do a mock synchronization or API path if implemented.
-      const isMockEnabled = 
-        !process.env.NEXT_PUBLIC_SUPABASE_URL || 
-        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')
 
-      if (isMockEnabled) {
-        const localInquiries = JSON.parse(localStorage.getItem('sb-mock-inquiries') || '[]')
-        const updatedInquiries = localInquiries.map((inq: any) => 
-          inq.id === inquiryId ? { ...inq, status: 'REJECTED' } : inq
-        )
-        localStorage.setItem('sb-mock-inquiries', JSON.stringify(updatedInquiries))
-        await fetch('/api/mock-sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: 'inquiries', data: updatedInquiries })
-        })
-      }
 
       router.refresh()
     } catch (err) {
