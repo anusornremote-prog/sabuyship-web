@@ -39,7 +39,7 @@ export function AddressSelectionModal({ isOpen, onClose, onConfirm }: AddressSel
         
         // Auto select default address
         if (data && data.length > 0) {
-          const defaultAddr = data.find(a => a.is_default) || data[0]
+          const defaultAddr = data.find((a: any) => a.is_default) || data[0]
           setSelectedId(defaultAddr.id)
         }
       } catch (error) {
