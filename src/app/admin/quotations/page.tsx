@@ -3,7 +3,25 @@ import { Button } from "@/components/ui/button"
 import { Search, Send, Edit } from "lucide-react"
 import { Input } from "@/components/ui/input"
 
-export default function AdminQuotations() {
+import { createClient } from "@/lib/supabase/server"
+
+export default async function AdminQuotations() {
+  const supabase = await createClient()
+
+  const { data: quotations } = await supabase
+    .from("quotations")
+    .select(`
+      id,
+      total_price,
+      status,
+      created_at,
+      inquiry:inquiry_id (
+        inquiry_number,
+        customer_name
+      )
+    `)
+    .order("created_at", { ascending: false })
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -38,32 +56,43 @@ export default function AdminQuotations() {
                   <th className="px-6 py-4 font-medium text-right">จัดการ</th>
                 </tr>
               </thead>
-              <tbody>
-                {/* Mock Data */}
-                <tr className="border-b hover:bg-slate-50/50">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-primary">INQ-240001</p>
-                    <p className="text-xs text-slate-500">สมชาย ใจดี</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="font-medium">฿ 4,500.00</p>
-                  </td>
-                  <td className="px-6 py-4 text-slate-600">15 มิ.ย. 2024</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded">DRAFT</span>
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <Button size="sm" variant="ghost">
-                      <Edit className="h-4 w-4 mr-1" />
-                      แก้ไข
-                    </Button>
-                    <Button size="sm" variant="default" className="bg-primary hover:bg-primary/90">
-                      <Send className="h-4 w-4 mr-1" />
-                      ส่งให้ลูกค้า
-                    </Button>
-                  </td>
-                </tr>
-              </tbody>
+                <tbody>
+                  {quotations && quotations.length > 0 ? (
+                    quotations.map((quote: any) => (
+                      <tr key={quote.id} className="border-b hover:bg-slate-50/50">
+                        <td className="px-6 py-4">
+                          <p className="font-medium text-primary">{quote.inquiry?.inquiry_number || '-'}</p>
+                          <p className="text-xs text-slate-500">{quote.inquiry?.customer_name || 'ลูกค้าทั่วไป'}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-medium">฿ {Number(quote.total_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {quote.created_at ? new Date(quote.created_at).toLocaleString('th-TH') : '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+                            quote.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                            quote.status === 'SENT' ? 'bg-blue-100 text-blue-800' :
+                            'bg-slate-100 text-slate-800'
+                          }`}>
+                            {quote.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <Button size="sm" variant="ghost">
+                            <Edit className="h-4 w-4 mr-1" />
+                            ดูรายละเอียด
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-slate-400">ยังไม่มีรายการใบเสนอราคา</td>
+                    </tr>
+                  )}
+                </tbody>
             </table>
           </div>
         </CardContent>

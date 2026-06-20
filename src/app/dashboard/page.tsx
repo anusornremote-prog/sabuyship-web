@@ -18,6 +18,65 @@ export default async function DashboardOverview() {
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || "ลูกค้า Sabuy Ship"
 
+  // Fetch real order stats
+  const { count: totalOrders } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("customer_id", user?.id)
+
+  const { count: pendingOrders } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("customer_id", user?.id)
+    .neq("status", "DELIVERED")
+
+  const { count: completedOrders } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("customer_id", user?.id)
+    .eq("status", "DELIVERED")
+
+  const { count: waitingPayment } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("customer_id", user?.id)
+    .eq("status", "WAITING_PAYMENT")
+
+  // Fetch recent orders
+  const { data: recentOrders } = await supabase
+    .from("orders")
+    .select("id, order_number, status, created_at")
+    .eq("customer_id", user?.id)
+    .order("created_at", { ascending: false })
+    .limit(5)
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'NEW': return 'bg-blue-100 text-blue-800'
+      case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800'
+      case 'PAID': return 'bg-green-100 text-green-800'
+      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
+      case 'SHIPPING': return 'bg-sky-100 text-sky-800'
+      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
+      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
+      default: return 'bg-slate-100 text-slate-800'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'NEW': return 'รอดำเนินการ'
+      case 'WAITING_PAYMENT': return 'รอชำระเงิน'
+      case 'PAID': return 'ชำระเงินแล้ว'
+      case 'ORDERED': return 'สั่งซื้อสำเร็จ'
+      case 'CHINA_WAREHOUSE': return 'ถึงโกดังจีน'
+      case 'SHIPPING': return 'อยู่ระหว่างจัดส่ง'
+      case 'THAILAND_WAREHOUSE': return 'ถึงโกดังไทย'
+      case 'DELIVERED': return 'จัดส่งสำเร็จ'
+      default: return status
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -81,7 +140,7 @@ export default async function DashboardOverview() {
             <Package className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">12</div>
+            <div className="text-2xl font-bold text-slate-900">{totalOrders || 0}</div>
             <p className="text-xs text-slate-500 mt-1">อัปเดตล่าสุดวันนี้</p>
           </CardContent>
         </Card>
@@ -92,7 +151,7 @@ export default async function DashboardOverview() {
             <Clock className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">3</div>
+            <div className="text-2xl font-bold text-slate-900">{pendingOrders || 0}</div>
             <p className="text-xs text-slate-500 mt-1">สินค้าอยู่ระหว่างทาง</p>
           </CardContent>
         </Card>
@@ -103,18 +162,18 @@ export default async function DashboardOverview() {
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">9</div>
+            <div className="text-2xl font-bold text-slate-900">{completedOrders || 0}</div>
             <p className="text-xs text-slate-500 mt-1">ส่งถึงหน้าบ้าน</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-blue-100">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">รอชำระเงิน / อนุมัติ</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">รอชำระเงิน</CardTitle>
             <Truck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">1</div>
+            <div className="text-2xl font-bold text-slate-900">{waitingPayment || 0}</div>
             <p className="text-xs text-slate-500 mt-1">ใบเสนอราคาใหม่</p>
           </CardContent>
         </Card>
@@ -134,16 +193,29 @@ export default async function DashboardOverview() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b">
-                    <td className="px-6 py-4 font-medium text-primary">ORD-240001</td>
-                    <td className="px-6 py-4 text-slate-600">15 มิ.ย. 2024</td>
-                    <td className="px-6 py-4"><span className="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded">กำลังจัดส่ง</span></td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="px-6 py-4 font-medium text-primary">ORD-240002</td>
-                    <td className="px-6 py-4 text-slate-600">14 มิ.ย. 2024</td>
-                    <td className="px-6 py-4"><span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">รอชำระเงิน</span></td>
-                  </tr>
+                  {recentOrders && recentOrders.length > 0 ? (
+                    recentOrders.map((order) => (
+                      <tr key={order.id} className="border-b">
+                        <td className="px-6 py-4 font-medium text-primary">
+                          <a href={`/dashboard/orders/${order.order_number}`} className="hover:underline">
+                            {order.order_number}
+                          </a>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {new Date(order.created_at).toLocaleString('th-TH', { dateStyle: 'medium' })}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${getStatusBadge(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-8 text-center text-slate-400">ยังไม่มีรายการคำสั่งซื้อ</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
