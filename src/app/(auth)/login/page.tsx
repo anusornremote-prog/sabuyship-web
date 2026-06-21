@@ -60,6 +60,8 @@ export default function Login() {
             <label className="text-sm font-medium">อีเมล หรือ เบอร์โทรศัพท์ *</label>
             <Input 
               type="text" 
+              name="email"
+              autoComplete="username"
               required 
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
@@ -75,10 +77,23 @@ export default function Login() {
             </div>
             <Input 
               type="password" 
+              name="password"
+              autoComplete="current-password"
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <input 
+              type="checkbox" 
+              id="remember" 
+              name="remember"
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+            />
+            <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer">
+              จำรหัสผ่านในระบบ
+            </label>
           </div>
           <Button type="submit" className="w-full h-11" disabled={loading}>
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
