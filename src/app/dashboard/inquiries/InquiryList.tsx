@@ -83,7 +83,8 @@ export default function InquiryList({ initialInquiries, customerId }: InquiryLis
   const filteredInquiries = initialInquiries.filter(inq => {
     const matchesSearch = 
       inq.inquiry_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inq.product_url.toLowerCase().includes(searchQuery.toLowerCase())
+      (inq.product_url && inq.product_url.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (inq.items && inq.items.some((item: any) => item.url.toLowerCase().includes(searchQuery.toLowerCase())))
     
     const matchesTab = activeTab === "ALL" || inq.status === activeTab
     return matchesSearch && matchesTab
@@ -222,38 +223,50 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
 
         {/* Card Body */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="space-y-2">
+          <div className="space-y-4 col-span-1 md:col-span-2">
             <div>
-              <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">ลิงก์สินค้า (URL)</span>
-              <a 
-                href={inq.product_url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-primary font-medium hover:underline flex items-center gap-1.5 break-all mt-1"
-              >
-                <Globe className="h-4 w-4 shrink-0 text-slate-400" />
-                <span>{inq.product_url}</span>
-                <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+                <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider mb-2">รายการสินค้า</span>
+                <div className="space-y-3">
+                  {inq.items && inq.items.length > 0 ? (
+                    inq.items.map((item: any, idx: number) => (
+                      <div key={idx} className="bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+                        <div className="flex flex-col sm:flex-row justify-between gap-2">
+                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1.5 break-all text-sm">
+                            <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span className="line-clamp-1">{item.url}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                          </a>
+                          <span className="font-semibold text-slate-800 text-sm shrink-0 whitespace-nowrap">จำนวน {item.quantity} ชิ้น</span>
+                        </div>
+                        {item.remark && (
+                          <p className="text-slate-600 text-xs mt-2 bg-white p-2 border border-slate-100 rounded">
+                            {item.remark}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+                        <div className="flex flex-col sm:flex-row justify-between gap-2">
+                          <a href={inq.product_url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1.5 break-all text-sm">
+                            <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span className="line-clamp-1">{inq.product_url}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                          </a>
+                          <span className="font-semibold text-slate-800 text-sm shrink-0 whitespace-nowrap">จำนวน {inq.quantity} ชิ้น</span>
+                        </div>
+                        {inq.remark && (
+                          <p className="text-slate-600 text-xs mt-2 bg-white p-2 border border-slate-100 rounded">
+                            {inq.remark}
+                          </p>
+                        )}
+                      </div>
+                  )}
+                </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div>
-                <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">จำนวน</span>
-                <span className="font-semibold text-slate-800">{inq.quantity} ชิ้น</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">บัญชี LINE / WeChat</span>
-                <span className="font-medium text-slate-800">{inq.line_id || '-'}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
             <div>
-              <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">รายละเอียดเพิ่มเติม/ข้อกำหนด</span>
-              <p className="text-slate-700 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 mt-1 whitespace-pre-wrap min-h-[60px] text-xs">
-                {inq.remark || 'ไม่มีรายละเอียดเพิ่มเติม'}
-              </p>
+              <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">บัญชี LINE / WeChat</span>
+              <span className="font-medium text-slate-800 text-sm">{inq.line_id || '-'}</span>
             </div>
           </div>
         </div>

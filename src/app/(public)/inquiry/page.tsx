@@ -13,6 +13,7 @@ export default function InquiryForm() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
+  const [items, setItems] = useState([{ url: '', quantity: 1, remark: '' }])
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -48,8 +49,29 @@ export default function InquiryForm() {
   const labelSuccessDesc = locale === 'en' ? 'We have received your product link for quotation.\nOur team will review it and reply within 24 hours.' : locale === 'zh' ? '我们已收到您的报价申请。\n团队将审核并于24小时内与您联系。' : 'ทีมงานได้รับคำขอให้ประเมินราคาเรียบร้อยแล้ว\nเราจะทำการตรวจสอบและติดต่อกลับภายใน 24 ชั่วโมง'
   const labelNewInquiry = locale === 'en' ? 'Submit Another Request' : locale === 'zh' ? '提交新申请' : 'ส่งคำขอใหม่'
 
+  const handleAddItem = () => {
+    setItems([...items, { url: '', quantity: 1, remark: '' }])
+  }
+
+  const handleRemoveItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index))
+  }
+
+  const handleItemChange = (index: number, field: keyof typeof items[0], value: string | number) => {
+    const newItems = [...items]
+    newItems[index] = { ...newItems[index], [field]: value }
+    setItems(newItems)
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    // Validate items
+    if (items.some(item => !item.url.trim())) {
+      setError(locale === 'en' ? 'Please fill in all product URLs.' : locale === 'zh' ? '请填写所有商品链接。' : 'กรุณากรอกลิงก์สินค้าให้ครบทุกรายการ')
+      return
+    }
+
     setIsSubmitting(true)
     setError(null)
 
@@ -58,9 +80,11 @@ export default function InquiryForm() {
       customer_name: formData.get("customerName"),
       phone: formData.get("phone"),
       line_id: formData.get("lineId"),
-      product_url: formData.get("productUrl"),
-      quantity: parseInt(formData.get("quantity") as string) || 1,
-      remark: formData.get("remark"),
+      items: items.map(item => ({
+        url: item.url,
+        quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
+        remark: item.remark
+      }))
     }
 
     try {
@@ -78,6 +102,7 @@ export default function InquiryForm() {
       }
 
       setSuccess(true)
+      setItems([{ url: '', quantity: 1, remark: '' }]) // Reset items
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -150,23 +175,60 @@ export default function InquiryForm() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-semibold border-b pb-2 pt-4">{labelProductInfo}</h3>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{labelProductUrl}</label>
-                  <Input required type="url" placeholder="https://item.taobao.com/..." name="productUrl" />
+                <div className="flex justify-between items-center border-b pb-2 pt-4">
+                  <h3 className="font-semibold">{labelProductInfo}</h3>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{labelQuantity}</label>
-                  <Input required type="number" min="1" defaultValue="1" name="quantity" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{labelRemark}</label>
-                  <textarea 
-                    name="remark"
-                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder={labelRemarkPlaceholder}
-                  ></textarea>
-                </div>
+                
+                {items.map((item, index) => (
+                  <div key={index} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4 relative">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-slate-700 text-sm">{locale === 'en' ? `Item ${index + 1}` : locale === 'zh' ? `商品 ${index + 1}` : `รายการที่ ${index + 1}`}</span>
+                      {items.length > 1 && (
+                        <button type="button" onClick={() => handleRemoveItem(index)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer">
+                          {locale === 'en' ? 'Remove' : locale === 'zh' ? '删除' : 'ลบรายการนี้'}
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{labelProductUrl}</label>
+                      <Input 
+                        required 
+                        type="url" 
+                        placeholder="https://item.taobao.com/..." 
+                        value={item.url}
+                        onChange={(e) => handleItemChange(index, 'url', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{labelQuantity}</label>
+                      <Input 
+                        required 
+                        type="number" 
+                        min="1" 
+                        value={item.quantity}
+                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{labelRemark}</label>
+                      <textarea 
+                        value={item.remark}
+                        onChange={(e) => handleItemChange(index, 'remark', e.target.value)}
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder={labelRemarkPlaceholder}
+                      ></textarea>
+                    </div>
+                  </div>
+                ))}
+                
+                <Button 
+                  type="button" 
+                  onClick={handleAddItem} 
+                  variant="outline" 
+                  className="w-full border-dashed border-2 py-6 text-slate-600 hover:text-slate-900 cursor-pointer"
+                >
+                  + {locale === 'en' ? 'Add Another Item' : locale === 'zh' ? '添加另一件商品' : 'เพิ่มรายการสินค้า'}
+                </Button>
               </div>
 
               <Button type="submit" className="w-full h-12 text-lg cursor-pointer" variant="orange" disabled={isSubmitting}>

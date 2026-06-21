@@ -8,9 +8,9 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     // Validate required fields
-    if (!body.customer_name || !body.phone || !body.product_url) {
+    if (!body.customer_name || !body.phone || !body.items || !Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json(
-        { error: "Missing required fields: customer_name, phone, product_url" },
+        { error: "Missing required fields: customer_name, phone, items" },
         { status: 400 }
       )
     }
@@ -30,9 +30,7 @@ export async function POST(request: Request) {
         customer_name: body.customer_name,
         phone: body.phone,
         line_id: body.line_id || null,
-        product_url: body.product_url,
-        quantity: body.quantity || 1,
-        remark: body.remark || null,
+        items: body.items,
         status: "PENDING"
       })
 

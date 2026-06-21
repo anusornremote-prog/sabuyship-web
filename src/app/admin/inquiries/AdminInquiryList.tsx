@@ -105,7 +105,9 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
     const matchesSearch =
       inq.inquiry_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inq.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (inq.phone && inq.phone.includes(searchQuery))
+      (inq.phone && inq.phone.includes(searchQuery)) ||
+      (inq.items && inq.items.some((item: any) => item.url.toLowerCase().includes(searchQuery.toLowerCase()))) ||
+      (inq.product_url && inq.product_url.toLowerCase().includes(searchQuery.toLowerCase()))
     
     const matchesStatus = statusFilter === "ALL" || inq.status === statusFilter
     return matchesSearch && matchesStatus
@@ -163,20 +165,44 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                         <p className="text-xs text-slate-500">{inq.phone}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <a
-                          href={inq.product_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate"
-                        >
-                          <Globe className="h-4 w-4 shrink-0 text-slate-400" />
-                          <span>{inq.product_url}</span>
-                          <ExternalLink className="h-3 w-3 shrink-0" />
-                        </a>
-                        <p className="text-xs text-slate-500 mt-1 font-semibold">จำนวน: {inq.quantity} ชิ้น</p>
+                        {inq.items && inq.items.length > 0 ? (
+                          <div className="space-y-2">
+                            {inq.items.map((item: any, idx: number) => (
+                              <div key={idx} className="pb-2 border-b border-slate-100 last:border-0 last:pb-0">
+                                <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate text-xs">
+                                  <Globe className="h-3 w-3 shrink-0 text-slate-400" />
+                                  <span>{item.url}</span>
+                                </a>
+                                <p className="text-xs text-slate-500 font-semibold">จำนวน: {item.quantity} ชิ้น</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <>
+                            <a
+                              href={inq.product_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate"
+                            >
+                              <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                              <span>{inq.product_url}</span>
+                              <ExternalLink className="h-3 w-3 shrink-0" />
+                            </a>
+                            <p className="text-xs text-slate-500 mt-1 font-semibold">จำนวน: {inq.quantity} ชิ้น</p>
+                          </>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-xs text-slate-600 max-w-[200px] truncate">
-                        {inq.remark || "-"}
+                        {inq.items && inq.items.length > 0 ? (
+                          <div className="space-y-2">
+                             {inq.items.map((item: any, idx: number) => (
+                               item.remark ? <div key={idx} className="truncate">{idx + 1}. {item.remark}</div> : null
+                             ))}
+                          </div>
+                        ) : (
+                          inq.remark || "-"
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <span
@@ -259,17 +285,32 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               )}
 
               <div className="space-y-2">
-                <span className="text-xs text-slate-500 uppercase tracking-wider block font-bold">ลิงก์สินค้าต้นฉบับ</span>
-                <a
-                  href={selectedInquiry.product_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary text-xs hover:underline flex items-center gap-1 truncate"
-                >
-                  <Globe className="h-4 w-4 shrink-0 text-slate-400" />
-                  <span>{selectedInquiry.product_url}</span>
-                </a>
-                <span className="text-xs text-slate-600 block mt-1 font-semibold">จำนวนสั่งซื้อ: {selectedInquiry.quantity} ชิ้น</span>
+                <span className="text-xs text-slate-500 uppercase tracking-wider block font-bold">รายการสินค้า</span>
+                {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
+                  <div className="space-y-2 max-h-32 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-100">
+                    {selectedInquiry.items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-center text-xs">
+                         <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[250px]">
+                           {idx + 1}. {item.url}
+                         </a>
+                         <span className="font-semibold text-slate-600 whitespace-nowrap">จำนวน: {item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <a
+                      href={selectedInquiry.product_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary text-xs hover:underline flex items-center gap-1 truncate"
+                    >
+                      <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                      <span>{selectedInquiry.product_url}</span>
+                    </a>
+                    <span className="text-xs text-slate-600 block mt-1 font-semibold">จำนวนสั่งซื้อ: {selectedInquiry.quantity} ชิ้น</span>
+                  </>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
