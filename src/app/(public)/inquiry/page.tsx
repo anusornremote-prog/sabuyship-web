@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,12 +9,14 @@ import { useTranslation } from "@/components/providers/language-provider"
 import { createClient } from "@/lib/supabase/client"
 
 export default function InquiryForm() {
+  const router = useRouter()
   const { t, locale } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
   const [items, setItems] = useState([{ url: '', quantity: 1, remark: '' }])
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,13 +32,28 @@ export default function InquiryForm() {
           if (data) {
             setProfile(data)
           }
+          setIsCheckingAuth(false)
+        } else {
+          router.push('/login')
         }
       } catch (err) {
         console.error("Error fetching profile for inquiry:", err)
+        router.push('/login')
       }
     }
     fetchProfile()
-  }, [])
+  }, [router])
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p>{locale === 'en' ? 'Checking authentication...' : locale === 'zh' ? '正在验证身份...' : 'กำลังตรวจสอบสิทธิ์การใช้งาน...'}</p>
+        </div>
+      </div>
+    )
+  }
 
   const labelContactInfo = locale === 'en' ? 'Contact Information' : locale === 'zh' ? '联系信息' : 'ข้อมูลผู้ติดต่อ'
   const labelContactSub = locale === 'en' ? 'Provide contact details so we can send the quotation' : locale === 'zh' ? '请提供联系方式以便我们发送报价单' : 'กรอกข้อมูลสินค้าและช่องทางติดต่อ เพื่อให้ทีมงานประเมินราคาและค่าขนส่ง'
