@@ -52,8 +52,13 @@ export default function DashboardLayout({
             ขอใบเสนอราคา
           </Link>
         </nav>
-        <div className="p-4 border-t">
-          <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+        <div className="p-4 border-t space-y-2">
+          <Link href="/dashboard/profile">
+             <Button variant="outline" className={`w-full justify-start transition-colors ${pathname.startsWith('/dashboard/profile') ? 'border-primary text-primary bg-blue-50' : 'text-slate-600 hover:bg-slate-100 cursor-pointer'}`}>
+               <span className="flex-1 text-left">ข้อมูลส่วนตัว</span>
+             </Button>
+          </Link>
+          <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer" onClick={handleLogout}>
             <LogOut className="mr-2 h-5 w-5" />
             ออกจากระบบ
           </Button>
@@ -86,6 +91,9 @@ export default function DashboardLayout({
           </Link>
           <Link href="/dashboard/addresses" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/addresses') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             สมุดที่อยู่
+          </Link>
+          <Link href="/dashboard/profile" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/profile') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
+            ข้อมูลส่วนตัว
           </Link>
           <Link href="/inquiry" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors text-slate-600`}>
             ขอใบเสนอราคา

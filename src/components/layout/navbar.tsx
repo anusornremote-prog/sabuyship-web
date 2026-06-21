@@ -12,13 +12,18 @@ export function Navbar() {
   const { t, locale } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
+        if (user) {
+          setUser(user)
+          const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+          setProfile(data)
+        }
       } catch (err) {
         console.error("Error fetching user in navbar:", err)
       }
@@ -26,7 +31,9 @@ export function Navbar() {
     fetchUser()
   }, [])
 
-  const dashboardLabel = locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'แดชบอร์ด'
+  const dashboardLabel = profile?.full_name 
+    ? (locale === 'en' ? `Hi, ${profile.full_name}` : locale === 'zh' ? `你好, ${profile.full_name}` : `สวัสดีคุณ ${profile.full_name}`)
+    : (locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'แดชบอร์ด')
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -58,7 +65,7 @@ export function Navbar() {
           <LanguageSwitcher />
           {user ? (
             <Link href="/dashboard">
-              <Button variant="ghost">{dashboardLabel}</Button>
+              <Button variant="ghost" className="font-bold text-primary">{dashboardLabel}</Button>
             </Link>
           ) : (
             <Link href="/login">
@@ -119,7 +126,7 @@ export function Navbar() {
           <div className="pt-4 border-t flex flex-col gap-2">
             {user ? (
               <Link href="/dashboard" onClick={() => setIsOpen(false)} className="w-full">
-                <Button variant="ghost" className="w-full justify-center">{dashboardLabel}</Button>
+                <Button variant="ghost" className="w-full justify-center font-bold text-primary">{dashboardLabel}</Button>
               </Link>
             ) : (
               <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
