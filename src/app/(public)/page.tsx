@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Ship, ShieldCheck, Clock, MapPin } from "lucide-react"
+import { Ship, ShieldCheck, Clock, MapPin, ShoppingCart } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { createClient } from "@/lib/supabase/client"
 
@@ -97,7 +97,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-slate-900 mb-4">{t.whyTitle}</h2>
             <p className="text-slate-600">{t.whySub}</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="p-8 rounded-2xl bg-blue-50 border border-blue-100 text-center">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <Clock className="w-8 h-8 text-primary" />
@@ -105,7 +105,7 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-3">{t.cardSpeedTitle}</h3>
               <p className="text-slate-600">{t.cardSpeedDesc}</p>
             </div>
-            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative md:-top-4">
+            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative lg:-top-4">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <ShieldCheck className="w-8 h-8 text-accent" />
               </div>
@@ -118,6 +118,13 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-3">{t.cardTrackTitle}</h3>
               <p className="text-slate-600">{t.cardTrackDesc}</p>
+            </div>
+            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative lg:-top-4">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <ShoppingCart className="w-8 h-8 text-accent" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">ฟรีบริการฝากซื้อ</h3>
+              <p className="text-slate-600">เรามีทีมงานช่วยเจรจาสั่งซื้อของและประสานงานกับร้านค้าจีนให้ฟรี ไม่มีค่าใช้จ่ายเพิ่มเติม</p>
             </div>
           </div>
         </div>
