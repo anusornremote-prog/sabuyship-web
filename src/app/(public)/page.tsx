@@ -33,12 +33,25 @@ export default function Home() {
         <div className="container max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
           <div className="flex-1 space-y-8 text-center md:text-left">
             {exchangeRate && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-full font-semibold border border-green-200 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-                เรทเงินวันนี้: 1 RMB = {exchangeRate} THB
+              <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white/90 backdrop-blur-md rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-900/5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  อัปเดตเรทเงินวันนี้
+                </div>
+                <div className="flex items-center gap-3 text-lg font-bold text-slate-800">
+                  <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <span className="text-2xl leading-none drop-shadow-sm" role="img" aria-label="China">🇨🇳</span>
+                    <span>1 หยวน</span>
+                  </div>
+                  <span className="text-slate-300 font-black">=</span>
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 rounded-xl border border-blue-200 text-primary shadow-sm">
+                    <span className="text-2xl leading-none drop-shadow-sm" role="img" aria-label="Thailand">🇹🇭</span>
+                    <span className="text-xl">{exchangeRate} บาท</span>
+                  </div>
+                </div>
               </div>
             )}
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
