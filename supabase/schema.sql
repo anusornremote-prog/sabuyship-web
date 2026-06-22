@@ -19,7 +19,7 @@ CREATE TYPE order_status AS ENUM (
 );
 
 -- 2. Create Sequences
-CREATE SEQUENCE IF NOT EXISTS customer_code_seq START WITH 1001;
+CREATE SEQUENCE IF NOT EXISTS new_customer_code_seq START WITH 1;
 
 -- 3. Profiles (extends auth.users)
 CREATE TABLE profiles (
@@ -176,13 +176,30 @@ CREATE POLICY "Customers can view tracking_logs" ON tracking_logs FOR SELECT
 -- Simple trigger to create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  seq_val BIGINT;
+  num_part INTEGER;
+  char_part INTEGER;
+  letter CHAR(1);
 BEGIN
+  -- Get the next value from the sequence (assume it starts from 1)
+  seq_val := nextval('new_customer_code_seq');
+  
+  -- Calculate numerical part (1 to 999)
+  num_part := ((seq_val - 1) % 999) + 1;
+  
+  -- Calculate character part (A=0, B=1, ..., Z=25)
+  char_part := ((seq_val - 1) / 999) % 26;
+  
+  -- Convert char_part to actual letter (ASCII 65 is 'A')
+  letter := chr(65 + char_part);
+
   INSERT INTO public.profiles (id, full_name, role, customer_code)
   VALUES (
     new.id, 
     new.raw_user_meta_data->>'full_name', 
     'CUSTOMER',
-    'SBS-' || nextval('customer_code_seq')
+    'M-S' || letter || LPAD(num_part::TEXT, 3, '0')
   );
   RETURN new;
 END;
