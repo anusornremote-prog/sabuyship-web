@@ -1,12 +1,30 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Ship, ShieldCheck, Clock, MapPin } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
+import { createClient } from "@/lib/supabase/client"
 
 export default function Home() {
   const { t } = useTranslation()
+  const [exchangeRate, setExchangeRate] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const supabase = createClient()
+        const { data } = await supabase.from('site_settings').select('value').eq('key', 'exchange_rate').single()
+        if (data?.value) {
+          setExchangeRate(data.value.toString())
+        }
+      } catch (err) {
+        console.error("Error fetching exchange rate:", err)
+      }
+    }
+    fetchRate()
+  }, [])
 
   return (
     <div className="flex flex-col">
@@ -14,6 +32,15 @@ export default function Home() {
       <section className="bg-blue-50 py-20 px-4 md:px-8">
         <div className="container max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
           <div className="flex-1 space-y-8 text-center md:text-left">
+            {exchangeRate && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-full font-semibold border border-green-200 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+                เรทเงินวันนี้: 1 RMB = {exchangeRate} THB
+              </div>
+            )}
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
               {t.heroTitle} <span className="text-primary">{t.heroTitleHighlight}</span>
             </h1>
