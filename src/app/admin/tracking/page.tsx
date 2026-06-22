@@ -7,6 +7,8 @@ import { Search, Truck, Loader2, Package, Clock, CheckCircle } from "lucide-reac
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import { TrackingUpdateModal } from "./TrackingUpdateModal"
+import { ExcelUploadModal } from "./ExcelUploadModal"
+import { FileSpreadsheet } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string, color: string, icon: any }> = {
   SHIPPING: { label: "กำลังจัดส่งมาไทย", color: "bg-blue-100 text-blue-700 border-blue-200", icon: Truck },
@@ -21,6 +23,7 @@ export default function AdminTrackingPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [uploadModalOpen, setUploadModalOpen] = useState(false)
 
   const fetchOrders = async () => {
     try {
@@ -72,6 +75,10 @@ export default function AdminTrackingPage() {
           </h1>
           <p className="text-slate-500 mt-1">อัปเดตสถานะพัสดุและแจ้งเลขพัสดุในไทยให้ลูกค้า</p>
         </div>
+        <Button onClick={() => setUploadModalOpen(true)} className="bg-green-600 hover:bg-green-700 text-white shadow-sm flex items-center gap-2">
+          <FileSpreadsheet className="w-4 h-4" />
+          อัปโหลด Excel พัสดุ
+        </Button>
       </div>
 
       <Card className="shadow-sm">
@@ -177,6 +184,16 @@ export default function AdminTrackingPage() {
           onClose={() => setModalOpen(false)} 
           order={selectedOrder} 
           onSuccess={fetchOrders} 
+        />
+      )}
+      
+      {uploadModalOpen && (
+        <ExcelUploadModal
+          isOpen={uploadModalOpen}
+          onClose={() => setUploadModalOpen(false)}
+          onSuccess={() => {
+            // Can fetch shipments here if we combine views later
+          }}
         />
       )}
     </div>

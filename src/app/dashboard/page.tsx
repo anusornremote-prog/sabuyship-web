@@ -24,13 +24,15 @@ export default async function DashboardOverview() {
     { count: pendingOrders },
     { count: completedOrders },
     { count: waitingPayment },
-    { data: recentOrders }
+    { data: recentOrders },
+    { data: recentShipments }
   ] = await Promise.all([
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).neq("status", "DELIVERED"),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).eq("status", "DELIVERED"),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).eq("status", "WAITING_PAYMENT"),
-    supabase.from("orders").select("id, order_number, status, created_at").eq("customer_id", user?.id).order("created_at", { ascending: false }).limit(5)
+    supabase.from("orders").select("id, order_number, status, created_at").eq("customer_id", user?.id).order("created_at", { ascending: false }).limit(5),
+    supabase.from("shipments").select("*").eq("customer_id", user?.id).order("created_at", { ascending: false }).limit(5)
   ])
 
   const getStatusBadge = (status: string) => {
@@ -197,6 +199,50 @@ export default async function DashboardOverview() {
                   ) : (
                     <tr>
                       <td colSpan={3} className="px-6 py-8 text-center text-slate-400">ยังไม่มีรายการคำสั่งซื้อ</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-slate-900 mb-4">พัสดุนำเข้า / สินค้าโกดังจีนล่าสุด</h2>
+        <Card className="shadow-sm">
+          <CardContent className="p-0">
+             <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                  <tr>
+                    <th className="px-6 py-4 font-medium">เลขแทรค (Tracking)</th>
+                    <th className="px-6 py-4 font-medium">ชื่อสินค้า</th>
+                    <th className="px-6 py-4 font-medium">วันที่เข้าตู้</th>
+                    <th className="px-6 py-4 font-medium">ค่าส่ง</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentShipments && recentShipments.length > 0 ? (
+                    recentShipments.map((shipment) => (
+                      <tr key={shipment.id} className="border-b hover:bg-slate-50/50">
+                        <td className="px-6 py-4 font-medium text-slate-800">
+                          {shipment.tracking_number || "-"}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {shipment.product_name || "-"}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {shipment.container_date || "-"}
+                        </td>
+                        <td className="px-6 py-4 text-green-600 font-semibold">
+                          {shipment.shipping_cost || "-"}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-8 text-center text-slate-400">ยังไม่มีรายการพัสดุนำเข้า</td>
                     </tr>
                   )}
                 </tbody>

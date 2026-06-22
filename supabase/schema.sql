@@ -259,3 +259,35 @@ CREATE POLICY "Customers can manage own addresses" ON addresses FOR ALL
   USING (customer_id = auth.uid())
   WITH CHECK (customer_id = auth.uid());
 
+-- 8. Shipments (for tracking packages imported from Excel)
+CREATE TABLE shipments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  customer_code TEXT NOT NULL,
+  transport_type TEXT,
+  tracking_number TEXT,
+  product_type TEXT,
+  product_name TEXT,
+  container_date TEXT,
+  quantity INTEGER,
+  weight NUMERIC,
+  arrival_date TEXT,
+  shipping_cost TEXT,
+  width NUMERIC,
+  length NUMERIC,
+  height NUMERIC,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE shipments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins can do everything on shipments" ON shipments;
+DROP POLICY IF EXISTS "Customers can view own shipments" ON shipments;
+
+CREATE POLICY "Admins can do everything on shipments" ON shipments FOR ALL 
+  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN')
+  WITH CHECK ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
+
+CREATE POLICY "Customers can view own shipments" ON shipments FOR SELECT 
+  USING (customer_id = auth.uid());
