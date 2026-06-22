@@ -97,7 +97,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-slate-900 mb-4">{t.whyTitle}</h2>
             <p className="text-slate-600">{t.whySub}</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8 rounded-2xl bg-blue-50 border border-blue-100 text-center">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <Clock className="w-8 h-8 text-primary" />
@@ -105,7 +105,7 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-3">{t.cardSpeedTitle}</h3>
               <p className="text-slate-600">{t.cardSpeedDesc}</p>
             </div>
-            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative lg:-top-4">
+            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative md:-top-4">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <ShieldCheck className="w-8 h-8 text-accent" />
               </div>
@@ -119,12 +119,34 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-3">{t.cardTrackTitle}</h3>
               <p className="text-slate-600">{t.cardTrackDesc}</p>
             </div>
-            <div className="p-8 rounded-2xl bg-orange-50 border border-orange-100 text-center relative lg:-top-4">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <ShoppingCart className="w-8 h-8 text-accent" />
+          </div>
+        </div>
+      </section>
+
+      {/* Special Feature Highlight */}
+      <section className="py-20 px-4 md:px-8 bg-gradient-to-br from-orange-50 to-orange-100">
+        <div className="container max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-12 bg-white rounded-3xl p-8 md:p-12 shadow-xl shadow-orange-900/5 border border-orange-100">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mb-6 md:mb-0">
+              <ShoppingCart className="w-12 h-12 md:w-16 md:h-16 text-orange-600" />
+            </div>
+            <div className="text-center md:text-left space-y-4">
+              <div className="inline-block px-4 py-1.5 bg-orange-100 text-orange-700 font-bold rounded-full text-sm tracking-wide">
+                จุดเด่นของเรา (Premium Service)
               </div>
-              <h3 className="text-xl font-bold mb-3">ฟรีบริการฝากซื้อ</h3>
-              <p className="text-slate-600">เรามีทีมงานช่วยเจรจาสั่งซื้อของและประสานงานกับร้านค้าจีนให้ฟรี ไม่มีค่าใช้จ่ายเพิ่มเติม</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                ฟรี! บริการฝากซื้อและ <span className="text-orange-500">เจรจาสั่งซื้อของ</span>
+              </h2>
+              <p className="text-lg text-slate-600 max-w-2xl mx-auto md:mx-0">
+                บอกลาปัญหาคุยกับคนจีนไม่รู้เรื่อง! เรามีทีมงานผู้เชี่ยวชาญช่วยเจรจาสั่งซื้อสินค้า ต่อรองราคา และประสานงานกับร้านค้าจีนให้คุณ <strong className="text-slate-800">ฟรี! ไม่มีค่าใช้จ่ายแอบแฝง</strong> มั่นใจได้ของชัวร์ ตรงปก ราคาดีที่สุด
+              </p>
+              <div className="pt-4">
+                <Link href="/inquiry">
+                  <Button size="lg" variant="orange" className="text-lg px-8 h-14 cursor-pointer shadow-md hover:shadow-lg transition-all">
+                    ส่งลิงก์ให้เราช่วยสั่งซื้อเลย
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
