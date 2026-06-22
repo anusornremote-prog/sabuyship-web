@@ -194,12 +194,14 @@ BEGIN
   -- Convert char_part to actual letter (ASCII 65 is 'A')
   letter := chr(65 + char_part);
 
-  INSERT INTO public.profiles (id, full_name, role, customer_code)
+  INSERT INTO public.profiles (id, full_name, role, customer_code, phone, line_id)
   VALUES (
     new.id, 
     new.raw_user_meta_data->>'full_name', 
     'CUSTOMER',
-    'M-S' || letter || LPAD(num_part::TEXT, 3, '0')
+    'M-S' || letter || LPAD(num_part::TEXT, 3, '0'),
+    new.raw_user_meta_data->>'phone',
+    new.raw_user_meta_data->>'line_id'
   );
   RETURN new;
 END;
