@@ -94,7 +94,32 @@ export function ExcelUploadModal({
           height: row['สูง'] ? parseFloat(row['สูง']) : null,
         }
 
-        // 2. Insert into shipments table
+        // 2. Insert or Update into shipments table
+        if (shipmentData.tracking_number) {
+          // Check if tracking number already exists
+          const { data: existing } = await supabase
+            .from("shipments")
+            .select("id")
+            .eq("tracking_number", shipmentData.tracking_number)
+            .maybeSingle()
+
+          if (existing) {
+            // Update existing record to avoid duplicates
+            const { error: updateError } = await supabase
+              .from("shipments")
+              .update(shipmentData)
+              .eq("id", existing.id)
+
+            if (updateError) {
+              console.error("Error updating row:", row, updateError)
+            } else {
+              uploadedCount++
+            }
+            continue // Skip to next row
+          }
+        }
+
+        // Insert new record
         const { error: insertError } = await supabase
           .from("shipments")
           .insert(shipmentData)
