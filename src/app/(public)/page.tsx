@@ -43,12 +43,12 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-3 text-lg font-bold text-slate-800">
                   <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                    <span className="text-2xl leading-none drop-shadow-sm" role="img" aria-label="China">🇨🇳</span>
+                    <img src="https://flagcdn.com/w40/cn.png" srcSet="https://flagcdn.com/w80/cn.png 2x" width="24" alt="China Flag" className="rounded-[2px] shadow-sm" />
                     <span>1 หยวน</span>
                   </div>
                   <span className="text-slate-300 font-black">=</span>
                   <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 rounded-xl border border-blue-200 text-primary shadow-sm">
-                    <span className="text-2xl leading-none drop-shadow-sm" role="img" aria-label="Thailand">🇹🇭</span>
+                    <img src="https://flagcdn.com/w40/th.png" srcSet="https://flagcdn.com/w80/th.png 2x" width="24" alt="Thailand Flag" className="rounded-[2px] shadow-sm" />
                     <span className="text-xl">{exchangeRate} บาท</span>
                   </div>
                 </div>
