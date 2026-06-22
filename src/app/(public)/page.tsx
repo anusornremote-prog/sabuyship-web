@@ -102,7 +102,7 @@ export default function Home() {
                 จุดเด่นของเรา (Premium Service)
               </div>
               <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
-                ฟรี! บริการฝากซื้อและ <span className="text-orange-500">เจรจาสั่งซื้อของ</span>
+                ฟรี! บริการสั่งซื้อและ <span className="text-orange-500">ต่อรองราคาสินค้า</span>
               </h2>
               <p className="text-lg text-slate-600 max-w-2xl mx-auto md:mx-0">
                 บอกลาปัญหาคุยกับคนจีนไม่รู้เรื่อง! เรามีทีมงานผู้เชี่ยวชาญช่วยเจรจาสั่งซื้อสินค้า ต่อรองราคา และประสานงานกับร้านค้าจีนให้คุณ <strong className="text-slate-800">ฟรี! ไม่มีค่าใช้จ่ายแอบแฝง</strong> มั่นใจได้ของชัวร์ ตรงปก ราคาดีที่สุด
