@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,10 +31,10 @@ export function WalletDeductModal({
   const [errorMsg, setErrorMsg] = useState("")
 
   // Reset states when opened with new defaults
-  useState(() => {
+  useEffect(() => {
     if (defaultAmount) setAmount(defaultAmount.toString())
     if (defaultDescription) setDescription(defaultDescription)
-  })
+  }, [defaultAmount, defaultDescription, isOpen])
 
   if (!customer) return null
 
