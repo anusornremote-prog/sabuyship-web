@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { PaymentApprovalModal } from "./PaymentApprovalModal"
+import { WalletDeductModal } from "../wallet/WalletDeductModal"
 
 export default function AdminOrders() {
   const supabase = createClient()
@@ -28,6 +29,10 @@ export default function AdminOrders() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<any>(null)
 
+  // Wallet Deduct states
+  const [deductModalOpen, setDeductModalOpen] = useState(false)
+  const [selectedDeductOrder, setSelectedDeductOrder] = useState<any>(null)
+
   const fetchOrders = async () => {
     try {
       setLoading(true)
@@ -38,9 +43,12 @@ export default function AdminOrders() {
           order_number,
           status,
           created_at,
+          customer_id,
           customer:customer_id (
+            id,
             full_name,
-            phone
+            phone,
+            wallet_balance
           ),
           address:shipping_address_id (
             address_line,
@@ -276,6 +284,17 @@ export default function AdminOrders() {
                           <MapPin className="h-4 w-4 mr-1" />
                           อัปเดตสถานะ
                         </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedDeductOrder(order)
+                            setDeductModalOpen(true)
+                          }}
+                          className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px] mb-2"
+                        >
+                          หัก Wallet
+                        </Button>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="icon" className="cursor-pointer" asChild>
                             <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank" title="เอกสาร Invoice/Receipt">
@@ -312,6 +331,20 @@ export default function AdminOrders() {
         order={selectedPayment?.order}
         onSuccess={() => {
           setPaymentModalOpen(false)
+          fetchOrders()
+        }}
+      />
+
+      {/* Wallet Deduct Modal */}
+      <WalletDeductModal 
+        isOpen={deductModalOpen}
+        onClose={() => setDeductModalOpen(false)}
+        customer={selectedDeductOrder?.customer || null}
+        referenceId={selectedDeductOrder?.order_number}
+        defaultAmount={selectedDeductOrder?.quotation?.total_price || 0}
+        defaultDescription={`หักค่าสินค้า ออเดอร์ ${selectedDeductOrder?.order_number || ''}`}
+        onSuccess={() => {
+          setDeductModalOpen(false)
           fetchOrders()
         }}
       />

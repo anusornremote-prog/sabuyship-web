@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client"
 import { TrackingUpdateModal } from "./TrackingUpdateModal"
 import { ExcelUploadModal } from "./ExcelUploadModal"
 import { FileSpreadsheet } from "lucide-react"
+import { WalletDeductModal } from "../wallet/WalletDeductModal"
 
 const STATUS_CONFIG: Record<string, { label: string, color: string, icon: any }> = {
   SHIPPING: { label: "กำลังจัดส่งมาไทย", color: "bg-blue-100 text-blue-700 border-blue-200", icon: Truck },
@@ -27,6 +28,10 @@ export default function AdminTrackingPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  
+  // Wallet Deduct states
+  const [deductModalOpen, setDeductModalOpen] = useState(false)
+  const [selectedDeductShipment, setSelectedDeductShipment] = useState<any>(null)
 
   const fetchOrders = async () => {
     try {
@@ -55,7 +60,7 @@ export default function AdminTrackingPage() {
       setLoadingShipments(true)
       const { data, error } = await supabase
         .from("shipments")
-        .select(`*, profiles(full_name, phone)`)
+        .select(`*, profiles(id, full_name, phone, wallet_balance)`)
         .order("created_at", { ascending: false })
         .limit(1000)
 
@@ -242,6 +247,7 @@ export default function AdminTrackingPage() {
                       <th className="px-6 py-4 font-semibold">บริษัทขนส่ง</th>
                       <th className="px-6 py-4 font-semibold">รายละเอียด</th>
                       <th className="px-6 py-4 font-semibold">วันที่บันทึก</th>
+                      <th className="px-6 py-4 font-semibold text-center">จัดการ</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -270,6 +276,21 @@ export default function AdminTrackingPage() {
                           </td>
                           <td className="px-6 py-4 text-slate-500">
                             {new Date(shipment.created_at).toLocaleDateString('th-TH')}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            {shipment.profiles?.id && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedDeductShipment(shipment)
+                                  setDeductModalOpen(true)
+                                }}
+                                className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px]"
+                              >
+                                หัก Wallet
+                              </Button>
+                            )}
                           </td>
                         </tr>
                       ))
@@ -300,6 +321,20 @@ export default function AdminTrackingPage() {
         />
       )}
       
+      {/* Wallet Deduct Modal */}
+      <WalletDeductModal 
+        isOpen={deductModalOpen}
+        onClose={() => setDeductModalOpen(false)}
+        customer={selectedDeductShipment?.profiles || null}
+        referenceId={selectedDeductShipment?.tracking_number}
+        defaultAmount={selectedDeductShipment?.shipping_cost ? parseFloat(selectedDeductShipment.shipping_cost.replace(/[^0-9.]/g, '')) : 0}
+        defaultDescription={`หักค่าขนส่งพัสดุ ${selectedDeductShipment?.tracking_number || ''}`}
+        onSuccess={() => {
+          setDeductModalOpen(false)
+          fetchShipments()
+        }}
+      />
+
       {uploadModalOpen && (
         <ExcelUploadModal
           isOpen={uploadModalOpen}
