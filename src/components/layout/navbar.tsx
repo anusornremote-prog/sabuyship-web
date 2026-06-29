@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Ship, Menu, X, ChevronDown, User, Wallet, Package, MapPin, FileText, FileQuestion } from "lucide-react"
+import { Ship, Menu, X, ChevronDown, User, Wallet, Package, MapPin, FileText, FileQuestion, LogOut } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 export function Navbar() {
   const { t, locale } = useTranslation()
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -46,6 +48,13 @@ export function Navbar() {
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isDropdownOpen])
+
+  const handleLogout = async () => {
+    setIsDropdownOpen(false)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/login")
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -105,6 +114,10 @@ export function Navbar() {
                   <Link href="/inquiry" className="flex items-center gap-2 px-4 py-2 text-sm text-primary font-medium hover:bg-slate-50 transition-colors" onClick={() => setIsDropdownOpen(false)}>
                     <FileQuestion className="h-4 w-4" /> ขอใบเสนอราคา
                   </Link>
+                  <div className="border-t my-1"></div>
+                  <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer">
+                    <LogOut className="h-4 w-4" /> ออกจากระบบ
+                  </button>
                 </div>
               )}
             </div>
