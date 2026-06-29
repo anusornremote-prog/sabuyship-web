@@ -145,7 +145,8 @@ DROP POLICY IF EXISTS "Customers can view own inquiries" ON inquiries;
 DROP POLICY IF EXISTS "Users and admins can view inquiries" ON inquiries;
 DROP POLICY IF EXISTS "Admins can update inquiries" ON inquiries;
 
-CREATE POLICY "Anyone can insert inquiries" ON inquiries FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Users can insert own inquiries or guest" ON inquiries;
+CREATE POLICY "Users can insert own inquiries or guest" ON inquiries FOR INSERT WITH CHECK (auth.uid() = customer_id OR customer_id IS NULL);
 CREATE POLICY "Users and admins can view inquiries" ON inquiries FOR SELECT 
   USING (auth.uid() = customer_id OR (SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
 CREATE POLICY "Admins can update inquiries" ON inquiries FOR UPDATE 

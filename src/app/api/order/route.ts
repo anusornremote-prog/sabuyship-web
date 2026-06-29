@@ -1,10 +1,30 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@supabase/ssr"
 
-// POST /api/order - Create an order (Node-RED integration)
+// POST /api/order - Create an order (Node-RED integration or external API)
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    // 1. Check API Key
+    const apiKey = request.headers.get("x-api-key")
+    if (!apiKey || apiKey !== process.env.SABUY_API_KEY) {
+      return NextResponse.json({ error: "Unauthorized: Invalid API Key" }, { status: 401 })
+    }
+
+    // 2. Use Service Role Key to bypass RLS for background tasks
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    
+    if (!supabaseServiceKey) {
+      return NextResponse.json({ error: "Server Configuration Error: Missing Service Role Key" }, { status: 500 })
+    }
+
+    const supabase = createServerClient(supabaseUrl, supabaseServiceKey, {
+      cookies: {
+        get() { return null },
+        set() {},
+        remove() {}
+      }
+    })
     const body = await request.json()
 
     if (!body.customer_id || !body.quotation_id) {

@@ -62,7 +62,7 @@ export default function AdminTrackingPage() {
         .from("shipments")
         .select(`*, profiles(id, full_name, phone, wallet_balance)`)
         .order("created_at", { ascending: false })
-        .limit(1000)
+        .limit(200) // Performance optimization: limit to recent 200 instead of 1000
 
       if (error) throw error
       setShipments(data || [])
