@@ -34,9 +34,17 @@ export function Navbar() {
     fetchUser()
   }, [])
 
-  const dashboardLabel = profile?.full_name 
-    ? (locale === 'en' ? `Hi, ${profile.full_name}` : locale === 'zh' ? `你好, ${profile.full_name}` : `สวัสดีคุณ ${profile.full_name}`)
-    : (locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'แดชบอร์ด')
+  const getDashboardLabel = () => {
+    const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || ''
+    
+    if (name) {
+      return locale === 'en' ? `Hi, ${name}` : locale === 'zh' ? `你好, ${name}` : `สวัสดีคุณ ${name}`
+    }
+    
+    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'แดชบอร์ด'
+  }
+  
+  const dashboardLabel = getDashboardLabel()
 
   // Close dropdown when clicking outside
   useEffect(() => {
