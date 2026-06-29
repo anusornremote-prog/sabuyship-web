@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, Truck, Clock, CheckCircle2 } from "lucide-react"
+import { Package, Truck, Clock, CheckCircle2, Wallet } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function DashboardOverview() {
@@ -118,7 +118,20 @@ export default async function DashboardOverview() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <Card className="shadow-sm border-blue-100 bg-gradient-to-br from-primary to-orange-500 text-white md:col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-white/90">กระเป๋าเงิน (E-Wallet)</CardTitle>
+            <Wallet className="h-4 w-4 text-white/80" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">฿{Number(profile?.wallet_balance || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</div>
+            <a href="/dashboard/wallet" className="inline-block mt-3 px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-xs font-medium transition-colors">
+              เติมเงิน
+            </a>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-sm border-blue-100">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">คำสั่งซื้อทั้งหมด</CardTitle>
