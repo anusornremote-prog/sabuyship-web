@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Ship, Menu, X } from "lucide-react"
+import { Ship, Menu, X, ChevronDown, User, Wallet, Package, MapPin, FileText, FileQuestion } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { createClient } from "@/lib/supabase/client"
@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client"
 export function Navbar() {
   const { t, locale } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
 
@@ -34,6 +35,17 @@ export function Navbar() {
   const dashboardLabel = profile?.full_name 
     ? (locale === 'en' ? `Hi, ${profile.full_name}` : locale === 'zh' ? `你好, ${profile.full_name}` : `สวัสดีคุณ ${profile.full_name}`)
     : (locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'แดชบอร์ด')
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isDropdownOpen && !(event.target as Element).closest('.user-dropdown')) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [isDropdownOpen])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -64,9 +76,38 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-4">
           <LanguageSwitcher />
           {user ? (
-            <Link href="/dashboard">
-              <Button variant="ghost" className="font-bold text-primary">{dashboardLabel}</Button>
-            </Link>
+            <div className="relative user-dropdown">
+              <Button 
+                variant="ghost" 
+                className="font-bold text-primary flex items-center gap-1"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                {dashboardLabel} <ChevronDown className="h-4 w-4" />
+              </Button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-slate-100 py-1 z-50">
+                  <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <Package className="h-4 w-4" /> ภาพรวม
+                  </Link>
+                  <Link href="/dashboard/wallet" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <Wallet className="h-4 w-4" /> กระเป๋าเงิน
+                  </Link>
+                  <Link href="/dashboard/inquiries" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <FileText className="h-4 w-4" /> ประวัติการขอราคา
+                  </Link>
+                  <Link href="/dashboard/addresses" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <MapPin className="h-4 w-4" /> สมุดที่อยู่
+                  </Link>
+                  <Link href="/dashboard/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <User className="h-4 w-4" /> ข้อมูลส่วนตัว
+                  </Link>
+                  <div className="border-t my-1"></div>
+                  <Link href="/inquiry" className="flex items-center gap-2 px-4 py-2 text-sm text-primary font-medium hover:bg-slate-50 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <FileQuestion className="h-4 w-4" /> ขอใบเสนอราคา
+                  </Link>
+                </div>
+              )}
+            </div>
           ) : (
             <Link href="/login">
               <Button variant="ghost">{t.navLogin}</Button>
