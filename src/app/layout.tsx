@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sabuy Ship | นำเข้าสินค้าจากจีนง่าย รวดเร็ว และปลอดภัย",
   description: "บริการนำเข้าสินค้าจากจีนถึงไทยอย่างมืออาชีพ รวดเร็ว ปลอดภัย ตรวจสอบสถานะได้ 24 ชั่วโมง พร้อมบริการสั่งซื้อสินค้าและขนส่ง",
+  icons: {
+    icon: "/favicon.ico?v=2",
+  },
 };
 
 export default async function RootLayout({
