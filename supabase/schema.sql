@@ -126,14 +126,12 @@ ALTER TABLE tracking_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles Policies
-DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile." ON profiles;
-DROP POLICY IF EXISTS "Users can update own profile." ON profiles;
-DROP POLICY IF EXISTS "Admins can do everything on profiles" ON profiles;
-DROP POLICY IF EXISTS "Admins can update profiles" ON profiles;
-DROP POLICY IF EXISTS "Admins can delete profiles" ON profiles;
 
-CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT USING (true);
+CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Admins can view all profiles" ON profiles FOR SELECT USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
 CREATE POLICY "Users can insert their own profile." ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile." ON profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Admins can update profiles" ON profiles FOR UPDATE 
