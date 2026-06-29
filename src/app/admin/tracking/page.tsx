@@ -102,6 +102,32 @@ export default function AdminTrackingPage() {
     setModalOpen(true)
   }
 
+  const handleManualShipmentPayment = async (shipment: any) => {
+    if (!confirm(`ยืนยันการรับชำระเงินค่าจัดส่งสำหรับพัสดุ ${shipment.tracking_number || '-'} (โอนตรง/ไม่หัก Wallet)?`)) return
+
+    try {
+      setLoadingShipments(true)
+      
+      // We append (จ่ายแล้ว) to shipping_cost to visually indicate payment
+      const currentCost = shipment.shipping_cost || "0"
+      const newCost = currentCost.includes("(จ่ายแล้ว)") ? currentCost : `${currentCost} (จ่ายแล้ว)`
+
+      const { error } = await supabase
+        .from("shipments")
+        .update({ shipping_cost: newCost })
+        .eq("id", shipment.id)
+
+      if (error) throw error
+
+      alert("บันทึกการรับชำระเงินค่าขนส่งสำเร็จ!")
+      fetchShipments()
+    } catch (err: any) {
+      alert(err.message || "เกิดข้อผิดพลาดในการบันทึก")
+    } finally {
+      setLoadingShipments(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -279,17 +305,29 @@ export default function AdminTrackingPage() {
                           </td>
                           <td className="px-6 py-4 text-center">
                             {shipment.profiles?.id && (
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedDeductShipment(shipment)
-                                  setDeductModalOpen(true)
-                                }}
-                                className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px]"
-                              >
-                                หัก Wallet
-                              </Button>
+                              <div className="flex flex-col gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedDeductShipment(shipment)
+                                    setDeductModalOpen(true)
+                                  }}
+                                  className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px]"
+                                >
+                                  หัก Wallet
+                                </Button>
+                                {!String(shipment.shipping_cost).includes("(จ่ายแล้ว)") && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleManualShipmentPayment(shipment)}
+                                    className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer w-full max-w-[120px]"
+                                  >
+                                    รับเงิน (โอนตรง)
+                                  </Button>
+                                )}
+                              </div>
                             )}
                           </td>
                         </tr>

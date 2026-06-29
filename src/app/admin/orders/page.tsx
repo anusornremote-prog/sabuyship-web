@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, MapPin, X, Loader2, FileText } from "lucide-react"
+import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -140,6 +140,38 @@ export default function AdminOrders() {
     }
   }
 
+  const handleManualPayment = async (order: any) => {
+    if (!confirm(`ยืนยันการรับชำระเงินสำหรับออเดอร์ ${order.order_number} (ผ่านช่องทางอื่น ไม่หัก Wallet)?`)) return
+
+    try {
+      setLoading(true)
+      
+      const { error: orderError } = await supabase
+        .from("orders")
+        .update({ status: 'PAID' })
+        .eq("id", order.id)
+
+      if (orderError) throw orderError
+
+      const { error: logError } = await supabase
+        .from("tracking_logs")
+        .insert({
+          order_id: order.id,
+          status: 'PAID',
+          notes: 'ยืนยันรับชำระเงินแล้ว (ผ่านช่องทางอื่น/โอนตรง)'
+        })
+
+      if (logError) throw logError
+
+      alert("อัปเดตสถานะการชำระเงินสำเร็จ!")
+      fetchOrders()
+    } catch (err: any) {
+      alert(err.message || "เกิดข้อผิดพลาดในการอัปเดต")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'NEW': return 'bg-blue-100 text-blue-800'
@@ -186,6 +218,12 @@ export default function AdminOrders() {
           <h1 className="text-3xl font-bold text-slate-900">จัดการคำสั่งซื้อ (Orders)</h1>
           <p className="text-slate-600">ตรวจสอบและอัปเดตสถานะคำสั่งซื้อพัสดุทั้งหมด</p>
         </div>
+        <Link href="/admin/orders/new">
+          <Button className="bg-primary hover:bg-primary/90 text-white shadow-sm flex items-center gap-2">
+            <PackagePlus className="w-4 h-4" />
+            สร้างออเดอร์ (Manual)
+          </Button>
+        </Link>
       </div>
 
       <Card className="shadow-sm">
@@ -294,6 +332,14 @@ export default function AdminOrders() {
                           className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px] mb-2"
                         >
                           หัก Wallet
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleManualPayment(order)}
+                          className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer w-full max-w-[120px] mb-2"
+                        >
+                          รับเงิน (โอนตรง)
                         </Button>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="icon" className="cursor-pointer" asChild>
