@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin } from "lucide-react"
+import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin, Wallet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
@@ -38,6 +38,10 @@ export default function DashboardLayout({
           <Link href="/dashboard/orders" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/orders') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <Package className="h-5 w-5" />
             คำสั่งซื้อของฉัน
+          </Link>
+          <Link href="/dashboard/wallet" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/wallet') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
+            <Wallet className="h-5 w-5" />
+            กระเป๋าเงิน (E-Wallet)
           </Link>
           <Link href="/dashboard/inquiries" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <FileText className="h-5 w-5" />
@@ -85,6 +89,9 @@ export default function DashboardLayout({
           </Link>
           <Link href="/dashboard/orders" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/orders') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             คำสั่งซื้อ
+          </Link>
+          <Link href="/dashboard/wallet" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/wallet') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
+            กระเป๋าเงิน
           </Link>
           <Link href="/dashboard/inquiries" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             ประวัติการขอราคา

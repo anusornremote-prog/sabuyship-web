@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ShieldAlert, Users, FileQuestion, FileText, Package, Truck, LayoutDashboard, LogOut, Settings } from "lucide-react"
+import { ShieldAlert, Users, FileQuestion, FileText, Package, Truck, LayoutDashboard, LogOut, Settings, Wallet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
@@ -27,6 +27,7 @@ export default function AdminLayout({
     { href: "/admin/quotations", icon: FileText, label: "ใบเสนอราคา" },
     { href: "/admin/orders", icon: Package, label: "คำสั่งซื้อ" },
     { href: "/admin/tracking", icon: Truck, label: "จัดการ Tracking" },
+    { href: "/admin/wallet", icon: Wallet, label: "กระเป๋าเงิน" },
     { href: "/admin/settings", icon: Settings, label: "ตั้งค่า" },
   ]
 

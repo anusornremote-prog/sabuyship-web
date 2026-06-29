@@ -17,6 +17,8 @@ CREATE TYPE order_status AS ENUM (
   'OUT_FOR_DELIVERY',
   'DELIVERED'
 );
+CREATE TYPE wallet_transaction_type AS ENUM ('TOPUP', 'DEDUCTION', 'REFUND');
+CREATE TYPE wallet_transaction_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- 2. Create Sequences
 CREATE SEQUENCE IF NOT EXISTS new_customer_code_seq START WITH 1;
@@ -29,6 +31,7 @@ CREATE TABLE profiles (
   full_name TEXT,
   phone TEXT,
   line_id TEXT,
+  wallet_balance NUMERIC(10, 2) DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -99,6 +102,20 @@ CREATE TABLE tracking_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 8. Wallet Transactions
+CREATE TABLE wallet_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  amount NUMERIC(10, 2) NOT NULL,
+  type wallet_transaction_type NOT NULL,
+  status wallet_transaction_status DEFAULT 'PENDING',
+  reference_image TEXT,
+  description TEXT,
+  admin_note TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
@@ -106,6 +123,7 @@ ALTER TABLE quotations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tracking_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles Policies
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON profiles;
@@ -172,6 +190,21 @@ CREATE POLICY "Customers can view tracking_logs" ON tracking_logs FOR SELECT
     WHERE orders.id = tracking_logs.order_id 
     AND orders.customer_id = auth.uid()
   ));
+
+-- Wallet Transactions Policies
+DROP POLICY IF EXISTS "Admins can do everything on wallet_transactions" ON wallet_transactions;
+DROP POLICY IF EXISTS "Customers can view own wallet_transactions" ON wallet_transactions;
+DROP POLICY IF EXISTS "Customers can insert own wallet_transactions" ON wallet_transactions;
+
+CREATE POLICY "Admins can do everything on wallet_transactions" ON wallet_transactions FOR ALL 
+  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN')
+  WITH CHECK ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
+  
+CREATE POLICY "Customers can view own wallet_transactions" ON wallet_transactions FOR SELECT 
+  USING (customer_id = auth.uid());
+  
+CREATE POLICY "Customers can insert own wallet_transactions" ON wallet_transactions FOR INSERT 
+  WITH CHECK (customer_id = auth.uid() AND type = 'TOPUP');
 
 -- Simple trigger to create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
