@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Wallet, Upload, Plus, History, Clock, CheckCircle2, XCircle } from "lucide-react"
 import {
   Dialog,
@@ -182,7 +181,7 @@ export default function WalletPage() {
 
                 <form onSubmit={handleTopup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="amount">จำนวนเงินที่โอน (บาท)</Label>
+                    <label htmlFor="amount" className="text-sm font-medium leading-none">จำนวนเงินที่โอน (บาท)</label>
                     <Input 
                       id="amount" 
                       type="number" 
@@ -193,7 +192,7 @@ export default function WalletPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="slip">หลักฐานการโอนเงิน (สลิป)</Label>
+                    <label htmlFor="slip" className="text-sm font-medium leading-none">หลักฐานการโอนเงิน (สลิป)</label>
                     <Input 
                       id="slip" 
                       type="file" 
