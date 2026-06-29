@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
       const data = await response.json()
 
-      if (data.code === 200 && data.data && data.data.length > 0) {
+      if (data.meta?.code === 200 && data.data && data.data.length > 0) {
         const trackingData = data.data[0]
         
         // Format TrackingMore data to our timeline structure
