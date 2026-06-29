@@ -35,13 +35,30 @@ export function Navbar() {
   }, [])
 
   const getDashboardLabel = () => {
-    const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || ''
+    // 1. Try to get name from profile
+    let name = profile?.full_name
     
-    if (name) {
+    // 2. Try user metadata
+    if (!name && user?.user_metadata?.full_name) {
+      name = user.user_metadata.full_name
+    }
+    
+    // 3. Try email or phone
+    if (!name) {
+      if (user?.email) {
+        name = user.email.split('@')[0]
+      } else if (user?.phone) {
+        name = user.phone
+      }
+    }
+    
+    // If we have any name/identifier, use it
+    if (name && name.trim() !== '') {
       return locale === 'en' ? `Hi, ${name}` : locale === 'zh' ? `你好, ${name}` : `สวัสดีคุณ ${name}`
     }
     
-    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'แดชบอร์ด'
+    // Fallback if absolutely nothing is available
+    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'ชื่อลูกค้า' // fallback to "ชื่อลูกค้า" instead of Dashboard as requested
   }
   
   const dashboardLabel = getDashboardLabel()
