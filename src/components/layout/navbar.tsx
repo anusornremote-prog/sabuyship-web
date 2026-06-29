@@ -72,9 +72,6 @@ export function Navbar() {
               <Button variant="ghost">{t.navLogin}</Button>
             </Link>
           )}
-          <Link href="/inquiry">
-            <Button variant="orange">{t.navSubmitLink}</Button>
-          </Link>
         </div>
 
         {/* Mobile Navigation Toggle & Switcher */}
@@ -133,9 +130,6 @@ export function Navbar() {
                 <Button variant="ghost" className="w-full justify-center">{t.navLogin}</Button>
               </Link>
             )}
-            <Link href="/inquiry" onClick={() => setIsOpen(false)} className="w-full">
-              <Button variant="orange" className="w-full justify-center">{t.navSubmitLink}</Button>
-            </Link>
           </div>
         </div>
       )}
