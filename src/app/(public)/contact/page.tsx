@@ -36,15 +36,7 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="bg-blue-100 p-3 rounded-full text-primary">
-                <Phone className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">{t.phoneLabel}</h3>
-                <p className="text-slate-600">02-XXX-XXXX</p>
-              </div>
-            </div>
+
 
             <div className="flex items-start gap-4">
               <div className="bg-blue-100 p-3 rounded-full text-primary">
