@@ -9,7 +9,6 @@ import { createClient } from "@/lib/supabase/client"
 import { TrackingUpdateModal } from "./TrackingUpdateModal"
 import { ExcelUploadModal } from "./ExcelUploadModal"
 import { FileSpreadsheet } from "lucide-react"
-import { WalletDeductModal } from "../wallet/WalletDeductModal"
 
 const STATUS_CONFIG: Record<string, { label: string, color: string, icon: any }> = {
   SHIPPING: { label: "กำลังจัดส่งมาไทย", color: "bg-blue-100 text-blue-700 border-blue-200", icon: Truck },
@@ -28,10 +27,6 @@ export default function AdminTrackingPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  
-  // Wallet Deduct states
-  const [deductModalOpen, setDeductModalOpen] = useState(false)
-  const [selectedDeductShipment, setSelectedDeductShipment] = useState<any>(null)
 
   const fetchOrders = async () => {
     try {
@@ -306,17 +301,6 @@ export default function AdminTrackingPage() {
                           <td className="px-6 py-4 text-center">
                             {shipment.profiles?.id && (
                               <div className="flex flex-col gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedDeductShipment(shipment)
-                                    setDeductModalOpen(true)
-                                  }}
-                                  className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px]"
-                                >
-                                  หัก Wallet
-                                </Button>
                                 {!String(shipment.shipping_cost).includes("(จ่ายแล้ว)") && (
                                   <Button 
                                     size="sm" 
@@ -358,20 +342,6 @@ export default function AdminTrackingPage() {
           onSuccess={fetchOrders} 
         />
       )}
-      
-      {/* Wallet Deduct Modal */}
-      <WalletDeductModal 
-        isOpen={deductModalOpen}
-        onClose={() => setDeductModalOpen(false)}
-        customer={selectedDeductShipment?.profiles || null}
-        referenceId={selectedDeductShipment?.tracking_number}
-        defaultAmount={selectedDeductShipment?.shipping_cost ? parseFloat(selectedDeductShipment.shipping_cost.replace(/[^0-9.]/g, '')) : 0}
-        defaultDescription={`หักค่าขนส่งพัสดุ ${selectedDeductShipment?.tracking_number || ''}`}
-        onSuccess={() => {
-          setDeductModalOpen(false)
-          fetchShipments()
-        }}
-      />
 
       {uploadModalOpen && (
         <ExcelUploadModal
