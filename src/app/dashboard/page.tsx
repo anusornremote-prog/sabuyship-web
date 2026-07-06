@@ -108,8 +108,12 @@ export default async function DashboardOverview() {
                     <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">13800138000</span>
                   </div>
                   <div>
+                    <strong className="text-slate-800 block">รหัสไปรษณีย์ (Zip Code):</strong>
+                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">510470</span>
+                  </div>
+                  <div>
                     <strong className="text-slate-800 block">ที่อยู่โกดัง (Address):</strong>
-                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">广东省广州市白云区石井街道 (SBS / {profile.customer_code})</span>
+                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">广东省广州市白云区人和镇人和大街68号（万宝集团）进大门右转直走到底61号仓（泰国专线仓库） (SBS / {profile.customer_code})</span>
                   </div>
                 </div>
               </div>
