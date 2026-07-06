@@ -21,7 +21,7 @@ export default function Login() {
   const initGoogleLogin = () => {
     if (typeof window !== "undefined" && (window as any).google && googleButtonRef.current) {
       (window as any).google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "449039415658-57snl0en8sa78c0pp0l2ttc9ld54q89d.apps.googleusercontent.com",
         callback: handleGoogleCallback,
       });
       (window as any).google.accounts.id.renderButton(
