@@ -12,18 +12,18 @@ export async function POST(req: Request) {
       )
     }
 
-    const lineToken = process.env.LINE_NOTIFY_TOKEN
+    const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
+    const adminUserId = process.env.LINE_ADMIN_USER_ID
 
-    if (!lineToken) {
+    if (!channelAccessToken || !adminUserId) {
       // If no token is configured, we just return success so the frontend works,
       // but log a warning on the server.
-      console.warn('LINE_NOTIFY_TOKEN is not set. Message was not sent to LINE.')
-      return NextResponse.json({ success: true, warning: 'No LINE token configured' })
+      console.warn('LINE Messaging API variables are not set. Message was not sent to LINE.')
+      return NextResponse.json({ success: true, warning: 'No LINE tokens configured' })
     }
 
     // Format the message for LINE
-    const lineMessage = `
-🔔 มีข้อความใหม่จากหน้าเว็บติดต่อเรา
+    const lineMessage = `🔔 มีข้อความใหม่จากหน้าเว็บติดต่อเรา
 -------------------------
 👤 ชื่อ: ${name}
 📧 อีเมล: ${email}
@@ -32,20 +32,26 @@ export async function POST(req: Request) {
 ${message}
 -------------------------`
 
-    const response = await fetch('https://notify-api.line.me/api/notify', {
+    const response = await fetch('https://api.line.me/v2/bot/message/push', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Bearer ${lineToken}`,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${channelAccessToken}`,
       },
-      body: new URLSearchParams({
-        message: lineMessage,
-      }),
+      body: JSON.stringify({
+        to: adminUserId,
+        messages: [
+          {
+            type: 'text',
+            text: lineMessage
+          }
+        ]
+      })
     })
 
     if (!response.ok) {
       const errorData = await response.text()
-      console.error('LINE Notify Error:', errorData)
+      console.error('LINE Messaging API Error:', errorData)
       return NextResponse.json(
         { error: 'ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง' },
         { status: 500 }
