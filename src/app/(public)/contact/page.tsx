@@ -31,7 +31,13 @@ export default function Contact() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">{t.lineResponse}</h3>
-                <p className="text-slate-600 text-lg font-bold text-green-600">@sabuyship</p>
+                <p className="text-slate-600 text-lg font-bold text-green-600 mb-2">@sabuyship</p>
+                <img src="/QR-Line.jpg" alt="LINE QR Code" className="w-40 h-40 mb-4 rounded-md shadow-sm border" />
+                <a href="https://lin.ee/UC0F9zl" target="_blank" rel="noopener noreferrer">
+                  <Button className="bg-[#06C755] hover:bg-[#05b34c] text-white w-full max-w-xs mb-2 shadow-sm font-semibold">
+                    เพิ่มเพื่อน (Add Friend)
+                  </Button>
+                </a>
                 <p className="text-sm text-slate-500">{t.lineHours}</p>
               </div>
             </div>
@@ -54,7 +60,7 @@ export default function Contact() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Email</h3>
-                <p className="text-slate-600">contact@sabuyship.com</p>
+                <p className="text-slate-600">sabuyship@gmail.com</p>
               </div>
             </div>
             
