@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { PhoneSetupModal } from "@/components/PhoneSetupModal"
 import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -14,6 +16,25 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [showPhoneModal, setShowPhoneModal] = useState(false)
+
+  useEffect(() => {
+    const checkProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('id', user.id)
+          .single()
+          
+        if (data && !data.phone) {
+          setShowPhoneModal(true)
+        }
+      }
+    }
+    checkProfile()
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -104,6 +125,7 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+      <PhoneSetupModal isOpen={showPhoneModal} onSuccess={() => setShowPhoneModal(false)} />
     </div>
   )
 }
