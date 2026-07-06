@@ -80,15 +80,15 @@ export default function Contact() {
 
 
 
-            <div className="flex items-start gap-4">
-              <div className="bg-blue-100 p-3 rounded-full text-primary">
+            <a href="https://facebook.com/sabuyshipexpress" target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 hover:opacity-80 transition-opacity group">
+              <div className="bg-blue-100 p-3 rounded-full text-primary group-hover:bg-blue-200 transition-colors">
                 <Facebook className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Facebook Fanpage</h3>
-                <p className="text-slate-600">Sabuy Ship Thailand - นำเข้าสินค้าจากจีน</p>
+                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Facebook Fanpage</h3>
+                <p className="text-slate-600 group-hover:text-slate-900 transition-colors">Sabuy Ship Express</p>
               </div>
-            </div>
+            </a>
 
             <div className="flex items-start gap-4">
               <div className="bg-blue-100 p-3 rounded-full text-primary">
