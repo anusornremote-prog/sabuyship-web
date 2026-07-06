@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Ship, Menu, X, ChevronDown, User, Wallet, Package, MapPin, FileText, FileQuestion, LogOut } from "lucide-react"
+import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuestion, LogOut } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { createClient } from "@/lib/supabase/client"
@@ -122,10 +122,10 @@ export function Navbar() {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-slate-100 py-1 z-50">
                   <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <Package className="h-4 w-4" /> ภาพรวม
+                    <User className="h-4 w-4" /> ภาพรวม
                   </Link>
-                  <Link href="/dashboard/wallet" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <Wallet className="h-4 w-4" /> กระเป๋าเงิน
+                  <Link href="/dashboard/orders" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <Package className="h-4 w-4" /> คำสั่งซื้อ
                   </Link>
                   <Link href="/dashboard/inquiries" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
                     <FileText className="h-4 w-4" /> ประวัติการขอราคา

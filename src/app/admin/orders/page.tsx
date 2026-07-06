@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { PaymentApprovalModal } from "./PaymentApprovalModal"
-import { WalletDeductModal } from "../wallet/WalletDeductModal"
 
 export default function AdminOrders() {
   const supabase = createClient()
@@ -28,10 +27,6 @@ export default function AdminOrders() {
   // Payment Modal states
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<any>(null)
-
-  // Wallet Deduct states
-  const [deductModalOpen, setDeductModalOpen] = useState(false)
-  const [selectedDeductOrder, setSelectedDeductOrder] = useState<any>(null)
 
   const fetchOrders = async () => {
     try {
@@ -325,17 +320,6 @@ export default function AdminOrders() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => {
-                            setSelectedDeductOrder(order)
-                            setDeductModalOpen(true)
-                          }}
-                          className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px] mb-2"
-                        >
-                          หัก Wallet
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
                           onClick={() => handleManualPayment(order)}
                           className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer w-full max-w-[120px] mb-2"
                         >
@@ -377,20 +361,6 @@ export default function AdminOrders() {
         order={selectedPayment?.order}
         onSuccess={() => {
           setPaymentModalOpen(false)
-          fetchOrders()
-        }}
-      />
-
-      {/* Wallet Deduct Modal */}
-      <WalletDeductModal 
-        isOpen={deductModalOpen}
-        onClose={() => setDeductModalOpen(false)}
-        customer={selectedDeductOrder?.customer || null}
-        referenceId={selectedDeductOrder?.order_number}
-        defaultAmount={selectedDeductOrder?.quotation?.total_price || 0}
-        defaultDescription={`หักค่าสินค้า ออเดอร์ ${selectedDeductOrder?.order_number || ''}`}
-        onSuccess={() => {
-          setDeductModalOpen(false)
           fetchOrders()
         }}
       />
