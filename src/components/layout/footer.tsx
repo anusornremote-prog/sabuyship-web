@@ -45,17 +45,20 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">{t.footerContactUs}</h3>
             <ul className="flex flex-col gap-3 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4" /> 02-XXX-XXXX
+              <li>
+                <a href="https://lin.ee/UC0F9zl" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-green-500 transition-colors">
+                  <span className="font-bold text-green-500">LINE</span> @sabuyship
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="font-bold text-green-500">LINE</span> @sabuyship
+              <li>
+                <a href="https://facebook.com/sabuyshipexpress" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-500 transition-colors">
+                  <Facebook className="h-4 w-4" /> Sabuy Ship Express
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <Facebook className="h-4 w-4" /> Sabuy Ship Thailand
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4" /> contact@sabuyship.com
+              <li>
+                <a href="mailto:sabuyship.express@gmail.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+                  <Mail className="h-4 w-4" /> sabuyship.express@gmail.com
+                </a>
               </li>
             </ul>
           </div>
