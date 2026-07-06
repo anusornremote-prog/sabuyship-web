@@ -54,17 +54,6 @@ export default function PrivacyPolicy() {
           <h2 className="text-xl font-semibold text-slate-800 border-b pb-2">5. สิทธิของคุณ</h2>
           <p>คุณมีสิทธิในการเข้าถึง แก้ไข หรือขอลบข้อมูลส่วนบุคคลของคุณที่อยู่ในระบบของเรา โดยคุณสามารถทำได้ผ่านหน้า "ข้อมูลส่วนตัว" ในระบบ หรือติดต่อทีมงานของเรา</p>
 
-          <h2 className="text-xl font-semibold text-slate-800 border-b pb-2">6. การติดต่อเรา</h2>
-          <p>
-            หากคุณมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัวนี้ สามารถติดต่อเราได้ที่:
-            <br />
-            <strong>Sabuy Ship Support</strong>
-            <br />
-            อีเมล: support@sabuyship.com
-            <br />
-            โทรศัพท์: 092-3833869, 064-2928922
-          </p>
-
           <div className="text-sm text-slate-500 pt-8 mt-8 border-t">
             อัปเดตล่าสุด: มิถุนายน 2026
           </div>
