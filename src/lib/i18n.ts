@@ -22,10 +22,10 @@ export const translations = {
     footerContactUs: "ติดต่อเรา",
 
     // Home / Landing Page
-    heroTitle: "นำเข้าสินค้าจากจีนง่าย",
-    heroTitleHighlight: "รวดเร็ว และปลอดภัย",
-    heroSub: "บริการสั่งซื้อและนำเข้าสินค้าจากจีนถึงมือคุณอย่างมืออาชีพ ประเมินราคาฟรี ไม่มีขั้นต่ำ ตรวจสอบสถานะได้ตลอด 24 ชั่วโมง",
-    heroBtnSend: "ส่งลิงก์สินค้าเลย",
+    heroTitle: "บริการสั่งซื้อและต่อรองราคาสินค้าจากจีน",
+    heroTitleHighlight: "มืออาชีพ ตัวจริง!",
+    heroSub: "หมดปัญหาคุยกับร้านจีนไม่รู้เรื่อง! เราช่วยสั่งซื้อ เจรจา และต่อรองราคาให้ ฟรี! ไม่มีค่าใช้จ่ายแอบแฝง มั่นใจได้ของชัวร์ ตรงปก ราคาดีที่สุด",
+    heroBtnSend: "ส่งลิงก์ให้เราช่วยต่อรองราคาเลย",
     heroBtnTrack: "ติดตามสถานะ",
     whyTitle: "ทำไมต้องเลือก Sabuy Ship?",
     whySub: "เราให้บริการที่เน้นความโปร่งใส รวดเร็ว และดูแลคุณตลอดการสั่งซื้อ",
@@ -35,9 +35,9 @@ export const translations = {
     cardSafeDesc: "มีระบบตรวจสอบสินค้าก่อนส่งกลับไทย ลดปัญหาสินค้าไม่ตรงปก",
     cardTrackTitle: "ติดตามได้ 24 ชม.",
     cardTrackDesc: "ระบบเช็คสถานะสินค้าตลอดเวลา อัปเดตแบบเรียลไทม์",
-    ctaTitle: "พร้อมเริ่มต้นสั่งซื้อสินค้ากับเราแล้วหรือยัง?",
-    ctaSub: "เพียงคัดลอกลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall แล้วส่งมาให้เรา",
-    ctaBtn: "ส่งลิงก์สินค้าเลย",
+    ctaTitle: "อยากได้สินค้าราคาดีที่สุดใช่ไหม?",
+    ctaSub: "เพียงคัดลอกลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall แล้วส่งมาให้เรา เราจัดการต่อรองราคาให้คุณเอง",
+    ctaBtn: "ส่งลิงก์ให้เราช่วยต่อรองราคาเลย",
 
     // How It Works
     howTitle: "ขั้นตอนการทำงาน",
@@ -164,10 +164,10 @@ export const translations = {
     footerContactUs: "Contact Us",
 
     // Home / Landing Page
-    heroTitle: "Import from China Made Easy",
-    heroTitleHighlight: "Fast & Secure",
-    heroSub: "Professional purchasing and importing services from China to your doorstep. Free quotation, no minimum order, trackable 24/7.",
-    heroBtnSend: "Send Product Link Now",
+    heroTitle: "Professional Purchasing & Price Negotiation",
+    heroTitleHighlight: "From China",
+    heroSub: "No more language barriers! We help you purchase, negotiate, and get the best deals for FREE. No hidden fees, guaranteed best prices.",
+    heroBtnSend: "Send Link to Negotiate Now",
     heroBtnTrack: "Track Status",
     whyTitle: "Why Choose Sabuy Ship?",
     whySub: "We focus on transparency, speed, and continuous support throughout your order process.",
@@ -177,9 +177,9 @@ export const translations = {
     cardSafeDesc: "Product inspection before shipping to Thailand, reducing mismatched items.",
     cardTrackTitle: "24/7 Tracking",
     cardTrackDesc: "Check your product status at any time with real-time updates.",
-    ctaTitle: "Ready to start ordering with us?",
-    ctaSub: "Just copy the product link from Taobao, 1688 or Tmall and send it to us.",
-    ctaBtn: "Send Product Link Now",
+    ctaTitle: "Want the best price for your products?",
+    ctaSub: "Just copy the product link from Taobao, 1688 or Tmall. We'll negotiate the best deal for you.",
+    ctaBtn: "Send Link to Negotiate Now",
 
     // How It Works
     howTitle: "How It Works",
@@ -306,10 +306,10 @@ export const translations = {
     footerContactUs: "联系我们",
 
     // Home / Landing Page
-    heroTitle: "中国商品进口更简单",
-    heroTitleHighlight: "快速且安全",
-    heroSub: "专业的代购与中国进口至泰国的物流服务。免费估价、无起订量、24小时实时追踪。",
-    heroBtnSend: "立即发送链接",
+    heroTitle: "专业代购与价格谈判",
+    heroTitleHighlight: "中国直邮",
+    heroSub: "告别沟通障碍！我们帮您代购、砍价，免费争取最优价格，绝无隐藏费用，确保货真价实。",
+    heroBtnSend: "立即发送链接让我们来砍价",
     heroBtnTrack: "追踪状态",
     whyTitle: "为什么选择 Sabuy Ship？",
     whySub: "我们专注于透明度、速度，并在整个订购过程中为您提供支持。",
@@ -319,9 +319,9 @@ export const translations = {
     cardSafeDesc: "商品运回泰国前进行质检，减少货不对板的问题。",
     cardTrackTitle: "24小时追踪",
     cardTrackDesc: "提供实时物流更新，随时随地掌握货物动态。",
-    ctaTitle: "准备好开始向我们订购了吗？",
-    ctaSub: "只需复制淘宝、1688或天猫的商品链接并发送给我们即可。",
-    ctaBtn: "立即发送商品链接",
+    ctaTitle: "想要拿到最划算的价格吗？",
+    ctaSub: "只需复制淘宝、1688或天猫的商品链接。我们将为您进行议价。",
+    ctaBtn: "立即发送链接让我们来砍价",
 
     // How It Works
     howTitle: "进口流程",
