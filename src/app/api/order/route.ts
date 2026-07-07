@@ -4,19 +4,48 @@ import { createServerClient } from "@supabase/ssr"
 // POST /api/order - Create an order (Node-RED integration or external API)
 export async function POST(request: Request) {
   try {
-    // 1. Check API Key
-    const apiKey = request.headers.get("x-api-key")
-    if (!apiKey || apiKey !== process.env.SABUY_API_KEY) {
-      return NextResponse.json({ error: "Unauthorized: Invalid API Key" }, { status: 401 })
-    }
-
-    // 2. Use Service Role Key to bypass RLS for background tasks
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
     
     if (!supabaseServiceKey) {
       return NextResponse.json({ error: "Server Configuration Error: Missing Service Role Key" }, { status: 500 })
     }
+
+    // 1. Check Auth (API Key or User Session)
+    let isAuthorized = false
+    let customerId = null
+    const apiKey = request.headers.get("x-api-key")
+
+    // Setup standard client for session checking
+    const supabaseClient = createServerClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      cookies: {
+        getAll() {
+          const cookieHeader = request.headers.get('cookie')
+          if (!cookieHeader) return []
+          return cookieHeader.split(';').map(c => {
+            const [name, ...rest] = c.split('=')
+            return { name: name.trim(), value: rest.join('=') }
+          })
+        },
+        setAll() {}
+      }
+    })
+
+    if (apiKey === process.env.SABUY_API_KEY) {
+      isAuthorized = true
+    } else {
+      // Check user session
+      const { data: { user } } = await supabaseClient.auth.getUser()
+      if (user) {
+        isAuthorized = true
+        customerId = user.id
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
 
     const supabase = createServerClient(supabaseUrl, supabaseServiceKey, {
       cookies: {
@@ -26,8 +55,9 @@ export async function POST(request: Request) {
       }
     })
     const body = await request.json()
+    const targetCustomerId = customerId || body.customer_id // enforce own id if user, or allow body if api key
 
-    if (!body.customer_id || !body.quotation_id) {
+    if (!targetCustomerId || !body.quotation_id) {
       return NextResponse.json(
         { error: "Missing required fields: customer_id, quotation_id" },
         { status: 400 }
@@ -42,7 +72,7 @@ export async function POST(request: Request) {
       .from("orders")
       .insert({
         order_number: orderNumber,
-        customer_id: body.customer_id,
+        customer_id: targetCustomerId,
         quotation_id: body.quotation_id,
         status: "NEW",
         admin_notes: body.admin_notes || null,

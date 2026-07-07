@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         shipping_fee: body.shipping_fee || 0,
         other_fee: body.other_fee || 0,
         total_price: total,
-        status: "DRAFT"
+        status: "SENT"
       })
       .select()
       .single()
