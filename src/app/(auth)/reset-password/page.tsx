@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
@@ -16,7 +16,21 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [sessionLoaded, setSessionLoaded] = useState(false)
   const supabase = createClient()
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setSessionLoaded(true)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) setSessionLoaded(true)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,6 +48,16 @@ export default function ResetPassword() {
       setError("รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง")
       setLoading(false)
       return
+    }
+
+    if (!sessionLoaded) {
+      // Force checking session one more time
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) {
+        setError("ไม่พบเซสชันการเข้าสู่ระบบ กรุณากดลิงก์จากอีเมลใหม่อีกครั้ง")
+        setLoading(false)
+        return
+      }
     }
 
     const { error } = await supabase.auth.updateUser({
