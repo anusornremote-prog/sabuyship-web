@@ -22,24 +22,56 @@ import {
 
 // Import Rates Mapping matching the user's provided sheet
 const RATES = {
-  road: {
-    general: { kg: 40, cbm: 6000 },
-    tisFda: { kg: 60, cbm: 8000 },
-    copyright: { kg: 80, cbm: 9000 }
+  preorder: {
+    road: {
+      general: { kg: 45, cbm: 7100 },
+      tis: { kg: 60, cbm: 7800 },
+      fda: { kg: 70, cbm: 8500 },
+      special: { kg: 100, cbm: 12000 },
+      controlled: { kg: 140, cbm: 14000 }
+    },
+    sea: {
+      general: { kg: 40, cbm: 5500 },
+      tis: { kg: 50, cbm: 7300 },
+      fda: { kg: 60, cbm: 8000 },
+      special: { kg: 90, cbm: 9500 },
+      controlled: { kg: 140, cbm: 14000 }
+    }
   },
-  sea: {
-    general: { kg: 25, cbm: 3500 },
-    tisFda: { kg: 35, cbm: 5500 },
-    copyright: { kg: 55, cbm: 7000 }
+  importer: {
+    road: {
+      general: { kg: 35, cbm: 6700 },
+      tis: { kg: 50, cbm: 7000 },
+      fda: { kg: 55, cbm: 8000 },
+      special: { kg: 90, cbm: 9000 },
+      controlled: { kg: 100, cbm: 12000 }
+    },
+    sea: {
+      general: { kg: 33, cbm: 5000 },
+      tis: { kg: 45, cbm: 6500 },
+      fda: { kg: 50, cbm: 7500 },
+      special: { kg: 80, cbm: 8000 },
+      controlled: { kg: 100, cbm: 12000 }
+    }
   }
 }
+
+// Category Helper
+const CATEGORIES = [
+  { id: "general", key: "catGeneral", descTh: "เสื้อผ้า ของใช้ทั่วไป", descEn: "Clothing, general items" },
+  { id: "tis", key: "catTis", descTh: "เครื่องใช้ไฟฟ้า ของเล่น", descEn: "Electrical appliances, toys" },
+  { id: "fda", key: "catFda", descTh: "เครื่องสำอาง อาหาร ยา", descEn: "Cosmetics, food, medicine" },
+  { id: "special", key: "catSpecial", descTh: "สินค้าแบรนด์เนม ลิขสิทธิ์", descEn: "Brand name, licensed goods" },
+  { id: "controlled", key: "catControlled", descTh: "สินค้าควบคุมพิเศษ", descEn: "Special controlled goods" }
+] as const;
 
 export default function Pricing() {
   const { t, locale } = useTranslation()
 
   // Calculator State
+  const [customerType, setCustomerType] = useState<"preorder" | "importer">("preorder")
   const [shipMethod, setShipMethod] = useState<"road" | "sea">("road")
-  const [category, setCategory] = useState<"general" | "tisFda" | "copyright">("general")
+  const [category, setCategory] = useState<"general" | "tis" | "fda" | "special" | "controlled">("general")
   const [weight, setWeight] = useState<string>("")
   const [inputType, setInputType] = useState<"dimensions" | "directCbm">("dimensions")
   const [width, setWidth] = useState<string>("")
@@ -64,7 +96,7 @@ export default function Pricing() {
       cbmVal = (parseFloat(directCbm) || 0)
     }
 
-    const rates = RATES[shipMethod][category]
+    const rates = RATES[customerType][shipMethod][category]
     const costByWeight = wVal * rates.kg
     const costByCbm = cbmVal * rates.cbm
     
@@ -87,7 +119,7 @@ export default function Pricing() {
       rateKg: rates.kg,
       rateCbm: rates.cbm
     }
-  }, [shipMethod, category, weight, inputType, width, length, height, quantity, directCbm, woodenCrate])
+  }, [customerType, shipMethod, category, weight, inputType, width, length, height, quantity, directCbm, woodenCrate])
 
   // Helper to format currency
   const formatCurrency = (val: number) => {
@@ -126,16 +158,43 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Tables Card */}
-        <Card className="border-slate-100 shadow-md bg-white dark:bg-slate-900 dark:border-slate-800">
-          <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
-              {t.importRateTitle || "เรทราคาบริการนำเข้าสินค้า จีน-ไทย"}
-            </CardTitle>
-            <CardDescription>
-              {locale === "th" ? "อัตราค่าขนส่งแยกตามประเภทสินค้าและการขนส่ง" : "Shipping rates categorized by product type and shipping method."}
-            </CardDescription>
-          </CardHeader>
+        <Card className="border-slate-100 shadow-md bg-white dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-center border-b border-slate-100 dark:border-slate-800 p-4 md:px-6 bg-slate-50/50 dark:bg-slate-900/50">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary" />
+                {t.importRateTitle || "เรทราคาบริการนำเข้าสินค้า จีน-ไทย"}
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {locale === "th" ? "อัตราค่าขนส่งแยกตามประเภทสินค้าและการขนส่ง" : "Shipping rates categorized by product type and shipping method."}
+              </CardDescription>
+            </div>
+            
+            {/* Customer Type Toggle */}
+            <div className="flex bg-slate-200/60 dark:bg-slate-800 p-1 rounded-xl mt-4 md:mt-0 shadow-inner">
+              <button
+                onClick={() => setCustomerType("preorder")}
+                className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${
+                  customerType === "preorder"
+                    ? "bg-white text-orange-600 shadow-sm dark:bg-slate-950 dark:text-orange-400"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+              >
+                {t.rateTypePreorder || "ราคา PREORDER"}
+              </button>
+              <button
+                onClick={() => setCustomerType("importer")}
+                className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${
+                  customerType === "importer"
+                    ? "bg-white text-blue-600 shadow-sm dark:bg-slate-950 dark:text-blue-400"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+              >
+                {t.rateTypeImporter || "ราคา IMPORTER"}
+              </button>
+            </div>
+          </div>
+          
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -158,101 +217,43 @@ export default function Pricing() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {/* General Goods */}
-                <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                  <td className="p-4 md:p-6">
-                    <div className="font-bold text-slate-900 dark:text-white flex flex-col">
-                      <span>{t.generalGoods || "สินค้าทั่วไป"}</span>
-                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
-                        {locale === "th" ? "เสื้อผ้า แฟชั่น ของใช้ทั่วไป ไม่มีตราสินค้า" : "Clothing, fashion, general items, no brands"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 md:p-6">
-                    <div className="space-y-1">
-                      <p className="text-slate-900 dark:text-white font-semibold">
-                        <span className="text-lg font-black text-slate-950 dark:text-slate-100">40</span> {locale === "th" ? "บาท" : "THB"} / KG
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">6,000</span> {locale === "th" ? "บาท" : "THB"} / CBM
-                      </p>
-                    </div>
-                  </td>
-                  <td className="p-4 md:p-6">
-                    <div className="space-y-1">
-                      <p className="text-slate-900 dark:text-white font-semibold">
-                        <span className="text-lg font-black text-slate-950 dark:text-slate-100">25</span> {locale === "th" ? "บาท" : "THB"} / KG
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">3,500</span> {locale === "th" ? "บาท" : "THB"} / CBM
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* FDA/TIS */}
-                <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                  <td className="p-4 md:p-6">
-                    <div className="font-bold text-slate-900 dark:text-white flex flex-col">
-                      <span>{t.tisFdaGoods || "สินค้า มอก. อย."}</span>
-                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
-                        {locale === "th" ? "เครื่องใช้ไฟฟ้า เครื่องสำอาง อาหาร ยา" : "Electrical appliances, cosmetics, food, medicine"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 md:p-6">
-                    <div className="space-y-1">
-                      <p className="text-slate-900 dark:text-white font-semibold">
-                        <span className="text-lg font-black text-slate-950 dark:text-slate-100">60</span> {locale === "th" ? "บาท" : "THB"} / KG
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">8,000</span> {locale === "th" ? "บาท" : "THB"} / CBM
-                      </p>
-                    </div>
-                  </td>
-                  <td className="p-4 md:p-6">
-                    <div className="space-y-1">
-                      <p className="text-slate-900 dark:text-white font-semibold">
-                        <span className="text-lg font-black text-slate-950 dark:text-slate-100">35</span> {locale === "th" ? "บาท" : "THB"} / KG
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">5,500</span> {locale === "th" ? "บาท" : "THB"} / CBM
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Copyright/Branded */}
-                <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                  <td className="p-4 md:p-6">
-                    <div className="font-bold text-slate-900 dark:text-white flex flex-col">
-                      <span>{t.copyrightGoods || "สินค้าลิขสิทธิ์"}</span>
-                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
-                        {locale === "th" ? "สินค้าแบรนด์เนม สินค้าลิขสิทธิ์การ์ตูน/กีฬา" : "Brand name goods, cartoon/sports license goods"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 md:p-6">
-                    <div className="space-y-1">
-                      <p className="text-slate-900 dark:text-white font-semibold">
-                        <span className="text-lg font-black text-slate-950 dark:text-slate-100">80</span> {locale === "th" ? "บาท" : "THB"} / KG
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">9,000</span> {locale === "th" ? "บาท" : "THB"} / CBM
-                      </p>
-                    </div>
-                  </td>
-                  <td className="p-4 md:p-6">
-                    <div className="space-y-1">
-                      <p className="text-slate-900 dark:text-white font-semibold">
-                        <span className="text-lg font-black text-slate-950 dark:text-slate-100">55</span> {locale === "th" ? "บาท" : "THB"} / KG
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium text-slate-700 dark:text-slate-300">7,000</span> {locale === "th" ? "บาท" : "THB"} / CBM
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                {CATEGORIES.map((cat) => {
+                  const roadRates = RATES[customerType].road[cat.id]
+                  const seaRates = RATES[customerType].sea[cat.id]
+                  
+                  return (
+                    <tr key={cat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                      <td className="p-4 md:p-6">
+                        <div className="font-bold text-slate-900 dark:text-white flex flex-col">
+                          <span>{t[cat.key as keyof typeof t] || cat.descTh.split(" ")[0]}</span>
+                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                            {locale === "th" ? cat.descTh : cat.descEn}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4 md:p-6">
+                        <div className="space-y-1">
+                          <p className="text-slate-900 dark:text-white font-semibold">
+                            <span className="text-lg font-black text-slate-950 dark:text-slate-100">{roadRates.kg}</span> {locale === "th" ? "บาท" : "THB"} / KG
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            <span className="font-medium text-slate-700 dark:text-slate-300">{roadRates.cbm.toLocaleString()}</span> {locale === "th" ? "บาท" : "THB"} / CBM
+                          </p>
+                        </div>
+                      </td>
+                      <td className="p-4 md:p-6">
+                        <div className="space-y-1">
+                          <p className="text-slate-900 dark:text-white font-semibold">
+                            <span className="text-lg font-black text-slate-950 dark:text-slate-100">{seaRates.kg}</span> {locale === "th" ? "บาท" : "THB"} / KG
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            <span className="font-medium text-slate-700 dark:text-slate-300">{seaRates.cbm.toLocaleString()}</span> {locale === "th" ? "บาท" : "THB"} / CBM
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </CardContent>
@@ -272,6 +273,37 @@ export default function Pricing() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+              {/* Customer Type */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  {t.calcCustomerType || "ประเภทลูกค้า (เรทราคา)"}
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setCustomerType("preorder")}
+                    className={`p-3 rounded-xl border text-sm font-semibold transition-all ${
+                      customerType === "preorder"
+                        ? "border-orange-500 bg-orange-50 text-orange-600 shadow-sm dark:border-orange-500/50 dark:bg-orange-950/30 dark:text-orange-400"
+                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    PREORDER
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomerType("importer")}
+                    className={`p-3 rounded-xl border text-sm font-semibold transition-all ${
+                      customerType === "importer"
+                        ? "border-blue-500 bg-blue-50 text-blue-600 shadow-sm dark:border-blue-500/50 dark:bg-blue-950/30 dark:text-blue-400"
+                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    IMPORTER
+                  </button>
+                </div>
+              </div>
+
               {/* Shipping Method */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -310,16 +342,16 @@ export default function Pricing() {
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   {t.calcProductCategory || "ประเภทสินค้า"}
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["general", "tisFda", "copyright"] as const).map((cat) => {
-                    const label = cat === "general" ? t.generalGoods : cat === "tisFda" ? t.tisFdaGoods : t.copyrightGoods
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {CATEGORIES.map((cat) => {
+                    const label = t[cat.key as keyof typeof t] || cat.descTh.split(" ")[0]
                     return (
                       <button
-                        key={cat}
+                        key={cat.id}
                         type="button"
-                        onClick={() => setCategory(cat)}
-                        className={`py-2.5 px-3 rounded-lg border text-xs font-semibold text-center transition-all ${
-                          category === cat
+                        onClick={() => setCategory(cat.id)}
+                        className={`py-2 px-2 rounded-lg border text-xs font-semibold text-center transition-all ${
+                          category === cat.id
                             ? "bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:border-slate-100 shadow-sm"
                             : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
                         }`}
@@ -506,8 +538,11 @@ export default function Pricing() {
                   <Badge className={`px-2.5 py-1 text-xs font-bold border-0 text-white ${shipMethod === "road" ? "bg-accent" : "bg-primary"}`}>
                     {shipMethod === "road" ? (t.importByRoad ? t.importByRoad.split(" ")[0] : "ทางรถ") : (t.importBySea ? t.importBySea.split(" ")[0] : "ทางเรือ")}
                   </Badge>
+                  <Badge className="bg-indigo-500 text-white border-0">
+                    {customerType.toUpperCase()}
+                  </Badge>
                   <Badge variant="outline" className="border-white/20 text-white/90">
-                    {category === "general" ? t.generalGoods : category === "tisFda" ? t.tisFdaGoods : t.copyrightGoods}
+                    {t[CATEGORIES.find(c => c.id === category)?.key as keyof typeof t] || "สินค้า"}
                   </Badge>
                 </div>
 
