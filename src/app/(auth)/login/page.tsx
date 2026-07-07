@@ -94,7 +94,11 @@ export default function Login() {
     })
 
     if (error) {
-      setError(error.message)
+      if (error.message === "Invalid login credentials") {
+        setError("อีเมล หรือ รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง")
+      } else {
+        setError(error.message)
+      }
       setLoading(false)
       return
     }
