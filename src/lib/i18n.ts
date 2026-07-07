@@ -22,9 +22,9 @@ export const translations = {
     footerContactUs: "ติดต่อเรา",
 
     // Home / Landing Page
-    heroTitle: "บริการสั่งซื้อและต่อรองราคาสินค้าจากจีน",
-    heroTitleHighlight: "มืออาชีพ ตัวจริง!",
-    heroSub: "หมดปัญหาคุยกับร้านจีนไม่รู้เรื่อง! เราช่วยสั่งซื้อ เจรจา และต่อรองราคาให้ ฟรี! ไม่มีค่าใช้จ่ายแอบแฝง มั่นใจได้ของชัวร์ ตรงปก ราคาดีที่สุด",
+    heroTitle: "บริการสั่งซื้อ ต่อรองราคา และนำเข้าสินค้าจากจีน",
+    heroTitleHighlight: "แบบครบวงจร!",
+    heroSub: "ตั้งแต่ช่วยคุยกับร้านจีน เจรจาต่อราคาให้ฟรี! ไปจนถึงบริการขนส่ง (Shipping) ที่รวดเร็ว ปลอดภัย ส่งตรงถึงหน้าบ้านคุณ มั่นใจได้ของชัวร์ ตรงปก ราคาดีที่สุด",
     heroBtnSend: "ส่งลิงก์ให้เราช่วยต่อรองราคาเลย",
     heroBtnTrack: "ติดตามสถานะ",
     whyTitle: "ทำไมต้องเลือก Sabuy Ship?",
@@ -164,9 +164,9 @@ export const translations = {
     footerContactUs: "Contact Us",
 
     // Home / Landing Page
-    heroTitle: "Professional Purchasing & Price Negotiation",
+    heroTitle: "All-in-One Purchasing, Negotiation & Shipping",
     heroTitleHighlight: "From China",
-    heroSub: "No more language barriers! We help you purchase, negotiate, and get the best deals for FREE. No hidden fees, guaranteed best prices.",
+    heroSub: "From negotiating the best prices for free, to providing fast and secure international shipping directly to your doorstep. Guaranteed best rates and seamless delivery.",
     heroBtnSend: "Send Link to Negotiate Now",
     heroBtnTrack: "Track Status",
     whyTitle: "Why Choose Sabuy Ship?",
@@ -306,9 +306,9 @@ export const translations = {
     footerContactUs: "联系我们",
 
     // Home / Landing Page
-    heroTitle: "专业代购与价格谈判",
+    heroTitle: "一站式代购、议价及国际物流服务",
     heroTitleHighlight: "中国直邮",
-    heroSub: "告别沟通障碍！我们帮您代购、砍价，免费争取最优价格，绝无隐藏费用，确保货真价实。",
+    heroSub: "从免费为您与商家议价，到提供快速、安全的跨境物流服务。确保价格最优，安全送达您家门口。",
     heroBtnSend: "立即发送链接让我们来砍价",
     heroBtnTrack: "追踪状态",
     whyTitle: "为什么选择 Sabuy Ship？",
