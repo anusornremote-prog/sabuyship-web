@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { ThailandAddressTypeahead, ThailandAddressValue } from 'react-thailand-address-typeahead'
 
 interface AddressFormModalProps {
   isOpen: boolean
@@ -22,10 +23,12 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [addressLine, setAddressLine] = useState("")
-  const [subdistrict, setSubdistrict] = useState("")
-  const [district, setDistrict] = useState("")
-  const [province, setProvince] = useState("")
-  const [postalCode, setPostalCode] = useState("")
+  const [addressVal, setAddressVal] = useState<ThailandAddressValue>({
+    subdistrict: '',
+    district: '',
+    province: '',
+    postalCode: '',
+  })
   const [isDefault, setIsDefault] = useState(false)
 
   useEffect(() => {
@@ -33,19 +36,23 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
       setFullName(address.full_name || "")
       setPhone(address.phone || "")
       setAddressLine(address.address_line || "")
-      setSubdistrict(address.subdistrict || "")
-      setDistrict(address.district || "")
-      setProvince(address.province || "")
-      setPostalCode(address.postal_code || "")
+      setAddressVal({
+        subdistrict: address.subdistrict || "",
+        district: address.district || "",
+        province: address.province || "",
+        postalCode: address.postal_code || "",
+      })
       setIsDefault(address.is_default || false)
     } else {
       setFullName("")
       setPhone("")
       setAddressLine("")
-      setSubdistrict("")
-      setDistrict("")
-      setProvince("")
-      setPostalCode("")
+      setAddressVal({
+        subdistrict: '',
+        district: '',
+        province: '',
+        postalCode: '',
+      })
       setIsDefault(false)
     }
     setErrorMsg("")
@@ -54,7 +61,7 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!fullName || !phone || !addressLine || !province || !postalCode) {
+    if (!fullName || !phone || !addressLine || !addressVal.province || !addressVal.postalCode) {
       setErrorMsg("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน")
       return
     }
@@ -79,10 +86,10 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
         full_name: fullName,
         phone: phone,
         address_line: addressLine,
-        subdistrict: subdistrict,
-        district: district,
-        province: province,
-        postal_code: postalCode,
+        subdistrict: addressVal.subdistrict,
+        district: addressVal.district,
+        province: addressVal.province,
+        postal_code: addressVal.postalCode,
         is_default: isDefault
       }
 
@@ -175,45 +182,44 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">ตำบล / แขวง</label>
-              <Input
-                placeholder="ตำบล/แขวง"
-                value={subdistrict}
-                onChange={(e) => setSubdistrict(e.target.value)}
-              />
+          <ThailandAddressTypeahead
+            value={addressVal}
+            onValueChange={(val) => setAddressVal(val)}
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">ตำบล / แขวง</label>
+                <ThailandAddressTypeahead.SubdistrictInput 
+                  placeholder="ตำบล/แขวง" 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">อำเภอ / เขต</label>
+                <ThailandAddressTypeahead.DistrictInput 
+                  placeholder="อำเภอ/เขต" 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">อำเภอ / เขต</label>
-              <Input
-                placeholder="อำเภอ/เขต"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">จังหวัด *</label>
-              <Input
-                required
-                placeholder="จังหวัด"
-                value={province}
-                onChange={(e) => setProvince(e.target.value)}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">จังหวัด *</label>
+                <ThailandAddressTypeahead.ProvinceInput 
+                  placeholder="จังหวัด" 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">รหัสไปรษณีย์ *</label>
+                <ThailandAddressTypeahead.PostalCodeInput 
+                  placeholder="รหัสไปรษณีย์" 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">รหัสไปรษณีย์ *</label>
-              <Input
-                required
-                placeholder="รหัสไปรษณีย์"
-                value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
-              />
-            </div>
-          </div>
+          </ThailandAddressTypeahead>
 
           <div className="pt-2 flex items-center gap-2">
             <input
