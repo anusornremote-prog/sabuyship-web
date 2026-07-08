@@ -86,7 +86,7 @@ export function Navbar() {
       <div className="container flex h-24 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex items-center">
           <div className="relative w-40 md:w-72 h-full shrink-0">
-            <Link href="/" className="absolute -top-8 md:-top-20 -left-2.5 z-50">
+            <Link href="/" className="absolute -top-[42px] md:-top-[90px] -left-2.5 z-50">
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 md:h-56 w-auto object-contain drop-shadow-md hover:scale-105 transition-transform origin-top-left" />
             </Link>
           </div>
