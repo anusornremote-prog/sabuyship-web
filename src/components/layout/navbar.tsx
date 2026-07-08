@@ -85,14 +85,14 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-24 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex items-center">
-          <div className="relative w-40 md:w-72 h-full shrink-0">
+          <div className="relative w-40 md:w-64 lg:w-72 h-full shrink-0">
             <Link href="/" className="absolute -top-[42px] md:-top-[90px] -left-2.5 z-50">
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 md:h-56 w-auto object-contain drop-shadow-md hover:scale-105 transition-transform origin-top-left" />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-12 text-lg font-semibold">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-10 text-base lg:text-lg font-semibold shrink-0">
             <Link href="/how-it-works" className="transition-colors hover:text-primary">
               {t.navHowItWorks}
             </Link>
