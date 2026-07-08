@@ -64,8 +64,7 @@ export default function Login() {
             id: data.user.id,
             full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Google User',
             role: 'CUSTOMER',
-            customer_code: customerCode,
-            is_active: true
+            customer_code: customerCode
           })
         }
 
@@ -76,7 +75,11 @@ export default function Login() {
         }
       }
     } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาดในการล็อกอินด้วย Google")
+      let errMessage = err?.message
+      if (typeof err === 'object' && Object.keys(err).length === 0 || errMessage === '{}') {
+        errMessage = "เกิดข้อผิดพลาดจากฐานข้อมูล (Database Trigger Failed) กรุณารัน SQL Script ตามที่ระบบแนะนำ"
+      }
+      setError(errMessage || "เกิดข้อผิดพลาดในการล็อกอินด้วย Google")
       setLoading(false)
     }
   }
