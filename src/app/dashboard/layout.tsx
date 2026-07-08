@@ -26,7 +26,7 @@ export default function DashboardLayout({
           .from('profiles')
           .select('phone')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
           
         if (data && !data.phone) {
           setShowPhoneModal(true)

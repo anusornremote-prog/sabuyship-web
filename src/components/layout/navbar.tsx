@@ -24,7 +24,7 @@ export function Navbar() {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           setUser(user)
-          const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+          const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
           setProfile(data)
         }
       } catch (err) {

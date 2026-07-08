@@ -64,6 +64,19 @@ export async function POST(request: Request) {
       )
     }
 
+    // 2. Validate Ownership (Prevent stealing quotes)
+    if (!apiKey) {
+      const { data: quoteCheck, error: quoteError } = await supabase
+        .from('quotations')
+        .select(`inquiry_id, inquiries!inner(customer_id)`)
+        .eq('id', body.quotation_id)
+        .single()
+        
+      if (quoteError || !quoteCheck || (quoteCheck.inquiries as any)?.customer_id !== targetCustomerId) {
+        return NextResponse.json({ error: "Invalid quotation or unauthorized" }, { status: 403 })
+      }
+    }
+
     // Next order number logic could be complex, simple timestamp for MVP
     const date = new Date()
     const orderNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`
@@ -89,6 +102,9 @@ export async function POST(request: Request) {
       status: "NEW",
       notes: "Order created"
     })
+
+    // Update quotation status to ACCEPTED
+    await supabase.from("quotations").update({ status: "ACCEPTED" }).eq("id", body.quotation_id)
 
     return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error: any) {

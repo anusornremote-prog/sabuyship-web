@@ -19,20 +19,25 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     const customerId = user ? user.id : null
 
-    // Generate Inquiry ID
-    const inquiryNumber = `INQ-${Math.floor(Date.now() / 1000)}`
+    // Generate base Inquiry ID
+    const baseInquiryNumber = `INQ-${Math.floor(Date.now() / 1000)}`
+
+    // Map items to match the DB schema (product_url, quantity, remark)
+    const recordsToInsert = body.items.map((item: any, index: number) => ({
+      inquiry_number: body.items.length > 1 ? `${baseInquiryNumber}-${index + 1}` : baseInquiryNumber,
+      customer_id: customerId,
+      customer_name: body.customer_name,
+      phone: body.phone,
+      line_id: body.line_id || null,
+      product_url: item.url,
+      quantity: item.quantity || 1,
+      remark: item.remark || null,
+      status: "PENDING"
+    }))
 
     const { error } = await supabase
       .from("inquiries")
-      .insert({
-        inquiry_number: inquiryNumber,
-        customer_id: customerId,
-        customer_name: body.customer_name,
-        phone: body.phone,
-        line_id: body.line_id || null,
-        items: body.items,
-        status: "PENDING"
-      })
+      .insert(recordsToInsert)
 
     if (error) throw error
 

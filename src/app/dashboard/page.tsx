@@ -12,7 +12,7 @@ export default async function DashboardOverview() {
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single()
+      .maybeSingle()
     profile = data
   }
 

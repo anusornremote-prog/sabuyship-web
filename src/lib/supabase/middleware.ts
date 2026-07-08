@@ -40,9 +40,9 @@ export async function updateSession(request: NextRequest) {
       .from('profiles')
       .select('role, phone')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
     
-    if (profileError && profileError.code !== 'PGRST116') {
+    if (profileError) {
       console.error("Middleware Profile Query Error:", profileError)
     }
     
