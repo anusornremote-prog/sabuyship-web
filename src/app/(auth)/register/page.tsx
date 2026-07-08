@@ -119,7 +119,7 @@ export default function Register() {
   return (
     <>
       <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" onLoad={initGoogleLogin} />
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-xl shadow-slate-200/50 border-slate-200/60 bg-white/95 backdrop-blur-sm relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">สมัครสมาชิก</CardTitle>
       </CardHeader>

@@ -130,14 +130,26 @@ DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile." ON profiles;
 
+-- Create a security definer function to avoid infinite recursion
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'ADMIN'
+  );
+END;
+$$;
+
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Admins can view all profiles" ON profiles FOR SELECT USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
+CREATE POLICY "Admins can view all profiles" ON profiles FOR SELECT USING (public.is_admin());
 CREATE POLICY "Users can insert their own profile." ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile." ON profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Admins can update profiles" ON profiles FOR UPDATE 
-  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
-CREATE POLICY "Admins can delete profiles" ON profiles FOR DELETE 
-  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'ADMIN');
+CREATE POLICY "Admins can update profiles" ON profiles FOR UPDATE USING (public.is_admin());
+CREATE POLICY "Admins can delete profiles" ON profiles FOR DELETE USING (public.is_admin());
 
 -- Inquiries Policies
 DROP POLICY IF EXISTS "Anyone can insert inquiries" ON inquiries;
