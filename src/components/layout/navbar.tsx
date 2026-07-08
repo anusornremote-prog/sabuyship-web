@@ -85,7 +85,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-24 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex items-center">
-          <div className="relative w-40 md:w-64 lg:w-72 h-full shrink-0">
+          <div className="relative w-40 md:w-80 lg:w-96 h-full shrink-0">
             <Link href="/" className="absolute -top-[52px] md:-top-[100px] -left-2.5 z-50">
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 md:h-56 w-auto object-contain drop-shadow-md hover:scale-105 transition-transform origin-top-left" />
             </Link>
