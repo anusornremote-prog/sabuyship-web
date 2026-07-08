@@ -102,7 +102,11 @@ export default function Register() {
     })
 
     if (error) {
-      setError(error.message)
+      let errMessage = error.message
+      if (typeof error === 'object' && Object.keys(error).length === 0 || error.message === '{}') {
+        errMessage = "เกิดข้อผิดพลาดจากฐานข้อมูล (Database Trigger Failed) กรุณาแจ้งแอดมิน"
+      }
+      setError(errMessage || "เกิดข้อผิดพลาดในการสมัครสมาชิก")
       setLoading(false)
       return
     }
