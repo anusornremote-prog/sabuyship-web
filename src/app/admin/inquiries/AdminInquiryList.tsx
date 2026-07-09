@@ -28,7 +28,9 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   
   // Modal states
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null)
+  const [selectedDetailsInquiry, setSelectedDetailsInquiry] = useState<any | null>(null)
   const [isQuotingOpen, setIsQuotingOpen] = useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
@@ -44,6 +46,11 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
     setOtherFee("0")
     setErrorMsg("")
     setIsQuotingOpen(true)
+  }
+
+  const openDetailsModal = (inquiry: any) => {
+    setSelectedDetailsInquiry(inquiry)
+    setIsDetailsOpen(true)
   }
 
   const handleCreateQuotation = async (e: React.FormEvent) => {
@@ -196,15 +203,10 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                       <td className="px-6 py-4">
                         {inq.items && inq.items.length > 0 ? (
                           <div className="space-y-2">
-                            {inq.items.map((item: any, idx: number) => (
-                              <div key={idx} className="pb-2 border-b border-slate-100 last:border-0 last:pb-0">
-                                <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate text-xs">
-                                  <Globe className="h-3 w-3 shrink-0 text-slate-400" />
-                                  <span>{item.url}</span>
-                                </a>
-                                <p className="text-xs text-slate-500 font-semibold">จำนวน: {item.quantity} ชิ้น</p>
-                              </div>
-                            ))}
+                            <span className="font-semibold text-primary block">รวม {inq.items.length} รายการ</span>
+                            <Button variant="outline" size="sm" onClick={() => openDetailsModal(inq)} className="text-xs">
+                              👀 ดูรายละเอียด
+                            </Button>
                           </div>
                         ) : (
                           <>
@@ -224,20 +226,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                       </td>
                       <td className="px-6 py-4 text-xs text-slate-600 max-w-[200px] truncate">
                         {inq.items && inq.items.length > 0 ? (
-                          <div className="space-y-2">
-                             {inq.items.map((item: any, idx: number) => (
-                               item.remark ? <div key={idx} className="truncate">{idx + 1}. {item.remark}</div> : null
-                             ))}
-                             {inq.items.some((item: any) => item.image_url) && (
-                               <div className="flex gap-2 mt-2 flex-wrap">
-                                 {inq.items.filter((item: any) => item.image_url).map((item: any, idx: number) => (
-                                   <a key={`img-${idx}`} href={item.image_url} target="_blank" rel="noopener noreferrer">
-                                     <img src={item.image_url} alt="Attached" className="h-10 w-10 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
-                                   </a>
-                                 ))}
-                               </div>
-                             )}
-                          </div>
+                          <span className="text-slate-400 italic">กรุณากดดูรายละเอียด</span>
                         ) : (
                           <>
                             {inq.remark || "-"}
@@ -408,30 +397,81 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 </span>
               </div>
 
-              <DialogFooter className="mt-6 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsQuotingOpen(false)}
-                  disabled={isSubmitting}
-                  className="cursor-pointer"
-                >
+              <DialogFooter className="mt-6 sm:justify-between">
+                <Button type="button" variant="outline" onClick={() => setIsQuotingOpen(false)}>
                   ยกเลิก
                 </Button>
-                <Button
-                  type="submit"
-                  variant="orange"
-                  size="sm"
-                  disabled={isSubmitting}
-                  className="cursor-pointer font-bold"
-                >
-                  {isSubmitting ? "กำลังส่งใบประเมิน..." : "ยืนยันและส่งราคา"}
+                <Button type="submit" disabled={isSubmitting} variant="primary">
+                  {isSubmitting ? "กำลังบันทึก..." : "ส่งใบเสนอราคาให้ลูกค้า"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Details Dialog Modal */}
+      {isDetailsOpen && selectedDetailsInquiry && (
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900 font-bold text-xl">รายละเอียดคำขอ {selectedDetailsInquiry.inquiry_number}</DialogTitle>
+              <DialogDescription>
+                รายการสินค้าทั้งหมดในคำขอนี้
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              {selectedDetailsInquiry.items?.map((item: any, idx: number) => (
+                <div key={idx} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col h-full">
+                  <div className="font-bold text-slate-800 mb-2 border-b pb-2">รายการที่ {idx + 1}</div>
+                  
+                  {item.image_url ? (
+                    <div className="mb-3 rounded overflow-hidden border border-slate-100 bg-slate-50 flex items-center justify-center h-40">
+                      <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+                        <img src={item.image_url} alt={`Item ${idx + 1}`} className="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mb-3 rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center h-40 text-slate-400 text-xs">
+                      ไม่มีรูปภาพ
+                    </div>
+                  )}
+
+                  <div className="flex-1 space-y-2 text-sm">
+                    <div>
+                      <span className="text-xs text-slate-500 font-bold uppercase block mb-1">ลิงก์สินค้า</span>
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-start gap-1 break-all">
+                        <Globe className="h-4 w-4 shrink-0 text-slate-400 mt-0.5" />
+                        <span className="line-clamp-2">{item.url}</span>
+                      </a>
+                    </div>
+                    
+                    <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
+                      <span className="text-xs text-slate-500 font-bold">จำนวน:</span>
+                      <span className="font-semibold text-slate-800">{item.quantity} ชิ้น</span>
+                    </div>
+
+                    <div>
+                      <span className="text-xs text-slate-500 font-bold uppercase block mb-1">หมายเหตุ/รายละเอียด</span>
+                      <p className="text-slate-700 bg-amber-50 p-2 rounded text-xs whitespace-pre-wrap min-h-[3rem]">
+                        {item.remark || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="outline" onClick={() => setIsDetailsOpen(false)} className="w-full sm:w-auto">
+                ปิดหน้าต่าง
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
       )}
     </div>
   )
