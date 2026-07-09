@@ -450,7 +450,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
       {/* Details Dialog Modal */}
       {isDetailsOpen && selectedDetailsInquiry && (
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-7xl w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-slate-900 font-bold text-xl">รายละเอียดคำขอ {selectedDetailsInquiry.inquiry_number}</DialogTitle>
               <DialogDescription>
