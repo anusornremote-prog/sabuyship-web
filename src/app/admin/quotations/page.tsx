@@ -9,7 +9,7 @@ export default async function AdminQuotations() {
     .select(`
       id,
       product_cost,
-      shipping_fee,
+      shipping_cost_cn_cn,
       other_fee,
       total_price,
       status,

@@ -37,14 +37,14 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   // Form input fields
   const [productCost, setProductCost] = useState("")
   const [itemCosts, setItemCosts] = useState<Record<number, string>>({})
-  const [shippingFee, setShippingFee] = useState("")
+  const [shippingCostCnCn, setShippingCostCnCn] = useState("")
   const [otherFee, setOtherFee] = useState("")
 
   const openQuoteModal = (inquiry: any) => {
     setSelectedInquiry(inquiry)
     setProductCost("")
     setItemCosts({})
-    setShippingFee("200") // Default shipping fee placeholder
+    setShippingCostCnCn("")
     setOtherFee("0")
     setErrorMsg("")
     setIsQuotingOpen(true)
@@ -81,7 +81,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
       const payload = {
         inquiry_id: selectedInquiry.id,
         product_cost: totalProductCost,
-        shipping_fee: parseFloat(shippingFee) || 0,
+        shipping_cost_cn_cn: parseFloat(shippingCostCnCn) || 0,
         other_fee: parseFloat(otherFee) || 0,
         updated_items: isMultiItem ? updatedItems : null,
       }
@@ -396,15 +396,18 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                     />
                   </div>
                 )}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">ค่าจัดส่งจีน-ไทย (บาท)</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="เช่น 300"
-                    value={shippingFee}
-                    onChange={(e) => setShippingFee(e.target.value)}
-                  />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">ค่าจัดส่ง จีน-จีน (ถ้ามี)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-500">฿</span>
+                    <Input 
+                      type="number" 
+                      min="0"
+                      className="pl-8 bg-white"
+                      value={shippingCostCnCn}
+                      onChange={(e) => setShippingCostCnCn(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -428,7 +431,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                     (selectedInquiry?.items && selectedInquiry.items.length > 0 
                       ? Object.values(itemCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)
                       : parseFloat(productCost) || 0) +
-                    (parseFloat(shippingFee) || 0) +
+                    (parseFloat(shippingCostCnCn) || 0) +
                     (parseFloat(otherFee) || 0)
                   ).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                 </span>

@@ -35,7 +35,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       id,
       product_cost,
       service_fee,
-      shipping_fee,
+      shipping_cost_cn_cn,
       other_fee,
       total_price,
       inquiry:inquiry_id (
@@ -175,13 +175,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <td className="py-4 px-4 text-center text-slate-600">{inquiry?.quantity || 1}</td>
               <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation?.product_cost)}</td>
             </tr>
-            {quotation?.shipping_fee > 0 && (
+            {quotation?.shipping_cost_cn_cn > 0 && (
               <tr>
-                <td className="py-4 px-4 text-slate-800">
-                  <p className="font-medium">ค่าขนส่งจีน-ไทย (Shipping Fee)</p>
+                <td className="py-4 px-4">
+                  <div className="font-semibold text-slate-900">ค่าจัดส่ง จีน-จีน</div>
+                  <div className="text-xs text-slate-500">China-China Delivery Fee</div>
                 </td>
-                <td className="py-4 px-4 text-center text-slate-600">1</td>
-                <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.shipping_fee)}</td>
+                <td className="py-4 px-4 text-center text-slate-600">-</td>
+                <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.shipping_cost_cn_cn)}</td>
               </tr>
             )}
             {quotation?.service_fee > 0 && (

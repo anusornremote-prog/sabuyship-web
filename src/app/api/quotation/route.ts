@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     const total = 
       (body.product_cost || 0) + 
-      (body.shipping_fee || 0) + 
+      (body.shipping_cost_cn_cn || 0) + 
       (body.other_fee || 0)
 
     const { data, error } = await supabase
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       .insert({
         inquiry_id: body.inquiry_id,
         product_cost: body.product_cost,
-        shipping_fee: body.shipping_fee || 0,
+        shipping_cost_cn_cn: body.shipping_cost_cn_cn || 0,
         other_fee: body.other_fee || 0,
         total_price: total,
         status: "SENT"

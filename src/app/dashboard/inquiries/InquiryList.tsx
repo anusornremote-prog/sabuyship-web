@@ -332,9 +332,9 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
                     <span className="font-semibold text-slate-900">{formatCurrency(quotation.product_cost)}</span>
                   </div>
 
-                  <div className="flex justify-between pb-1 border-b text-slate-600">
-                    <span>ค่าจัดส่งจีน-ไทย (Shipping Fee)</span>
-                    <span className="font-semibold text-slate-900">{formatCurrency(quotation.shipping_fee)}</span>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-600 font-medium">ค่าจัดส่ง จีน-จีน</span>
+                    <span className="font-semibold text-slate-900">{formatCurrency(quotation.shipping_cost_cn_cn)}</span>
                   </div>
                   <div className="flex justify-between pb-1 border-b text-slate-600">
                     <span>ค่าธรรมเนียมอื่น ๆ (Other Fee)</span>

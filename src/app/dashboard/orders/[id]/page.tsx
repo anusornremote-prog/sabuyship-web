@@ -24,6 +24,9 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     admin_notes,
     tracking_number,
     shipping_company,
+    payment_round_1_status,
+    payment_round_2_status,
+    payment_round_3_status,
     shipping_address_id,
     address:shipping_address_id (
       full_name,
@@ -38,7 +41,9 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       id,
       product_cost,
       service_fee,
-      shipping_fee,
+      shipping_cost_cn_cn,
+      shipping_cost_cn_th,
+      shipping_cost_th_th,
       other_fee,
       total_price,
       inquiry:inquiry_id (
@@ -163,17 +168,33 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                     <span className="font-medium">{formatCurrency(quotation.product_cost)}</span>
                   </div>
 
-                  <div className="flex justify-between border-b pb-2 text-sm">
-                    <span className="text-slate-600">ค่าขนส่งจีน-ไทย (Shipping Fee)</span>
-                    <span className="font-medium">{formatCurrency(quotation.shipping_fee)}</span>
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span className="text-slate-600">ค่าจัดส่ง จีน-จีน</span>
+                    <span className="font-medium">{formatCurrency(quotation.shipping_cost_cn_cn)}</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span className="text-slate-600">ค่าจัดส่ง จีน-ไทย</span>
+                    <div className="text-right">
+                      <span className="font-medium">{formatCurrency(quotation.shipping_cost_cn_th)}</span>
+                      {order.payment_round_2_status === 'PAID' && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span className="text-slate-600">ค่าจัดส่ง ไทย-ไทย</span>
+                    <div className="text-right">
+                      <span className="font-medium">
+                        {quotation.shipping_cost_th_th > 0 ? formatCurrency(quotation.shipping_cost_th_th) : "รับเองที่โกดัง / ไม่มีค่าใช้จ่าย"}
+                      </span>
+                      {order.payment_round_3_status === 'PAID' && quotation.shipping_cost_th_th > 0 && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
+                    </div>
                   </div>
                   <div className="flex justify-between border-b pb-2 text-sm">
                     <span className="text-slate-600">ค่าบริการอื่นๆ (Other Fee)</span>
                     <span className="font-medium">{formatCurrency(quotation.other_fee)}</span>
                   </div>
                   <div className="flex justify-between pt-2">
-                    <span className="font-bold text-lg text-slate-950">ยอดรวมทั้งสิ้น (Total)</span>
-                    <span className="font-bold text-lg text-primary">{formatCurrency(quotation.total_price)}</span>
+                    <span className="font-bold text-lg text-slate-950">ยอดรวมทั้งสิ้น (รวมทุกรอบ)</span>
+                    <span className="font-bold text-lg text-primary">{formatCurrency((quotation.total_price || 0) + (quotation.shipping_cost_cn_th || 0) + (quotation.shipping_cost_th_th || 0))}</span>
                   </div>
                 </div>
               ) : (

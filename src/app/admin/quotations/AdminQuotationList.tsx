@@ -156,8 +156,8 @@ export default function AdminQuotationList({ initialQuotations }: { initialQuota
                   <span className="font-bold text-slate-900">฿ {Number(selectedQuote.product_cost || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 font-medium">ค่าจัดส่งจีน-ไทย</span>
-                  <span className="font-bold text-slate-900">฿ {Number(selectedQuote.shipping_fee || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                  <span className="text-slate-600 font-medium">ค่าจัดส่ง จีน-จีน</span>
+                  <span className="font-bold text-slate-900">฿ {Number(selectedQuote.shipping_cost_cn_cn || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-600 font-medium">ค่าธรรมเนียมอื่น ๆ</span>

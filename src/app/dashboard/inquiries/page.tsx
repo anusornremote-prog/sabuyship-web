@@ -30,7 +30,7 @@ export default async function DashboardInquiries() {
         id,
         product_cost,
         service_fee,
-        shipping_fee,
+        shipping_cost_cn_cn,
         other_fee,
         total_price,
         status,

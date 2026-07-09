@@ -35,7 +35,8 @@ export default function AdminTrackingPage() {
         .from("orders")
         .select(`
           *,
-          profiles:customer_id(full_name, phone)
+          profiles:customer_id(full_name, phone),
+          quotations:quotation_id(*)
         `)
         .in('status', ['SHIPPING', 'ARRIVED', 'DELIVERED'])
         .order("created_at", { ascending: false })

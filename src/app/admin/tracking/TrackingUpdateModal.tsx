@@ -26,6 +26,10 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
   const [status, setStatus] = useState("")
   const [shippingCompany, setShippingCompany] = useState("")
   const [trackingNumber, setTrackingNumber] = useState("")
+  const [shippingCostCnTh, setShippingCostCnTh] = useState("")
+  const [shippingCostThTh, setShippingCostThTh] = useState("")
+  const [paymentRound2Status, setPaymentRound2Status] = useState("PENDING")
+  const [paymentRound3Status, setPaymentRound3Status] = useState("PENDING")
   const [notes, setNotes] = useState("")
 
   useEffect(() => {
@@ -33,6 +37,10 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
       setStatus(order.status || "SHIPPING")
       setShippingCompany(order.shipping_company || "")
       setTrackingNumber(order.tracking_number || "")
+      setShippingCostCnTh(order.quotations?.shipping_cost_cn_th?.toString() || "")
+      setShippingCostThTh(order.quotations?.shipping_cost_th_th?.toString() || "")
+      setPaymentRound2Status(order.payment_round_2_status || "PENDING")
+      setPaymentRound3Status(order.payment_round_3_status || "PENDING")
       setNotes("")
     }
     setErrorMsg("")
@@ -56,11 +64,25 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
         .update({
           status: status,
           shipping_company: shippingCompany || null,
-          tracking_number: trackingNumber || null
+          tracking_number: trackingNumber || null,
+          payment_round_2_status: paymentRound2Status,
+          payment_round_3_status: paymentRound3Status
         })
         .eq("id", order.id)
 
       if (orderError) throw orderError
+
+      if (order.quotations?.id) {
+        const { error: quoteError } = await supabase
+          .from("quotations")
+          .update({
+            shipping_cost_cn_th: parseFloat(shippingCostCnTh) || 0,
+            shipping_cost_th_th: parseFloat(shippingCostThTh) || 0
+          })
+          .eq("id", order.quotations.id)
+
+        if (quoteError) throw quoteError
+      }
 
       // Insert Tracking Log
       const { error: logError } = await supabase
@@ -147,6 +169,49 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="space-y-1.5 p-3 border rounded-lg bg-slate-50">
+              <label className="text-sm font-semibold text-slate-700">ค่าขนส่ง จีน-ไทย (รอบ 2)</label>
+              <Input
+                type="number"
+                placeholder="ระบุจำนวนเงิน"
+                value={shippingCostCnTh}
+                onChange={(e) => setShippingCostCnTh(e.target.value)}
+                className="mb-2"
+              />
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="paid_round2"
+                  checked={paymentRound2Status === 'PAID'}
+                  onChange={(e) => setPaymentRound2Status(e.target.checked ? 'PAID' : 'PENDING')}
+                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                />
+                <label htmlFor="paid_round2" className="text-sm text-slate-700 cursor-pointer">ลูกค้าชำระเงินแล้ว</label>
+              </div>
+            </div>
+            <div className="space-y-1.5 p-3 border rounded-lg bg-slate-50">
+              <label className="text-sm font-semibold text-slate-700">ค่าขนส่ง ไทย-ไทย (รอบ 3)</label>
+              <Input
+                type="number"
+                placeholder="ระบุจำนวนเงิน"
+                value={shippingCostThTh}
+                onChange={(e) => setShippingCostThTh(e.target.value)}
+                className="mb-2"
+              />
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="paid_round3"
+                  checked={paymentRound3Status === 'PAID'}
+                  onChange={(e) => setPaymentRound3Status(e.target.checked ? 'PAID' : 'PENDING')}
+                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                />
+                <label htmlFor="paid_round3" className="text-sm text-slate-700 cursor-pointer">ลูกค้าชำระเงินแล้ว</label>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-1.5">
