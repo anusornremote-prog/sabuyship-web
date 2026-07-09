@@ -61,7 +61,7 @@ export default async function MyOrders() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">คำสั่งซื้อของฉัน</h1>
+          <h1 className="text-3xl font-bold text-slate-900">ยื่นคำสั่งซื้อใหม่</h1>
           <p className="text-slate-600">ประวัติการสั่งซื้อและสถานะปัจจุบัน</p>
         </div>
         <Link href="/inquiry">

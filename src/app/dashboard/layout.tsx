@@ -58,11 +58,11 @@ export default function DashboardLayout({
           </Link>
           <Link href="/dashboard/orders" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/orders') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <Package className="h-5 w-5" />
-            คำสั่งซื้อของฉัน
+            ยื่นคำสั่งซื้อใหม่
           </Link>
           <Link href="/dashboard/inquiries" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <FileText className="h-5 w-5" />
-            ประวัติการขอราคา
+            คำสั่งซื้อของฉัน
           </Link>
           <Link href="/dashboard/addresses" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/addresses') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <MapPin className="h-5 w-5" />
@@ -108,7 +108,7 @@ export default function DashboardLayout({
             คำสั่งซื้อ
           </Link>
           <Link href="/dashboard/inquiries" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
-            ประวัติการขอราคา
+            คำสั่งซื้อของฉัน
           </Link>
           <Link href="/dashboard/addresses" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/addresses') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             สมุดที่อยู่

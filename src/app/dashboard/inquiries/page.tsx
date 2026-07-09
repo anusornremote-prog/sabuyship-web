@@ -47,7 +47,7 @@ export default async function DashboardInquiries() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">ประวัติการขอราคา</h1>
+        <h1 className="text-3xl font-bold text-slate-900">คำสั่งซื้อของฉัน</h1>
         <p className="text-slate-600">ประวัติการส่งลิงก์ประเมินราคาและใบเสนอราคาของคุณ</p>
       </div>
       <InquiryList initialInquiries={inquiries || []} customerId={user.id} />

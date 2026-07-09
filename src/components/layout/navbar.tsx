@@ -128,7 +128,7 @@ export function Navbar() {
                     <Package className="h-4 w-4" /> คำสั่งซื้อ
                   </Link>
                   <Link href="/dashboard/inquiries" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <FileText className="h-4 w-4" /> ประวัติการขอราคา
+                    <FileText className="h-4 w-4" /> คำสั่งซื้อของฉัน
                   </Link>
                   <Link href="/dashboard/addresses" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
                     <MapPin className="h-4 w-4" /> สมุดที่อยู่
