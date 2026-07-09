@@ -30,6 +30,8 @@ export async function POST(request: Request) {
       phone: body.phone,
       line_id: body.line_id || null,
       items: body.items, // Ensure your DB schema has an 'items' jsonb column
+      product_url: body.items[0]?.url || "-", // Fallback to satisfy DB NOT NULL constraint
+      quantity: body.items[0]?.quantity || 1, // Fallback to satisfy DB NOT NULL constraint
       status: "PENDING"
     }
 
