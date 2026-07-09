@@ -220,7 +220,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                         <p className="text-xs text-slate-500">{inq.phone}</p>
                       </td>
                       <td className="px-6 py-4">
-                        {inq.items && inq.items.length > 0 ? (
+                        {inq.items && inq.items.length > 1 ? (
                           <div className="space-y-2">
                             <span className="font-semibold text-primary block">รวม {inq.items.length} รายการ</span>
                             <Button variant="outline" size="sm" onClick={() => openDetailsModal(inq)} className="text-xs">
@@ -230,29 +230,29 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                         ) : (
                           <>
                             <a
-                              href={inq.product_url}
+                              href={inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate"
                             >
                               <Globe className="h-4 w-4 shrink-0 text-slate-400" />
-                              <span>{inq.product_url}</span>
+                              <span>{inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}</span>
                               <ExternalLink className="h-3 w-3 shrink-0" />
                             </a>
-                            <p className="text-xs text-slate-500 mt-1 font-semibold">จำนวน: {inq.quantity} ชิ้น</p>
+                            <p className="text-xs text-slate-500 mt-1 font-semibold">จำนวน: {inq.items && inq.items.length === 1 ? inq.items[0].quantity : inq.quantity} ชิ้น</p>
                           </>
                         )}
                       </td>
                       <td className="px-6 py-4 text-xs text-slate-600 max-w-[200px] truncate">
-                        {inq.items && inq.items.length > 0 ? (
+                        {inq.items && inq.items.length > 1 ? (
                           <span className="text-slate-400 italic">กรุณากดดูรายละเอียด</span>
                         ) : (
                           <>
-                            {inq.remark || "-"}
-                            {inq.image_url && (
+                            {inq.items && inq.items.length === 1 ? (inq.items[0].remark || "-") : (inq.remark || "-")}
+                            {((inq.items && inq.items.length === 1 && inq.items[0].image_url) || inq.image_url) && (
                               <div className="mt-2">
-                                <a href={inq.image_url} target="_blank" rel="noopener noreferrer">
-                                  <img src={inq.image_url} alt="Attached" className="h-10 w-10 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
+                                <a href={inq.items && inq.items.length === 1 ? inq.items[0].image_url : inq.image_url} target="_blank" rel="noopener noreferrer">
+                                  <img src={inq.items && inq.items.length === 1 ? inq.items[0].image_url : inq.image_url} alt="Attached" className="h-10 w-10 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
                                 </a>
                               </div>
                             )}
