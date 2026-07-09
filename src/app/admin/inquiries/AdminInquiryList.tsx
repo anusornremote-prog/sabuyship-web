@@ -458,40 +458,44 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            <div className="flex flex-col gap-4 mt-4">
               {selectedDetailsInquiry.items?.map((item: any, idx: number) => (
-                <div key={idx} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col h-full">
-                  <div className="font-bold text-slate-800 mb-2 border-b pb-2">รายการที่ {idx + 1}</div>
+                <div key={idx} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col sm:flex-row gap-6 items-start">
                   
-                  {item.image_url ? (
-                    <div className="mb-3 rounded overflow-hidden border border-slate-100 bg-slate-50 flex items-center justify-center h-40">
-                      <a href={item.image_url} target="_blank" rel="noopener noreferrer">
-                        <img src={item.image_url} alt={`Item ${idx + 1}`} className="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="mb-3 rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center h-40 text-slate-400 text-xs">
-                      ไม่มีรูปภาพ
-                    </div>
-                  )}
+                  {/* Left Column: Image */}
+                  <div className="w-full sm:w-1/4 sm:min-w-[150px] flex-shrink-0">
+                    <div className="font-bold text-slate-800 mb-2 border-b pb-2">รายการที่ {idx + 1}</div>
+                    {item.image_url ? (
+                      <div className="rounded overflow-hidden border border-slate-100 bg-slate-50 flex items-center justify-center h-32 sm:h-40">
+                        <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="h-full w-full flex items-center justify-center">
+                          <img src={item.image_url} alt={`Item ${idx + 1}`} className="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center h-32 sm:h-40 text-slate-400 text-xs">
+                        ไม่มีรูปภาพ
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="flex-1 space-y-2 text-sm">
+                  {/* Right Column: Details */}
+                  <div className="flex-1 space-y-4 text-sm w-full pt-2 sm:pt-8">
                     <div>
                       <span className="text-xs text-slate-500 font-bold uppercase block mb-1">ลิงก์สินค้า</span>
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-start gap-1 break-all">
                         <Globe className="h-4 w-4 shrink-0 text-slate-400 mt-0.5" />
-                        <span className="line-clamp-2">{item.url}</span>
+                        <span>{item.url}</span>
                       </a>
                     </div>
                     
-                    <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
-                      <span className="text-xs text-slate-500 font-bold">จำนวน:</span>
-                      <span className="font-semibold text-slate-800">{item.quantity} ชิ้น</span>
+                    <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100 w-full sm:w-1/2">
+                      <span className="text-sm text-slate-600 font-bold">จำนวน:</span>
+                      <span className="font-semibold text-slate-800 text-base">{item.quantity} ชิ้น</span>
                     </div>
 
                     <div>
                       <span className="text-xs text-slate-500 font-bold uppercase block mb-1">หมายเหตุ/รายละเอียด</span>
-                      <p className="text-slate-700 bg-amber-50 p-2 rounded text-xs whitespace-pre-wrap min-h-[3rem]">
+                      <p className="text-slate-700 bg-amber-50 p-3 rounded-lg text-sm whitespace-pre-wrap min-h-[3rem] border border-amber-100">
                         {item.remark || "-"}
                       </p>
                     </div>
