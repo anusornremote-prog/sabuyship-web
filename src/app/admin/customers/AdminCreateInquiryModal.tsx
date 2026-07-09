@@ -26,6 +26,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
+  const [shippingType, setShippingType] = useState("CAR")
 
   const [items, setItems] = useState([
     { url: "", quantity: 1 as number | string, remark: "", file: null as File | null }
@@ -112,6 +113,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
         customer_name: customer.full_name || customer.customer_code,
         phone: customer.phone,
         line_id: customer.line_id,
+        shipping_type: shippingType,
         items: uploadedItems
       }
 
@@ -157,7 +159,36 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
           )}
 
           <div className="space-y-4">
-            <h3 className="font-semibold border-b pb-2">ข้อมูลสินค้า</h3>
+            <h3 className="font-semibold border-b pb-2">รูปแบบการขนส่ง *</h3>
+            <div className="flex gap-6 pt-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="adminShippingType" 
+                  value="CAR" 
+                  checked={shippingType === 'CAR'}
+                  onChange={() => setShippingType('CAR')}
+                  className="w-4 h-4 text-primary" 
+                />
+                <span>ทางรถ (Car)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="adminShippingType" 
+                  value="BOAT" 
+                  checked={shippingType === 'BOAT'}
+                  onChange={() => setShippingType('BOAT')}
+                  className="w-4 h-4 text-primary" 
+                />
+                <span>ทางเรือ (Boat)</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center border-b pb-2">
+              <h3 className="font-semibold">ข้อมูลสินค้า</h3>
             
             <div className="space-y-4">
               {items.map((item, idx) => (

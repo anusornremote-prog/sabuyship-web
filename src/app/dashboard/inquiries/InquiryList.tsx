@@ -283,9 +283,17 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
                   )}
                 </div>
             </div>
-            <div>
-              <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">บัญชี LINE / WeChat</span>
-              <span className="font-medium text-slate-800 text-sm">{inq.line_id || '-'}</span>
+            <div className="space-y-4">
+              <div>
+                <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">บัญชี LINE / WeChat</span>
+                <span className="font-medium text-slate-800 text-sm">{inq.line_id || '-'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-xs font-semibold uppercase tracking-wider">รูปแบบการขนส่ง</span>
+                <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
+                  {inq.shipping_type === 'BOAT' ? '🛳️ ทางเรือ (Boat)' : '🚚 ทางรถ (Car)'}
+                </span>
+              </div>
             </div>
           </div>
         </div>

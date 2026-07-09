@@ -150,6 +150,7 @@ export default function InquiryForm() {
         customer_name: formData.get("customerName"),
         phone: formData.get("phone"),
         line_id: formData.get("lineId"),
+        shipping_type: formData.get("shippingType") || "CAR",
         items: uploadedItems
       }
 
@@ -236,6 +237,22 @@ export default function InquiryForm() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{labelLineId}</label>
                   <Input placeholder="Line ID / WeChat ID" name="lineId" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b pb-2 pt-4">
+                  <h3 className="font-semibold">{locale === 'en' ? 'Shipping Method' : locale === 'zh' ? '运输方式' : 'รูปแบบการขนส่ง'} *</h3>
+                </div>
+                <div className="flex gap-6 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="shippingType" value="CAR" defaultChecked className="w-4 h-4 text-primary" />
+                    <span>{locale === 'en' ? 'By Car (ทางรถ)' : locale === 'zh' ? '陆运 (ทางรถ)' : 'ทางรถ (Car)'}</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="shippingType" value="BOAT" className="w-4 h-4 text-primary" />
+                    <span>{locale === 'en' ? 'By Boat (ทางเรือ)' : locale === 'zh' ? '海运 (ทางเรือ)' : 'ทางเรือ (Boat)'}</span>
+                  </label>
                 </div>
               </div>
 

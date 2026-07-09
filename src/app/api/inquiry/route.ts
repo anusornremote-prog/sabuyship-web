@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       customer_name: body.customer_name,
       phone: body.phone,
       line_id: body.line_id || null,
+      shipping_type: body.shipping_type || "CAR",
       items: body.items, // Ensure your DB schema has an 'items' jsonb column
       product_url: body.items[0]?.url || "-", // Fallback to satisfy DB NOT NULL constraint
       quantity: body.items[0]?.quantity || 1, // Fallback to satisfy DB NOT NULL constraint
