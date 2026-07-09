@@ -1,5 +1,7 @@
 "use client"
 
+import imageCompression from 'browser-image-compression'
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
@@ -100,11 +102,26 @@ export default function InquiryForm() {
       const uploadedItems = await Promise.all(items.map(async (item, idx) => {
         let image_url = null
         if (item.file) {
-          const fileExt = item.file.name.split('.').pop()
+          // Compress image before uploading
+          const options = {
+            maxSizeMB: 0.2, // ~200KB limit
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+            initialQuality: 0.7
+          }
+          let fileToUpload = item.file
+          try {
+            fileToUpload = await imageCompression(item.file, options)
+          } catch (error) {
+            console.error("Compression error:", error)
+            // Fallback to original if compression fails
+          }
+          
+          const fileExt = fileToUpload.name.split('.').pop() || 'jpg'
           const fileName = `${Date.now()}-${idx}.${fileExt}`
           const { error: uploadError } = await supabase.storage
             .from('inquiries')
-            .upload(fileName, item.file, {
+            .upload(fileName, fileToUpload, {
                cacheControl: '3600',
                upsert: false
             })

@@ -24,6 +24,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   const [inquiries, setInquiries] = useState(initialInquiries)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
+  const [isCleaning, setIsCleaning] = useState(false)
   
   // Modal states
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null)
@@ -100,6 +101,26 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
     }
   }
 
+  const handleCleanupImages = async () => {
+    if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างรูปภาพเก่าที่เกิน 90 วันทิ้ง? (ข้อมูลข้อความยังอยู่ครบ แต่รูปจะถูกลบเพื่อคืนพื้นที่)")) return
+    
+    setIsCleaning(true)
+    try {
+      const res = await fetch("/api/inquiry/cleanup", { method: "POST" })
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.error || "Cleanup failed")
+      
+      alert(`ล้างรูปภาพสำเร็จแล้ว ${data.count} รูปภาพ จากทั้งหมดที่เจอ ${data.totalFound || 0} รายการ`)
+      router.refresh()
+    } catch (err: any) {
+      console.error(err)
+      alert("เกิดข้อผิดพลาดในการล้างรูปภาพ: " + err.message)
+    } finally {
+      setIsCleaning(false)
+    }
+  }
+
   // Filter logic
   const filtered = initialInquiries.filter((inq) => {
     const matchesSearch =
@@ -137,6 +158,14 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
             <option value="QUOTED">QUOTED (ส่งใบเสนอราคาแล้ว)</option>
             <option value="REJECTED">REJECTED (ยกเลิก)</option>
           </select>
+          <Button 
+            variant="outline" 
+            className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 w-full sm:w-auto"
+            onClick={handleCleanupImages}
+            disabled={isCleaning}
+          >
+            {isCleaning ? 'กำลังล้าง...' : 'ล้างรูปภาพเก่า (เกิน 90 วัน)'}
+          </Button>
         </CardContent>
       </Card>
 
