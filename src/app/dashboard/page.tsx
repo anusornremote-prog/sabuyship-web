@@ -105,7 +105,7 @@ export default async function DashboardOverview() {
                   </div>
                   <div>
                     <strong className="text-slate-800 block">เบอร์โทรศัพท์ (Phone):</strong>
-                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">13800138000</span>
+                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">18602069827</span>
                   </div>
                   <div>
                     <strong className="text-slate-800 block">รหัสไปรษณีย์ (Zip Code):</strong>
