@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { PlusCircle, Trash2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import imageCompression from 'browser-image-compression'
 import {
   Dialog,
   DialogContent,
@@ -26,11 +28,11 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
   const [errorMsg, setErrorMsg] = useState("")
 
   const [items, setItems] = useState([
-    { url: "", quantity: 1, remark: "", image_url: "" }
+    { url: "", quantity: 1 as number | string, remark: "", file: null as File | null }
   ])
 
   const handleAddItem = () => {
-    setItems([...items, { url: "", quantity: 1, remark: "", image_url: "" }])
+    setItems([...items, { url: "", quantity: 1, remark: "", file: null }])
   }
 
   const handleRemoveItem = (index: number) => {
@@ -49,7 +51,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
     e.preventDefault()
     
     // Validate
-    if (items.some(i => !i.url || i.quantity < 1)) {
+    if (items.some(i => !i.url.trim() || Number(i.quantity) < 1)) {
       setErrorMsg("กรุณากรอกลิงก์และจำนวนสินค้าให้ครบถ้วนทุกรายการ")
       return
     }
@@ -58,12 +60,59 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
     setErrorMsg("")
 
     try {
+      const supabase = createClient()
+      
+      // Upload images if any
+      const uploadedItems = await Promise.all(items.map(async (item, idx) => {
+        let image_url = null
+        if (item.file) {
+          // Compress image before uploading
+          const options = {
+            maxSizeMB: 0.2, // ~200KB limit
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+            initialQuality: 0.7
+          }
+          let fileToUpload = item.file
+          try {
+            fileToUpload = await imageCompression(item.file, options)
+          } catch (error) {
+            console.error("Compression error:", error)
+            // Fallback to original if compression fails
+          }
+          
+          const fileExt = fileToUpload.name.split('.').pop() || 'jpg'
+          const fileName = `${Date.now()}-${idx}.${fileExt}`
+          const { error: uploadError } = await supabase.storage
+            .from('inquiries')
+            .upload(fileName, fileToUpload, {
+               cacheControl: '3600',
+               upsert: false
+            })
+          
+          if (uploadError) throw new Error(`Upload failed for item ${idx + 1}: ${uploadError.message}`)
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('inquiries')
+            .getPublicUrl(fileName)
+            
+          image_url = publicUrl
+        }
+        
+        return {
+          url: item.url,
+          quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
+          remark: item.remark,
+          image_url
+        }
+      }))
+
       const payload = {
         customer_id: customer.id,
         customer_name: customer.full_name || customer.customer_code,
         phone: customer.phone,
         line_id: customer.line_id,
-        items: items
+        items: uploadedItems
       }
 
       const res = await fetch("/api/inquiry/admin", {
@@ -78,7 +127,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
       alert(`สร้างคำขอประเมินราคาสำเร็จ! หมายเลข: ${data.inquiry_number}`)
       
       // Reset form
-      setItems([{ url: "", quantity: 1, remark: "", image_url: "" }])
+      setItems([{ url: "", quantity: 1, remark: "", file: null }])
       onClose()
       router.refresh()
     } catch (err: any) {
@@ -108,75 +157,80 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
           )}
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-slate-800">รายการสินค้า ({items.length} รายการ)</h3>
-              <Button type="button" variant="outline" size="sm" onClick={handleAddItem} className="gap-1 h-8 text-xs">
-                <PlusCircle className="h-3.5 w-3.5" />
-                เพิ่มสินค้าอีกชิ้น
-              </Button>
-            </div>
-
+            <h3 className="font-semibold border-b pb-2">ข้อมูลสินค้า</h3>
+            
             <div className="space-y-4">
               {items.map((item, idx) => (
-                <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-lg relative">
-                  {items.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(idx)}
-                      className="absolute top-3 right-3 text-slate-400 hover:text-red-500 transition-colors bg-white rounded-full p-1 shadow-sm border border-slate-100"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                  
-                  <div className="font-semibold text-slate-800 text-sm mb-3">ชิ้นที่ {idx + 1}</div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-8 space-y-1">
-                      <label className="text-xs font-semibold text-slate-600">ลิงก์สินค้า (URL) *</label>
-                      <Input
-                        required
-                        placeholder="https://taobao.com/..."
-                        value={item.url}
-                        onChange={(e) => updateItem(idx, "url", e.target.value)}
-                        className="h-9"
-                      />
-                    </div>
-                    
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="text-xs font-semibold text-slate-600">จำนวน *</label>
-                      <Input
-                        required
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 1)}
-                        className="h-9"
-                      />
-                    </div>
+                <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4 relative">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold text-slate-700 text-sm">รายการที่ {idx + 1}</span>
+                    {items.length > 1 && (
+                      <button type="button" onClick={() => handleRemoveItem(idx)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer">
+                        ลบรายการนี้
+                      </button>
+                    )}
+                  </div>
 
-                    <div className="md:col-span-12 space-y-1">
-                      <label className="text-xs font-semibold text-slate-600">ลิงก์รูปภาพตัวอย่าง (ถ้ามี)</label>
-                      <Input
-                        placeholder="https://..."
-                        value={item.image_url}
-                        onChange={(e) => updateItem(idx, "image_url", e.target.value)}
-                        className="h-9"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">ลิงก์สินค้า (URL) * (1688, taobao, xianyu)</label>
+                    <Input 
+                      required 
+                      type="url" 
+                      placeholder="https://item.taobao.com/..." 
+                      value={item.url}
+                      onChange={(e) => updateItem(idx, 'url', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">จำนวนที่ต้องการ *</label>
+                    <Input 
+                      required 
+                      type="number" 
+                      min="1" 
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                    />
+                  </div>
 
-                    <div className="md:col-span-12 space-y-1">
-                      <label className="text-xs font-semibold text-slate-600">รายละเอียดเพิ่มเติม/ระบุความต้องการ (ถ้ามี)</label>
-                      <Textarea
-                        placeholder="เช่น สี, ไซส์ หรือขนาด"
-                        value={item.remark}
-                        onChange={(e) => updateItem(idx, "remark", e.target.value)}
-                        className="resize-none h-16"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">หมายเหตุ / รายละเอียดเพิ่มเติม (สี, ไซส์)</label>
+                    <textarea 
+                      value={item.remark}
+                      onChange={(e) => updateItem(idx, 'remark', e.target.value)}
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="เช่น เอาสีดำ ไซส์ M อย่างละ 2 ตัว"
+                    ></textarea>
+                  </div>
+                  
+                  <div className="space-y-2 pt-2">
+                    <label className="text-sm font-medium">รูปภาพสินค้าเพิ่มเติม (ถ้ามี)</label>
+                    <Input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null
+                        updateItem(idx, 'file', file)
+                      }}
+                    />
+                    {item.file && (
+                      <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        {item.file.name}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
+              
+              <Button 
+                type="button" 
+                onClick={handleAddItem} 
+                variant="outline" 
+                className="w-full border-dashed border-2 py-6 text-slate-600 hover:text-slate-900 cursor-pointer"
+              >
+                + เพิ่มรายการสินค้า
+              </Button>
             </div>
           </div>
 
@@ -184,7 +238,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               ยกเลิก
             </Button>
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
+            <Button type="submit" className="px-8 cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? "กำลังบันทึก..." : "ยืนยันสร้างคำขอ"}
             </Button>
           </DialogFooter>
