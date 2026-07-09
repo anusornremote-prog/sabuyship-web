@@ -458,50 +458,48 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col gap-4 mt-4">
-              {selectedDetailsInquiry.items?.map((item: any, idx: number) => (
-                <div key={idx} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col sm:flex-row gap-6 items-start">
-                  
-                  {/* Left Column: Image */}
-                  <div className="w-full sm:w-1/4 sm:min-w-[150px] flex-shrink-0">
-                    <div className="font-bold text-slate-800 mb-2 border-b pb-2">รายการที่ {idx + 1}</div>
-                    {item.image_url ? (
-                      <div className="rounded overflow-hidden border border-slate-100 bg-slate-50 flex items-center justify-center h-32 sm:h-40">
-                        <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="h-full w-full flex items-center justify-center">
-                          <img src={item.image_url} alt={`Item ${idx + 1}`} className="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
+            <div className="overflow-x-auto mt-4 rounded-lg border border-slate-200">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold w-16 text-center">ลำดับ</th>
+                    <th className="px-4 py-3 font-semibold w-24">รูปภาพ</th>
+                    <th className="px-4 py-3 font-semibold">ลิงก์สินค้า</th>
+                    <th className="px-4 py-3 font-semibold">รายละเอียด / ความต้องการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {selectedDetailsInquiry.items?.map((item: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-4 font-bold text-slate-900 text-center">{idx + 1}</td>
+                      <td className="px-4 py-4">
+                        {item.image_url ? (
+                          <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+                            <img src={item.image_url} alt={`Item ${idx + 1}`} className="h-16 w-16 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
+                          </a>
+                        ) : (
+                          <div className="h-16 w-16 flex items-center justify-center bg-slate-50 rounded border border-dashed border-slate-200 text-xs text-slate-400">
+                            ไม่มีรูป
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 max-w-[200px]">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 break-all truncate">
+                          <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span className="truncate">{item.url}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0" />
                         </a>
-                      </div>
-                    ) : (
-                      <div className="rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center h-32 sm:h-40 text-slate-400 text-xs">
-                        ไม่มีรูปภาพ
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column: Details */}
-                  <div className="flex-1 space-y-4 text-sm w-full pt-2 sm:pt-8">
-                    <div>
-                      <span className="text-xs text-slate-500 font-bold uppercase block mb-1">ลิงก์สินค้า</span>
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-start gap-1 break-all">
-                        <Globe className="h-4 w-4 shrink-0 text-slate-400 mt-0.5" />
-                        <span>{item.url}</span>
-                      </a>
-                    </div>
-                    
-                    <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100 w-full sm:w-1/2">
-                      <span className="text-sm text-slate-600 font-bold">จำนวน:</span>
-                      <span className="font-semibold text-slate-800 text-base">{item.quantity} ชิ้น</span>
-                    </div>
-
-                    <div>
-                      <span className="text-xs text-slate-500 font-bold uppercase block mb-1">หมายเหตุ/รายละเอียด</span>
-                      <p className="text-slate-700 bg-amber-50 p-3 rounded-lg text-sm whitespace-pre-wrap min-h-[3rem] border border-amber-100">
+                        <div className="mt-2 text-xs font-semibold text-slate-700 bg-slate-100 inline-block px-2 py-1 rounded">
+                          จำนวน {item.quantity} ชิ้น
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 max-w-[250px] text-xs text-slate-600 whitespace-pre-wrap">
                         {item.remark || "-"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <DialogFooter className="mt-6">
