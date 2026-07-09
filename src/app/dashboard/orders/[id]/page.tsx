@@ -9,9 +9,11 @@ import { notFound } from "next/navigation"
 import { PaymentSection } from "./PaymentSection"
 import { PaymentStepper } from "./PaymentStepper"
 
-export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  try {
   const supabase = await createClient()
-  const { id } = await params
+  const resolvedParams = await params
+  const { id } = resolvedParams as { id: string }
   const orderIdOrNumber = id
 
   // Check if uuid format or order number
@@ -327,4 +329,12 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       </div>
     </div>
   )
+  } catch (err: any) {
+    return (
+      <div className="p-8 bg-red-50 text-red-600 font-mono text-sm whitespace-pre-wrap">
+        <h2>Server Error: {err.message}</h2>
+        <p>{err.stack}</p>
+      </div>
+    )
+  }
 }
