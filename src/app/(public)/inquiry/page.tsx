@@ -60,7 +60,7 @@ export default function InquiryForm() {
   const labelContactInfo = locale === 'en' ? 'Contact Information' : locale === 'zh' ? '联系信息' : 'ข้อมูลผู้ติดต่อ'
   const labelContactSub = locale === 'en' ? 'Provide contact details so we can send the quotation' : locale === 'zh' ? '请提供联系方式以便我们发送报价单' : 'กรอกข้อมูลสินค้าและช่องทางติดต่อ เพื่อให้ทีมงานประเมินราคาและค่าขนส่ง'
   const labelProductInfo = locale === 'en' ? 'Product Information' : locale === 'zh' ? '商品信息' : 'ข้อมูลสินค้า'
-  const labelProductUrl = locale === 'en' ? 'Product Link (URL) * (1688, Taobao, Xianyu)' : locale === 'zh' ? '商品链接 (URL) * (1688, Taobao, Xianyu)' : 'ลิงก์สินค้า (URL) * (1688, taobao, xianyu)'
+  const labelProductUrl = locale === 'en' ? 'Product Link / Details *' : locale === 'zh' ? '商品链接 / 详情 *' : 'ลิงก์สินค้า หรือ ข้อมูลสินค้า *'
   const labelQuantity = locale === 'en' ? 'Quantity *' : locale === 'zh' ? '数量 *' : 'จำนวนที่ต้องการ *'
   const labelRemark = locale === 'en' ? 'Remarks / Specific details (Color, Size)' : locale === 'zh' ? '备注 / 规格详情 (颜色, 尺码)' : 'หมายเหตุ / รายละเอียดเพิ่มเติม (สี, ไซส์)'
   const labelRemarkPlaceholder = locale === 'en' ? 'e.g. Black color, size M, 2 pieces' : locale === 'zh' ? '例如：黑色 M码 2件' : 'เช่น เอาสีดำ ไซส์ M อย่างละ 2 ตัว'
@@ -275,8 +275,8 @@ export default function InquiryForm() {
                       <label className="text-sm font-medium">{labelProductUrl}</label>
                       <Input 
                         required 
-                        type="url" 
-                        placeholder="https://item.taobao.com/..." 
+                        type="text" 
+                        placeholder="https://item.taobao.com/... หรือใส่ข้อความได้" 
                         value={item.url}
                         onChange={(e) => handleItemChange(index, 'url', e.target.value)}
                       />

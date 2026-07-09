@@ -203,11 +203,11 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">ลิงก์สินค้า (URL) * (1688, taobao, xianyu)</label>
+                    <label className="text-sm font-medium">ลิงก์สินค้า หรือ ข้อมูลสินค้า *</label>
                     <Input 
                       required 
-                      type="url" 
-                      placeholder="https://item.taobao.com/..." 
+                      type="text" 
+                      placeholder="https://item.taobao.com/... หรือใส่ข้อความได้" 
                       value={item.url}
                       onChange={(e) => updateItem(idx, 'url', e.target.value)}
                     />
