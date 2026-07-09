@@ -199,9 +199,27 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                              {inq.items.map((item: any, idx: number) => (
                                item.remark ? <div key={idx} className="truncate">{idx + 1}. {item.remark}</div> : null
                              ))}
+                             {inq.items.some((item: any) => item.image_url) && (
+                               <div className="flex gap-2 mt-2 flex-wrap">
+                                 {inq.items.filter((item: any) => item.image_url).map((item: any, idx: number) => (
+                                   <a key={`img-${idx}`} href={item.image_url} target="_blank" rel="noopener noreferrer">
+                                     <img src={item.image_url} alt="Attached" className="h-10 w-10 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
+                                   </a>
+                                 ))}
+                               </div>
+                             )}
                           </div>
                         ) : (
-                          inq.remark || "-"
+                          <>
+                            {inq.remark || "-"}
+                            {inq.image_url && (
+                              <div className="mt-2">
+                                <a href={inq.image_url} target="_blank" rel="noopener noreferrer">
+                                  <img src={inq.image_url} alt="Attached" className="h-10 w-10 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
+                                </a>
+                              </div>
+                            )}
+                          </>
                         )}
                       </td>
                       <td className="px-6 py-4">

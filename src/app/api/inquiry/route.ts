@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       product_url: item.url,
       quantity: item.quantity || 1,
       remark: item.remark || null,
+      image_url: item.image_url || null,
       status: "PENDING"
     }))
 

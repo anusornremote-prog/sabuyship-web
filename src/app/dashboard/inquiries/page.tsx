@@ -23,6 +23,7 @@ export default async function DashboardInquiries() {
       product_url,
       quantity,
       remark,
+      image_url,
       status,
       created_at,
       quotations:quotations(

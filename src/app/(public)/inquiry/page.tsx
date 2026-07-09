@@ -15,7 +15,7 @@ export default function InquiryForm() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
-  const [items, setItems] = useState([{ url: '', quantity: 1, remark: '' }])
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null }>([{ url: '', quantity: 1, remark: '', file: null }])
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {
@@ -68,14 +68,14 @@ export default function InquiryForm() {
   const labelNewInquiry = locale === 'en' ? 'Submit Another Request' : locale === 'zh' ? '提交新申请' : 'ส่งคำขอใหม่'
 
   const handleAddItem = () => {
-    setItems([...items, { url: '', quantity: 1, remark: '' }])
+    setItems([...items, { url: '', quantity: 1, remark: '', file: null }])
   }
 
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  const handleItemChange = (index: number, field: keyof typeof items[0], value: string | number) => {
+  const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items]
     newItems[index] = { ...newItems[index], [field]: value }
     setItems(newItems)
@@ -93,19 +93,47 @@ export default function InquiryForm() {
     setIsSubmitting(true)
     setError(null)
 
-    const formData = new FormData(e.currentTarget)
-    const payload = {
-      customer_name: formData.get("customerName"),
-      phone: formData.get("phone"),
-      line_id: formData.get("lineId"),
-      items: items.map(item => ({
-        url: item.url,
-        quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
-        remark: item.remark
-      }))
-    }
-
     try {
+      const supabase = createClient()
+      
+      // Upload images if any
+      const uploadedItems = await Promise.all(items.map(async (item, idx) => {
+        let image_url = null
+        if (item.file) {
+          const fileExt = item.file.name.split('.').pop()
+          const fileName = `${Date.now()}-${idx}.${fileExt}`
+          const { error: uploadError } = await supabase.storage
+            .from('inquiries')
+            .upload(fileName, item.file, {
+               cacheControl: '3600',
+               upsert: false
+            })
+          
+          if (uploadError) throw new Error(`Upload failed for item ${idx + 1}: ${uploadError.message}`)
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('inquiries')
+            .getPublicUrl(fileName)
+            
+          image_url = publicUrl
+        }
+        
+        return {
+          url: item.url,
+          quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
+          remark: item.remark,
+          image_url
+        }
+      }))
+
+      const formData = new FormData(e.currentTarget)
+      const payload = {
+        customer_name: formData.get("customerName"),
+        phone: formData.get("phone"),
+        line_id: formData.get("lineId"),
+        items: uploadedItems
+      }
+
       const response = await fetch("/api/inquiry", {
         method: "POST",
         headers: {
@@ -120,7 +148,7 @@ export default function InquiryForm() {
       }
 
       setSuccess(true)
-      setItems([{ url: '', quantity: 1, remark: '' }]) // Reset items
+      setItems([{ url: '', quantity: 1, remark: '', file: null }]) // Reset items
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -235,6 +263,23 @@ export default function InquiryForm() {
                         className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder={labelRemarkPlaceholder}
                       ></textarea>
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <label className="text-sm font-medium">{locale === 'en' ? 'Product Image (Optional)' : locale === 'zh' ? '商品图片 (选填)' : 'รูปภาพสินค้าเพิ่มเติม (ถ้ามี)'}</label>
+                      <Input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null
+                          handleItemChange(index, 'file', file)
+                        }}
+                      />
+                      {item.file && (
+                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          {item.file.name}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

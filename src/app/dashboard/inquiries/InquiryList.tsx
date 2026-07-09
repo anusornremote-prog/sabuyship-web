@@ -243,6 +243,13 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
                             {item.remark}
                           </p>
                         )}
+                        {item.image_url && (
+                          <div className="mt-2">
+                            <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+                              <img src={item.image_url} alt="Product Image" className="h-16 w-16 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity shadow-sm" />
+                            </a>
+                          </div>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -259,6 +266,13 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
                           <p className="text-slate-600 text-xs mt-2 bg-white p-2 border border-slate-100 rounded">
                             {inq.remark}
                           </p>
+                        )}
+                        {inq.image_url && (
+                          <div className="mt-2">
+                            <a href={inq.image_url} target="_blank" rel="noopener noreferrer">
+                              <img src={inq.image_url} alt="Product Image" className="h-16 w-16 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity shadow-sm" />
+                            </a>
+                          </div>
                         )}
                       </div>
                   )}
