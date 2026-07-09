@@ -7,6 +7,7 @@ import { ArrowLeft, FileText, Globe, Truck, Printer } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { PaymentSection } from "./PaymentSection"
+import { PaymentStepper } from "./PaymentStepper"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -153,6 +154,15 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           </Link>
         </Button>
       </div>
+
+      <PaymentStepper 
+        status={order.status}
+        paymentRound1Status={order.payment_round_1_status || (order.status !== 'WAITING_PAYMENT' && order.status !== 'NEW' ? 'PAID' : 'PENDING')}
+        paymentRound2Status={order.payment_round_2_status}
+        paymentRound3Status={order.payment_round_3_status}
+        shippingCostCnTh={quotation?.shipping_cost_cn_th || 0}
+        shippingCostThTh={quotation?.shipping_cost_th_th || 0}
+      />
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
