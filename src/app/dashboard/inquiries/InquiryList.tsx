@@ -236,7 +236,12 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
                             <span className="line-clamp-1">{item.url}</span>
                             <ExternalLink className="h-3 w-3 shrink-0" />
                           </a>
-                          <span className="font-semibold text-slate-800 text-sm shrink-0 whitespace-nowrap">จำนวน {item.quantity} ชิ้น</span>
+                          <span className="font-semibold text-slate-800 text-sm shrink-0 whitespace-nowrap">
+                            จำนวน {item.quantity} ชิ้น
+                            {item.quoted_price !== undefined && (
+                              <span className="text-primary ml-2 border-l border-slate-300 pl-2">฿ {item.quoted_price.toLocaleString("th-TH")}</span>
+                            )}
+                          </span>
                         </div>
                         {item.remark && (
                           <p className="text-slate-600 text-xs mt-2 bg-white p-2 border border-slate-100 rounded">

@@ -36,12 +36,14 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
 
   // Form input fields
   const [productCost, setProductCost] = useState("")
+  const [itemCosts, setItemCosts] = useState<Record<number, string>>({})
   const [shippingFee, setShippingFee] = useState("")
   const [otherFee, setOtherFee] = useState("")
 
   const openQuoteModal = (inquiry: any) => {
     setSelectedInquiry(inquiry)
     setProductCost("")
+    setItemCosts({})
     setShippingFee("200") // Default shipping fee placeholder
     setOtherFee("0")
     setErrorMsg("")
@@ -60,11 +62,28 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
     setErrorMsg("")
 
     try {
+      const isMultiItem = selectedInquiry.items && selectedInquiry.items.length > 0;
+      let totalProductCost = 0;
+      let updatedItems = selectedInquiry.items;
+
+      if (isMultiItem) {
+        let sum = 0;
+        updatedItems = selectedInquiry.items.map((item: any, idx: number) => {
+          const cost = parseFloat(itemCosts[idx]) || 0;
+          sum += cost;
+          return { ...item, quoted_price: cost };
+        });
+        totalProductCost = sum;
+      } else {
+        totalProductCost = parseFloat(productCost) || 0;
+      }
+
       const payload = {
         inquiry_id: selectedInquiry.id,
-        product_cost: parseFloat(productCost) || 0,
+        product_cost: totalProductCost,
         shipping_fee: parseFloat(shippingFee) || 0,
         other_fee: parseFloat(otherFee) || 0,
+        updated_items: isMultiItem ? updatedItems : null,
       }
 
       if (payload.product_cost <= 0) {
@@ -321,15 +340,29 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               )}
 
               <div className="space-y-2">
-                <span className="text-xs text-slate-500 uppercase tracking-wider block font-bold">รายการสินค้า</span>
+                <span className="text-xs text-slate-500 uppercase tracking-wider block font-bold">รายการสินค้าและประเมินราคา</span>
                 {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
-                  <div className="space-y-2 max-h-32 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-100">
+                  <div className="space-y-3 max-h-60 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-100">
                     {selectedInquiry.items.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-xs">
-                         <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[250px]">
-                           {idx + 1}. {item.url}
-                         </a>
-                         <span className="font-semibold text-slate-600 whitespace-nowrap">จำนวน: {item.quantity}</span>
+                      <div key={idx} className="flex flex-col gap-2 p-2 bg-white rounded border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-center text-xs">
+                           <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">
+                             {idx + 1}. {item.url}
+                           </a>
+                           <span className="font-semibold text-slate-600 whitespace-nowrap">จำนวน: {item.quantity}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <label className="text-xs font-semibold text-slate-700 whitespace-nowrap">ค่าสินค้า (บาท):</label>
+                          <Input
+                            required
+                            type="number"
+                            min="0"
+                            placeholder="ราคาชิ้นนี้"
+                            className="h-8 text-xs"
+                            value={itemCosts[idx] || ""}
+                            onChange={(e) => setItemCosts({ ...itemCosts, [idx]: e.target.value })}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -350,17 +383,19 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">ค่าสินค้า (บาท) *</label>
-                  <Input
-                    required
-                    type="number"
-                    min="1"
-                    placeholder="เช่น 1500"
-                    value={productCost}
-                    onChange={(e) => setProductCost(e.target.value)}
-                  />
-                </div>
+                {(!selectedInquiry.items || selectedInquiry.items.length === 0) && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">ค่าสินค้ารวม (บาท) *</label>
+                    <Input
+                      required
+                      type="number"
+                      min="1"
+                      placeholder="เช่น 1500"
+                      value={productCost}
+                      onChange={(e) => setProductCost(e.target.value)}
+                    />
+                  </div>
+                )}
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-700">ค่าจัดส่งจีน-ไทย (บาท)</label>
                   <Input
@@ -390,7 +425,9 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 <span className="text-slate-700">รวมราคาสุทธิเสนอขาย:</span>
                 <span className="text-primary text-base">
                   ฿ {(
-                    (parseFloat(productCost) || 0) +
+                    (selectedInquiry?.items && selectedInquiry.items.length > 0 
+                      ? Object.values(itemCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)
+                      : parseFloat(productCost) || 0) +
                     (parseFloat(shippingFee) || 0) +
                     (parseFloat(otherFee) || 0)
                   ).toLocaleString("th-TH", { minimumFractionDigits: 2 })}

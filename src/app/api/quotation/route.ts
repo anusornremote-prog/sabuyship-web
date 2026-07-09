@@ -34,8 +34,12 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Update inquiry status
-    await supabase.from("inquiries").update({ status: "QUOTED" }).eq("id", body.inquiry_id)
+    // Update inquiry status and optionally the items breakdown
+    const updatePayload: any = { status: "QUOTED" }
+    if (body.updated_items) {
+      updatePayload.items = body.updated_items
+    }
+    await supabase.from("inquiries").update(updatePayload).eq("id", body.inquiry_id)
 
     return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error: any) {
