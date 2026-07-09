@@ -52,7 +52,10 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       inquiry:inquiry_id (
         product_url,
         quantity,
-        remark
+        remark,
+        items,
+        shipping_type,
+        image_url
       )
     )
   `)
@@ -222,23 +225,78 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
             <CardContent className="space-y-4 text-sm">
               {inquiry ? (
                 <>
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">ลิงก์สินค้า (URL)</h4>
-                    <a href={inquiry.product_url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline break-all flex items-center gap-1">
-                      <Globe className="h-4 w-4 shrink-0" />
-                      {inquiry.product_url}
-                    </a>
+                  <div className="flex justify-between items-center mb-4 pb-2 border-b">
+                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">รูปแบบการขนส่ง</h4>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                      {inquiry.shipping_type === 'BOAT' ? '🛳️ ทางเรือ (Boat)' : '🚚 ทางรถ (Car)'}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">จำนวนที่สั่ง</h4>
-                      <p className="text-slate-900 font-medium">{inquiry.quantity} ชิ้น</p>
+                  
+                  {inquiry.items && inquiry.items.length > 0 ? (
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">รายการสินค้า ({inquiry.items.length} รายการ)</h4>
+                      {inquiry.items.map((item: any, idx: number) => (
+                        <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col sm:flex-row gap-4">
+                          {item.image_url && (
+                            <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                              <img src={item.image_url} alt="Product" className="w-20 h-20 object-cover rounded-md border border-slate-200" />
+                            </a>
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 break-all text-sm">
+                              <Globe className="h-4 w-4 shrink-0" />
+                              <span className="line-clamp-1">{item.url}</span>
+                            </a>
+                            <div className="flex justify-between items-end">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase">จำนวนที่สั่ง</p>
+                                <p className="text-sm font-medium text-slate-900">{item.quantity} ชิ้น</p>
+                              </div>
+                              {item.quoted_price !== undefined && (
+                                <div className="text-right">
+                                  <p className="text-xs font-semibold text-slate-500 uppercase">ราคาประเมิน</p>
+                                  <p className="text-sm font-bold text-primary">{formatCurrency(item.quoted_price)}</p>
+                                </div>
+                              )}
+                            </div>
+                            {item.remark && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-1">หมายเหตุ</p>
+                                <p className="text-sm text-slate-700 bg-white p-2 rounded border border-slate-100">{item.remark}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">หมายเหตุเพิ่มเติม</h4>
-                      <p className="text-slate-900 font-medium whitespace-pre-wrap">{inquiry.remark || '-'}</p>
+                  ) : (
+                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col sm:flex-row gap-4">
+                      {inquiry.image_url && (
+                        <a href={inquiry.image_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                          <img src={inquiry.image_url} alt="Product" className="w-20 h-20 object-cover rounded-md border border-slate-200" />
+                        </a>
+                      )}
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">ลิงก์สินค้า / ข้อมูลสินค้า</h4>
+                          <a href={inquiry.product_url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline break-all flex items-start gap-1">
+                            <Globe className="h-4 w-4 shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{inquiry.product_url}</span>
+                          </a>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">จำนวนที่สั่ง</h4>
+                            <p className="text-slate-900 font-medium text-sm">{inquiry.quantity} ชิ้น</p>
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">หมายเหตุเพิ่มเติม</h4>
+                            <p className="text-slate-900 font-medium text-sm whitespace-pre-wrap bg-white p-2 rounded border border-slate-100">{inquiry.remark || '-'}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               ) : (
                 <p className="text-slate-400 text-center py-2">ไม่พบข้อมูลคำขอนำเข้า</p>
