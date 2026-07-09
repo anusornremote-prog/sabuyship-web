@@ -471,8 +471,6 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
           </DialogContent>
         </Dialog>
       )}
-
-      )}
     </div>
   )
 }
