@@ -2,15 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Users, Loader2 } from "lucide-react"
+import { Search, Users, Loader2, PlusCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
+import AdminCreateInquiryModal from "./AdminCreateInquiryModal"
 
 export default function AdminCustomers() {
   const supabase = createClient()
   const [customers, setCustomers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isCreateInquiryModalOpen, setIsCreateInquiryModalOpen] = useState(false)
+  const [selectedCustomerForInquiry, setSelectedCustomerForInquiry] = useState<any | null>(null)
 
   const fetchCustomers = async () => {
     try {
@@ -96,6 +100,7 @@ export default function AdminCustomers() {
                     <th className="px-6 py-4 font-semibold">เบอร์โทรศัพท์</th>
                     <th className="px-6 py-4 font-semibold">LINE ID</th>
                     <th className="px-6 py-4 font-semibold">วันที่สมัคร</th>
+                    <th className="px-6 py-4 font-semibold text-center">การจัดการ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -119,11 +124,25 @@ export default function AdminCustomers() {
                         <td className="px-6 py-4 text-xs text-slate-500">
                           {new Date(customer.created_at).toLocaleString('th-TH')}
                         </td>
+                        <td className="px-6 py-4 text-center">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 border-amber-200"
+                            onClick={() => {
+                              setSelectedCustomerForInquiry(customer)
+                              setIsCreateInquiryModalOpen(true)
+                            }}
+                          >
+                            <PlusCircle className="w-3 h-3 mr-1" />
+                            สร้างคำขอประเมินราคา
+                          </Button>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <Users className="w-8 h-8 opacity-20" />
                           <p>ไม่พบข้อมูลลูกค้า</p>
@@ -137,6 +156,12 @@ export default function AdminCustomers() {
           )}
         </CardContent>
       </Card>
+
+      <AdminCreateInquiryModal 
+        isOpen={isCreateInquiryModalOpen}
+        onClose={() => setIsCreateInquiryModalOpen(false)}
+        customer={selectedCustomerForInquiry}
+      />
     </div>
   )
 }
