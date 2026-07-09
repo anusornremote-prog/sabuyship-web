@@ -22,23 +22,20 @@ export async function POST(request: Request) {
     // Generate base Inquiry ID
     const baseInquiryNumber = `INQ-${Math.floor(Date.now() / 1000)}`
 
-    // Map items to match the DB schema (product_url, quantity, remark)
-    const recordsToInsert = body.items.map((item: any, index: number) => ({
-      inquiry_number: body.items.length > 1 ? `${baseInquiryNumber}-${index + 1}` : baseInquiryNumber,
+    // Create a single record with all items stored in the 'items' column (JSONB)
+    const recordToInsert = {
+      inquiry_number: baseInquiryNumber,
       customer_id: customerId,
       customer_name: body.customer_name,
       phone: body.phone,
       line_id: body.line_id || null,
-      product_url: item.url,
-      quantity: item.quantity || 1,
-      remark: item.remark || null,
-      image_url: item.image_url || null,
+      items: body.items, // Ensure your DB schema has an 'items' jsonb column
       status: "PENDING"
-    }))
+    }
 
     const { error } = await supabase
       .from("inquiries")
-      .insert(recordsToInsert)
+      .insert([recordToInsert])
 
     if (error) throw error
 
