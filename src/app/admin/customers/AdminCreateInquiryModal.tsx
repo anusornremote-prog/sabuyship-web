@@ -189,6 +189,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <h3 className="font-semibold">ข้อมูลสินค้า</h3>
+            </div>
             
             <div className="space-y-4">
               {items.map((item, idx) => (
