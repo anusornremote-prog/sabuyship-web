@@ -94,6 +94,9 @@ export default function InquiryForm() {
 
     setIsSubmitting(true)
     setError(null)
+    
+    // Capture form data synchronously before any await
+    const formData = new FormData(e.currentTarget)
 
     try {
       const supabase = createClient()
@@ -143,7 +146,6 @@ export default function InquiryForm() {
         }
       }))
 
-      const formData = new FormData(e.currentTarget)
       const payload = {
         customer_name: formData.get("customerName"),
         phone: formData.get("phone"),
