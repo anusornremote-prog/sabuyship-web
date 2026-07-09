@@ -89,7 +89,7 @@ export default async function DashboardOverview() {
                     <strong>คำแนะนำสำหรับการสั่งซื้อสินค้าจีน:</strong> เพื่อความถูกต้องและรวดเร็วในการนำเข้า โปรดระบุรหัสลูกค้าของคุณต่อท้ายชื่อผู้รับในข้อมูลที่อยู่ส่งของโกดังจีนทุกครั้ง ตัวอย่างเช่น: 
                   </p>
                   <div className="bg-white/80 p-2.5 rounded-lg border border-blue-100/60 font-medium text-slate-800 text-xs md:text-sm inline-block">
-                    ชื่อผู้รับ (Consignee Name): <span className="text-primary font-bold">ชื่อของคุณ ({profile.customer_code})</span>
+                    ชื่อผู้รับ (Consignee Name): <span className="text-primary font-bold">傅先生 {profile.customer_code}</span>
                   </div>
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default async function DashboardOverview() {
                 <div className="text-xs text-slate-600 space-y-2 font-mono">
                   <div>
                     <strong className="text-slate-800 block">ผู้รับ (Consignee Name):</strong>
-                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">{profile.customer_code}</span>
+                    <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">傅先生 {profile.customer_code}</span>
                   </div>
                   <div>
                     <strong className="text-slate-800 block">เบอร์โทรศัพท์ (Phone):</strong>
@@ -114,6 +114,10 @@ export default async function DashboardOverview() {
                   <div>
                     <strong className="text-slate-800 block">ที่อยู่โกดัง (Address):</strong>
                     <span className="bg-slate-50 px-1 py-0.5 rounded block border border-slate-100 mt-0.5">广东省广州市白云区人和镇人和大街68号（万宝集团）进大门右转直走到底61号仓（泰国专线仓库） ({profile.customer_code})</span>
+                  </div>
+                  <div className="mt-3 p-2 bg-red-50/80 border border-red-200 rounded text-red-600 font-semibold text-[11px] leading-relaxed">
+                    📌 กรุณาแจ้งร้านให้ติดรหัสลูกค้าข้างกล่องพัสดุให้ชัดเจน<br/>
+                    (外包装上要写上入仓唛头)
                   </div>
                 </div>
               </div>
