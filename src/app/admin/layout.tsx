@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { ShieldAlert, Users, FileQuestion, FileText, Package, Truck, LayoutDashboard, LogOut, Settings } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 
 export default function AdminLayout({
   children,
@@ -14,6 +15,32 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  
+  const [badgeCounts, setBadgeCounts] = useState({
+    inquiriesCount: 0,
+    ordersCount: 0,
+    trackingCount: 0
+  })
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const res = await fetch('/api/admin/badge-counts')
+        if (res.ok) {
+          const data = await res.json()
+          setBadgeCounts({
+            inquiriesCount: data.inquiriesCount || 0,
+            ordersCount: data.ordersCount || 0,
+            trackingCount: data.trackingCount || 0
+          })
+        }
+      } catch (error) {
+        console.error("Failed to fetch badge counts:", error)
+      }
+    }
+    
+    fetchCounts()
+  }, [pathname]) // Refresh counts every time pathname changes
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -23,10 +50,10 @@ export default function AdminLayout({
   const navItems = [
     { href: "/admin", icon: LayoutDashboard, label: "ภาพรวม" },
     { href: "/admin/customers", icon: Users, label: "ลูกค้า" },
-    { href: "/admin/inquiries", icon: FileQuestion, label: "คำขอประเมินราคา" },
+    { href: "/admin/inquiries", icon: FileQuestion, label: "คำขอประเมินราคา", badge: badgeCounts.inquiriesCount },
     { href: "/admin/quotations", icon: FileText, label: "ใบเสนอราคา" },
-    { href: "/admin/orders", icon: Package, label: "คำสั่งซื้อ" },
-    { href: "/admin/tracking", icon: Truck, label: "จัดการ Tracking" },
+    { href: "/admin/orders", icon: Package, label: "คำสั่งซื้อ", badge: badgeCounts.ordersCount },
+    { href: "/admin/tracking", icon: Truck, label: "จัดการ Tracking", badge: badgeCounts.trackingCount },
     { href: "/admin/settings", icon: Settings, label: "ตั้งค่า" },
   ]
 
@@ -45,10 +72,17 @@ export default function AdminLayout({
             <Link 
               key={item.href}
               href={item.href} 
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin') ? 'bg-primary text-white font-medium' : 'hover:bg-slate-800 hover:text-white'}`}
+              className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin') ? 'bg-primary text-white font-medium' : 'hover:bg-slate-800 hover:text-white'}`}
             >
-              <item.icon className="h-5 w-5" />
-              {item.label}
+              <div className="flex items-center gap-3">
+                <item.icon className="h-5 w-5" />
+                {item.label}
+              </div>
+              {item.badge ? (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              ) : null}
             </Link>
           ))}
         </nav>
@@ -79,9 +113,14 @@ export default function AdminLayout({
             <Link 
               key={item.href}
               href={item.href} 
-              className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin') ? 'border-b-2 border-primary text-white font-medium bg-slate-900' : 'hover:bg-slate-700'}`}
+              className={`whitespace-nowrap px-4 py-3 flex items-center gap-2 text-sm transition-colors ${pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin') ? 'border-b-2 border-primary text-white font-medium bg-slate-900' : 'hover:bg-slate-700'}`}
             >
               {item.label}
+              {item.badge ? (
+                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              ) : null}
             </Link>
           ))}
         </nav>
