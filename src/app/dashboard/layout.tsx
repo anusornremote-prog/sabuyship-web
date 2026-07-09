@@ -17,6 +17,28 @@ export default function DashboardLayout({
   const router = useRouter()
   const supabase = createClient()
   const [showPhoneModal, setShowPhoneModal] = useState(false)
+  const [badgeCounts, setBadgeCounts] = useState({
+    inquiriesCount: 0,
+    ordersCount: 0
+  })
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const res = await fetch('/api/customer/badge-counts')
+        if (res.ok) {
+          const data = await res.json()
+          setBadgeCounts({
+            inquiriesCount: data.inquiriesCount || 0,
+            ordersCount: data.ordersCount || 0
+          })
+        }
+      } catch (error) {
+        console.error("Failed to fetch badge counts:", error)
+      }
+    }
+    fetchCounts()
+  }, [pathname])
 
   useEffect(() => {
     const checkProfile = async () => {
@@ -56,13 +78,27 @@ export default function DashboardLayout({
             <LayoutDashboard className="h-5 w-5" />
             ภาพรวม
           </Link>
-          <Link href="/dashboard/orders" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/orders') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
-            <Package className="h-5 w-5" />
-            ยื่นคำสั่งซื้อใหม่
+          <Link href="/dashboard/orders" className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/orders') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
+            <div className="flex items-center gap-3">
+              <Package className="h-5 w-5" />
+              ยื่นคำสั่งซื้อใหม่
+            </div>
+            {badgeCounts.ordersCount ? (
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {badgeCounts.ordersCount}
+              </span>
+            ) : null}
           </Link>
-          <Link href="/dashboard/inquiries" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
-            <FileText className="h-5 w-5" />
-            คำสั่งซื้อของฉัน
+          <Link href="/dashboard/inquiries" className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
+            <div className="flex items-center gap-3">
+              <FileText className="h-5 w-5" />
+              คำสั่งซื้อของฉัน
+            </div>
+            {badgeCounts.inquiriesCount ? (
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {badgeCounts.inquiriesCount}
+              </span>
+            ) : null}
           </Link>
           <Link href="/dashboard/addresses" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/addresses') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <MapPin className="h-5 w-5" />
@@ -104,11 +140,21 @@ export default function DashboardLayout({
            <Link href="/dashboard" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname === '/dashboard' ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             ภาพรวม
           </Link>
-          <Link href="/dashboard/orders" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/orders') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
+          <Link href="/dashboard/orders" className={`whitespace-nowrap flex items-center gap-2 px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/orders') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             คำสั่งซื้อ
+            {badgeCounts.ordersCount ? (
+              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {badgeCounts.ordersCount}
+              </span>
+            ) : null}
           </Link>
-          <Link href="/dashboard/inquiries" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
+          <Link href="/dashboard/inquiries" className={`whitespace-nowrap flex items-center gap-2 px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/inquiries') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             คำสั่งซื้อของฉัน
+            {badgeCounts.inquiriesCount ? (
+              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {badgeCounts.inquiriesCount}
+              </span>
+            ) : null}
           </Link>
           <Link href="/dashboard/addresses" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname.startsWith('/dashboard/addresses') ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             สมุดที่อยู่
