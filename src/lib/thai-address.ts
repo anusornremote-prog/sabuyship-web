@@ -22,8 +22,8 @@ const allData = td.getAllData();
 
 export const getProvinces = (): Province[] => {
   const map = new Map<string, Province>();
-  allData.forEach(z => {
-    z.provinceList.forEach(p => map.set(p.provinceName, p));
+  (allData || []).forEach(z => {
+    (z.provinceList || []).forEach(p => map.set(p.provinceName, p));
   });
   return Array.from(map.values()).sort((a, b) => a.provinceName.localeCompare(b.provinceName, 'th'));
 };
@@ -31,10 +31,10 @@ export const getProvinces = (): Province[] => {
 export const getDistricts = (provinceName: string): District[] => {
   if (!provinceName) return [];
   const map = new Map<string, District>();
-  allData
-    .filter(z => z.provinceList.some(p => p.provinceName === provinceName))
+  (allData || [])
+    .filter(z => (z.provinceList || []).some(p => p.provinceName === provinceName))
     .forEach(z => {
-      z.districtList.forEach(d => map.set(d.districtName, d));
+      (z.districtList || []).forEach(d => map.set(d.districtName, d));
     });
   return Array.from(map.values()).sort((a, b) => a.districtName.localeCompare(b.districtName, 'th'));
 };
@@ -42,23 +42,23 @@ export const getDistricts = (provinceName: string): District[] => {
 export const getSubDistricts = (provinceName: string, districtName: string): SubDistrict[] => {
   if (!provinceName || !districtName) return [];
   const map = new Map<string, SubDistrict>();
-  allData
+  (allData || [])
     .filter(z => 
-      z.provinceList.some(p => p.provinceName === provinceName) &&
-      z.districtList.some(d => d.districtName === districtName)
+      (z.provinceList || []).some(p => p.provinceName === provinceName) &&
+      (z.districtList || []).some(d => d.districtName === districtName)
     )
     .forEach(z => {
-      z.subDistrictList.forEach(s => map.set(s.subDistrictName, s));
+      (z.subDistrictList || []).forEach(s => map.set(s.subDistrictName, s));
     });
   return Array.from(map.values()).sort((a, b) => a.subDistrictName.localeCompare(b.subDistrictName, 'th'));
 };
 
 export const getZipCode = (provinceName: string, districtName: string, subDistrictName: string): string => {
   if (!provinceName || !districtName || !subDistrictName) return "";
-  const match = allData.find(z => 
-    z.provinceList.some(p => p.provinceName === provinceName) &&
-    z.districtList.some(d => d.districtName === districtName) &&
-    z.subDistrictList.some(s => s.subDistrictName === subDistrictName)
+  const match = (allData || []).find(z => 
+    (z.provinceList || []).some(p => p.provinceName === provinceName) &&
+    (z.districtList || []).some(d => d.districtName === districtName) &&
+    (z.subDistrictList || []).some(s => s.subDistrictName === subDistrictName)
   );
   return match ? match.zipCode : "";
 };
