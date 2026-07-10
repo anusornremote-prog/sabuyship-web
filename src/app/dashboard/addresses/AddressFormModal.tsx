@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { ThailandAddressTypeahead, ThailandAddressValue } from 'react-thailand-address-typeahead'
+import { getProvinces, getDistricts, getSubDistricts, getZipCode } from '@/lib/thai-address'
 
 interface AddressFormModalProps {
   isOpen: boolean
@@ -23,12 +23,16 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [addressLine, setAddressLine] = useState("")
-  const [addressVal, setAddressVal] = useState<ThailandAddressValue>({
+  const [addressVal, setAddressVal] = useState({
     subdistrict: '',
     district: '',
     province: '',
     postalCode: '',
   })
+  
+  const provinces = getProvinces()
+  const districts = getDistricts(addressVal.province)
+  const subDistricts = getSubDistricts(addressVal.province, addressVal.district)
   const [isDefault, setIsDefault] = useState(false)
 
   useEffect(() => {
@@ -182,44 +186,77 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
             />
           </div>
 
-          <ThailandAddressTypeahead
-            value={addressVal}
-            onValueChange={(val) => setAddressVal(val)}
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">ตำบล / แขวง</label>
-                <ThailandAddressTypeahead.SubdistrictInput 
-                  placeholder="ตำบล/แขวง" 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">อำเภอ / เขต</label>
-                <ThailandAddressTypeahead.DistrictInput 
-                  placeholder="อำเภอ/เขต" 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">จังหวัด *</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={addressVal.province}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setAddressVal(prev => ({ ...prev, province: val, district: '', subdistrict: '', postalCode: '' }))
+                }}
+                required
+              >
+                <option value="">เลือกจังหวัด</option>
+                {provinces.map(p => (
+                  <option key={p.provinceId} value={p.provinceName}>{p.provinceName}</option>
+                ))}
+              </select>
             </div>
+            
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">อำเภอ / เขต *</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={addressVal.district}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setAddressVal(prev => ({ ...prev, district: val, subdistrict: '', postalCode: '' }))
+                }}
+                disabled={!addressVal.province}
+                required
+              >
+                <option value="">เลือกอำเภอ/เขต</option>
+                {districts.map(d => (
+                  <option key={d.districtName} value={d.districtName}>{d.districtName}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">จังหวัด *</label>
-                <ThailandAddressTypeahead.ProvinceInput 
-                  placeholder="จังหวัด" 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">รหัสไปรษณีย์ *</label>
-                <ThailandAddressTypeahead.PostalCodeInput 
-                  placeholder="รหัสไปรษณีย์" 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">ตำบล / แขวง *</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={addressVal.subdistrict}
+                onChange={(e) => {
+                  const val = e.target.value
+                  const zip = getZipCode(addressVal.province, addressVal.district, val)
+                  setAddressVal(prev => ({ ...prev, subdistrict: val, postalCode: zip }))
+                }}
+                disabled={!addressVal.district}
+                required
+              >
+                <option value="">เลือกตำบล/แขวง</option>
+                {subDistricts.map(s => (
+                  <option key={s.subDistrictName} value={s.subDistrictName}>{s.subDistrictName}</option>
+                ))}
+              </select>
             </div>
-          </ThailandAddressTypeahead>
+            
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">รหัสไปรษณีย์ *</label>
+              <Input
+                required
+                placeholder="รหัสไปรษณีย์"
+                value={addressVal.postalCode}
+                onChange={(e) => setAddressVal(prev => ({ ...prev, postalCode: e.target.value }))}
+                className="bg-slate-50"
+              />
+            </div>
+          </div>
 
           <div className="pt-2 flex items-center gap-2">
             <input
