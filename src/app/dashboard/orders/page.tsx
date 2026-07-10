@@ -1,105 +1,75 @@
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox, FileText, Package } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import InquiryList from "../inquiries/InquiryList"
+import UnifiedOrderList from "./UnifiedOrderList"
 
-export default async function MyOrders({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+export default async function MyOrders() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const params = await searchParams
-  const tab = params.tab === 'inquiries' ? 'inquiries' : 'orders'
-
   let orders: any[] = []
-  let inquiries: any[] = []
+  let unifiedItems: any[] = []
   
   if (user) {
-    if (tab === 'orders') {
-      const { data } = await supabase
-        .from("orders")
-        .select(`
-          id,
-          order_number,
-          status,
-          created_at,
-          quotation:quotation_id (
-            total_price
-          )
-        `)
-        .eq("customer_id", user.id)
-        .order("created_at", { ascending: false })
+    // 1. Fetch Orders
+    const { data: ordersData } = await supabase
+      .from("orders")
+      .select(`
+        id,
+        order_number,
+        status,
+        created_at,
+        quotation:quotation_id (
+          total_price
+        )
+      `)
+      .eq("customer_id", user.id)
       
-      if (data) {
-        orders = data
-      }
-    } else {
-      const { data } = await supabase
-        .from("inquiries")
-        .select(`
+    // 2. Fetch Inquiries
+    const { data: inquiriesData } = await supabase
+      .from("inquiries")
+      .select(`
+        id,
+        inquiry_number,
+        status,
+        created_at,
+        quotations(
           id,
-          inquiry_number,
-          customer_id,
-          customer_name,
-          phone,
-          line_id,
-          product_url,
-          quantity,
-          remark,
-          image_url,
-          status,
-          created_at,
-          quotations:quotations(
-            id,
-            product_cost,
-            service_fee,
-            shipping_cost_cn_cn,
-            other_fee,
-            total_price,
-            status,
-            orders:orders(
-              id,
-              order_number,
-              status
-            )
-          )
-        `)
-        .eq("customer_id", user.id)
-        .order("created_at", { ascending: false })
-        
-      if (data) {
-        inquiries = data
-      }
-    }
-  }
+          total_price
+        )
+      `)
+      .eq("customer_id", user.id)
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'NEW': return 'bg-blue-100 text-blue-800'
-      case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800'
-      case 'PAID': return 'bg-green-100 text-green-800'
-      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
-      case 'SHIPPING': return 'bg-sky-100 text-sky-800'
-      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
-      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
-      default: return 'bg-slate-100 text-slate-800'
-    }
-  }
+    const orders = ordersData || []
+    const inquiries = inquiriesData || []
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'NEW': return 'รอดำเนินการ'
-      case 'WAITING_PAYMENT': return 'รอชำระเงิน'
-      case 'PAID': return 'ชำระเงินแล้ว'
-      case 'ORDERED': return 'สั่งซื้อสำเร็จ'
-      case 'CHINA_WAREHOUSE': return 'ถึงโกดังจีน'
-      case 'SHIPPING': return 'อยู่ระหว่างจัดส่งมาไทย'
-      case 'THAILAND_WAREHOUSE': return 'ถึงโกดังไทย'
-      case 'OUT_FOR_DELIVERY': return 'อยู่ระหว่างนำจ่าย'
-      case 'DELIVERED': return 'จัดส่งสำเร็จ'
-      default: return status
-    }
+    // Extract existing order numbers (since inquiry_number === order_number)
+    const orderNumbers = new Set(orders.map(o => o.order_number))
+
+    // Map Orders
+    const formattedOrders = orders.map(o => ({
+      ...o,
+      type: 'ORDER',
+      total_price: o.quotation?.total_price
+    }))
+
+    // Map Inquiries (skip if order already exists for this number)
+    const formattedInquiries = inquiries
+      .filter(inq => !orderNumbers.has(inq.inquiry_number))
+      .map(inq => ({
+        id: inq.id,
+        inquiry_number: inq.inquiry_number,
+        status: inq.status,
+        created_at: inq.created_at,
+        type: 'INQUIRY',
+        total_price: inq.quotations?.[0]?.total_price,
+        quotation_id: inq.quotations?.[0]?.id
+      }))
+
+    // Combine and sort by created_at DESC
+    unifiedItems = [...formattedOrders, ...formattedInquiries].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
   }
 
   return (
@@ -114,87 +84,7 @@ export default async function MyOrders({ searchParams }: { searchParams: Promise
         </Link>
       </div>
       
-      <div className="flex gap-4 border-b">
-        <Link 
-          href="?tab=orders" 
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${tab === 'orders' ? 'border-b-2 border-primary text-primary' : 'text-slate-600 hover:text-slate-900'}`}
-        >
-          <Package className="h-4 w-4" />
-          สถานะการจัดส่ง (Orders)
-        </Link>
-        <Link 
-          href="?tab=inquiries" 
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${tab === 'inquiries' ? 'border-b-2 border-primary text-primary' : 'text-slate-600 hover:text-slate-900'}`}
-        >
-          <FileText className="h-4 w-4" />
-          รอประเมินราคา (Inquiries)
-        </Link>
-      </div>
-
-      {tab === 'inquiries' ? (
-        <InquiryList initialInquiries={inquiries} customerId={user?.id || ""} />
-      ) : (
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50/80 border-b">
-                <tr>
-                  <th className="px-6 py-4 font-medium">หมายเลขคำสั่งซื้อ</th>
-                  <th className="px-6 py-4 font-medium">วันที่สร้าง</th>
-                  <th className="px-6 py-4 font-medium">ยอดชำระ</th>
-                  <th className="px-6 py-4 font-medium">สถานะ</th>
-                  <th className="px-6 py-4 font-medium text-right">จัดการ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders && orders.length > 0 ? (
-                  orders.map((order) => (
-                    <tr key={order.id} className="border-b hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-primary">{order.order_number}</td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {order.created_at ? new Date(order.created_at).toLocaleDateString('th-TH', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        }) : '-'}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-slate-900">
-                        {order.quotation?.total_price !== undefined 
-                          ? `฿ ${Number(order.quotation.total_price).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                          : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(order.status)}`}>
-                          {getStatusText(order.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link href={`/dashboard/orders/${order.order_number}`}>
-                          <Button variant="ghost" size="sm" className="cursor-pointer">
-                            <Eye className="h-4 w-4 mr-2" />
-                            ดูรายละเอียด
-                          </Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
-                      <div className="flex flex-col items-center justify-center space-y-2">
-                        <Inbox className="h-10 w-10 text-slate-300" />
-                        <p className="text-slate-500">ยังไม่มีข้อมูลคำสั่งซื้อ</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-      )}
+      <UnifiedOrderList items={unifiedItems} customerId={user?.id || ""} />
     </div>
   )
 }
