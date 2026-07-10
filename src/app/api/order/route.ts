@@ -36,22 +36,36 @@ export async function POST(request: Request) {
       )
     }
 
-    // 2. Validate Ownership (Prevent stealing quotes)
+    // 2. Validate Ownership and Get Inquiry Number
+    let orderNumber = ""
+    
     if (!apiKey) {
       const { data: quoteCheck, error: quoteError } = await supabase
         .from('quotations')
-        .select(`inquiry_id, inquiries!inner(customer_id)`)
+        .select(`inquiry_id, inquiries!inner(customer_id, inquiry_number)`)
         .eq('id', body.quotation_id)
         .single()
         
       if (quoteError || !quoteCheck || (quoteCheck.inquiries as any)?.customer_id !== targetCustomerId) {
         return NextResponse.json({ error: "Invalid quotation or unauthorized" }, { status: 403 })
       }
+      
+      orderNumber = (quoteCheck.inquiries as any)?.inquiry_number
+    } else {
+      // For API key flow, we still need to get the inquiry number
+      const { data: quoteCheck, error: quoteError } = await supabase
+        .from('quotations')
+        .select(`inquiries!inner(inquiry_number)`)
+        .eq('id', body.quotation_id)
+        .single()
+        
+      if (!quoteError && quoteCheck) {
+        orderNumber = (quoteCheck.inquiries as any)?.inquiry_number
+      } else {
+        const date = new Date()
+        orderNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`
+      }
     }
-
-    // Next order number logic could be complex, simple timestamp for MVP
-    const date = new Date()
-    const orderNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`
 
     const { data, error } = await supabase
       .from("orders")

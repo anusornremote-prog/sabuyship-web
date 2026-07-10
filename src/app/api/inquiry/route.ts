@@ -19,8 +19,9 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     const customerId = user ? user.id : null
 
-    // Generate base Inquiry ID
-    const baseInquiryNumber = `INQ-${Math.floor(Date.now() / 1000)}`
+    // Generate base Inquiry ID as ORD-
+    const date = new Date()
+    const baseInquiryNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`
 
     // Create a single record with all items stored in the 'items' column (JSONB)
     const recordToInsert = {
