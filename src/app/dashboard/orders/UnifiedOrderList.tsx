@@ -85,22 +85,22 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   const getStatusText = (status: string, type: 'INQUIRY' | 'ORDER') => {
     if (type === 'INQUIRY') {
       switch (status) {
-        case 'PENDING': return 'รอเจ้าหน้าที่ประเมินราคา'
-        case 'QUOTED': return 'ประเมินราคาเสร็จสิ้น (รอสั่งซื้อ)'
+        case 'PENDING': return 'รอแอดมินประเมินราคา'
+        case 'QUOTED': return 'แอดมินเสนอราคาแล้ว (รอยืนยันสั่งซื้อ)'
         case 'REJECTED': return 'ยกเลิกคำขอ'
         default: return status
       }
     } else {
       switch (status) {
-        case 'NEW': return 'รอดำเนินการ'
-        case 'WAITING_PAYMENT': return 'รอชำระเงิน'
-        case 'PAID': return 'ชำระเงินแล้ว'
-        case 'ORDERED': return 'สั่งซื้อสำเร็จ'
-        case 'CHINA_WAREHOUSE': return 'ถึงโกดังจีน'
-        case 'SHIPPING': return 'อยู่ระหว่างจัดส่งมาไทย'
-        case 'THAILAND_WAREHOUSE': return 'ถึงโกดังไทย'
-        case 'OUT_FOR_DELIVERY': return 'อยู่ระหว่างนำจ่าย'
-        case 'DELIVERED': return 'จัดส่งสำเร็จ'
+        case 'NEW': return 'รอชำระเงิน (รออัปโหลดสลิป)'
+        case 'WAITING_PAYMENT': return 'รอชำระเงิน (รออัปโหลดสลิป)'
+        case 'PAID': return 'ชำระเงินแล้ว (รอแอดมินตรวจสอบ)'
+        case 'ORDERED': return 'ร้านค้าจีนเตรียมจัดส่ง'
+        case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน'
+        case 'SHIPPING': return 'กำลังส่งข้ามแดนมาไทย'
+        case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย'
+        case 'OUT_FOR_DELIVERY': return 'กำลังนำส่งไปบ้านลูกค้า'
+        case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
         default: return status
       }
     }
