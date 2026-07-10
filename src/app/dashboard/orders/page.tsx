@@ -1,31 +1,76 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox } from "lucide-react"
+import { Eye, Inbox, FileText, Package } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import InquiryList from "../inquiries/InquiryList"
 
-export default async function MyOrders() {
+export default async function MyOrders({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  const params = await searchParams
+  const tab = params.tab === 'inquiries' ? 'inquiries' : 'orders'
+
   let orders: any[] = []
+  let inquiries: any[] = []
+  
   if (user) {
-    const { data } = await supabase
-      .from("orders")
-      .select(`
-        id,
-        order_number,
-        status,
-        created_at,
-        quotation:quotation_id (
-          total_price
-        )
-      `)
-      .eq("customer_id", user.id)
-      .order("created_at", { ascending: false })
-    
-    if (data) {
-      orders = data
+    if (tab === 'orders') {
+      const { data } = await supabase
+        .from("orders")
+        .select(`
+          id,
+          order_number,
+          status,
+          created_at,
+          quotation:quotation_id (
+            total_price
+          )
+        `)
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+      
+      if (data) {
+        orders = data
+      }
+    } else {
+      const { data } = await supabase
+        .from("inquiries")
+        .select(`
+          id,
+          inquiry_number,
+          customer_id,
+          customer_name,
+          phone,
+          line_id,
+          product_url,
+          quantity,
+          remark,
+          image_url,
+          status,
+          created_at,
+          quotations:quotations(
+            id,
+            product_cost,
+            service_fee,
+            shipping_cost_cn_cn,
+            other_fee,
+            total_price,
+            status,
+            orders:orders(
+              id,
+              order_number,
+              status
+            )
+          )
+        `)
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+        
+      if (data) {
+        inquiries = data
+      }
     }
   }
 
@@ -61,17 +106,37 @@ export default async function MyOrders() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">ยื่นคำสั่งซื้อใหม่</h1>
+          <h1 className="text-3xl font-bold text-slate-900">คำสั่งซื้อของฉัน</h1>
           <p className="text-slate-600">ประวัติการสั่งซื้อและสถานะปัจจุบัน</p>
         </div>
         <Link href="/inquiry">
           <Button variant="orange">ขอใบเสนอราคาใหม่</Button>
         </Link>
       </div>
+      
+      <div className="flex gap-4 border-b">
+        <Link 
+          href="?tab=orders" 
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${tab === 'orders' ? 'border-b-2 border-primary text-primary' : 'text-slate-600 hover:text-slate-900'}`}
+        >
+          <Package className="h-4 w-4" />
+          สถานะการจัดส่ง (Orders)
+        </Link>
+        <Link 
+          href="?tab=inquiries" 
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${tab === 'inquiries' ? 'border-b-2 border-primary text-primary' : 'text-slate-600 hover:text-slate-900'}`}
+        >
+          <FileText className="h-4 w-4" />
+          รอประเมินราคา (Inquiries)
+        </Link>
+      </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+      {tab === 'inquiries' ? (
+        <InquiryList initialInquiries={inquiries} customerId={user?.id || ""} />
+      ) : (
+        <Card className="shadow-sm">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50/80 border-b">
                 <tr>
@@ -129,6 +194,7 @@ export default async function MyOrders() {
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   )
 }
