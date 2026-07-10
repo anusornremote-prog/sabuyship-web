@@ -60,8 +60,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
     }
   }
 
-  const getStatusBadge = (status: string, type: 'INQUIRY' | 'ORDER') => {
-    if (type === 'INQUIRY') {
+  const getStatusBadge = (status: string, item: any) => {
+    if (item.type === 'INQUIRY') {
       switch (status) {
         case 'PENDING': return 'bg-amber-100 text-amber-800'
         case 'QUOTED': return 'bg-green-100 text-green-800'
@@ -69,21 +69,38 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         default: return 'bg-slate-100 text-slate-800'
       }
     } else {
+      // Check Payment Round 1
+      if (item.payment_round_1_status === 'PENDING') return 'bg-amber-100 text-amber-800'
+      if (item.payment_round_1_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
+      
+      // Check Payment Round 2 (When in China Warehouse)
+      if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING' || status === 'THAILAND_WAREHOUSE' || status === 'DELIVERED') {
+        if (item.payment_round_2_status === 'PENDING') return 'bg-amber-100 text-amber-800'
+        if (item.payment_round_2_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
+      }
+      
+      // Check Payment Round 3 (When in Thai Warehouse)
+      if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED') {
+        if (item.payment_round_3_status === 'PENDING') return 'bg-amber-100 text-amber-800'
+        if (item.payment_round_3_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
+      }
+
+      // Base Statuses
       switch (status) {
-        case 'NEW': return 'bg-blue-100 text-blue-800'
-        case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800'
-        case 'PAID': return 'bg-green-100 text-green-800'
+        case 'ORDERED': return 'bg-blue-100 text-blue-800'
         case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
         case 'SHIPPING': return 'bg-sky-100 text-sky-800'
         case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
+        case 'OUT_FOR_DELIVERY': return 'bg-orange-100 text-orange-800'
         case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
+        case 'PAID': return 'bg-green-100 text-green-800'
         default: return 'bg-slate-100 text-slate-800'
       }
     }
   }
 
-  const getStatusText = (status: string, type: 'INQUIRY' | 'ORDER') => {
-    if (type === 'INQUIRY') {
+  const getStatusText = (status: string, item: any) => {
+    if (item.type === 'INQUIRY') {
       switch (status) {
         case 'PENDING': return 'รอแอดมินประเมินราคา'
         case 'QUOTED': return 'แอดมินเสนอราคาแล้ว (รอยืนยันสั่งซื้อ)'
@@ -91,15 +108,32 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         default: return status
       }
     } else {
+      // Payment Round 1
+      if (item.payment_round_1_status === 'PENDING') return 'รอชำระเงิน รอบ 1 (ค่าสินค้า)'
+      if (item.payment_round_1_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 1'
+      
+      // Payment Round 2
+      if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING') {
+         if (item.payment_round_2_status === 'PENDING') return 'รอชำระเงิน รอบ 2 (ค่าขนส่งจีน-ไทย)'
+         if (item.payment_round_2_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 2'
+      }
+      
+      // Payment Round 3
+      if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY') {
+         if (item.payment_round_3_status === 'PENDING') return 'รอชำระเงิน รอบ 3 (ค่าจัดส่งในไทย)'
+         if (item.payment_round_3_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 3'
+      }
+
+      // Base Statuses
       switch (status) {
-        case 'NEW': return 'รอชำระเงิน (รออัปโหลดสลิป)'
-        case 'WAITING_PAYMENT': return 'รอชำระเงิน (รออัปโหลดสลิป)'
-        case 'PAID': return 'ชำระเงินแล้ว (รอแอดมินตรวจสอบ)'
-        case 'ORDERED': return 'ร้านค้าจีนเตรียมจัดส่ง'
-        case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน'
-        case 'SHIPPING': return 'กำลังส่งข้ามแดนมาไทย'
-        case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย'
-        case 'OUT_FOR_DELIVERY': return 'กำลังนำส่งไปบ้านลูกค้า'
+        case 'NEW': return 'รอดำเนินการ'
+        case 'WAITING_PAYMENT': return 'รอชำระเงิน'
+        case 'PAID': return 'ชำระรอบ 1 แล้ว (รอแอดมินสั่งของ)'
+        case 'ORDERED': return 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
+        case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน (รอคำนวณค่าขนส่ง)'
+        case 'SHIPPING': return 'ชำระรอบ 2 แล้ว (กำลังส่งมาไทย)'
+        case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย (รอคำนวณค่าส่งในไทย)'
+        case 'OUT_FOR_DELIVERY': return 'ชำระครบถ้วน (กำลังนำส่งไปบ้านลูกค้า)'
         case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
         default: return status
       }
@@ -146,8 +180,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                           : '-'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(item.status, item.type)}`}>
-                          {getStatusText(item.status, item.type)}
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(item.status, item)}`}>
+                          {getStatusText(item.status, item)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

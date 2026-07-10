@@ -19,6 +19,9 @@ export default async function MyOrders() {
         order_number,
         status,
         created_at,
+        payment_round_1_status,
+        payment_round_2_status,
+        payment_round_3_status,
         quotation:quotation_id (
           total_price
         )
