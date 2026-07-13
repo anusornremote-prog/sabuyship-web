@@ -65,6 +65,11 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     query = query.eq("order_number", orderIdOrNumber)
   }
 
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect("/login")
+  }
+
   const { data: order, error } = await query.single()
 
   if (error) {
@@ -412,7 +417,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
         </div>
       </div>
     </div>
-  )
+    )
   } catch (err: any) {
     return (
       <div className="p-8 bg-red-50 text-red-600 font-mono text-sm whitespace-pre-wrap">
