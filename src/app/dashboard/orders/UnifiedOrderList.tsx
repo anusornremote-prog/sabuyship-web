@@ -17,6 +17,7 @@ interface UnifiedOrderListProps {
 export default function UnifiedOrderList({ items, customerId }: UnifiedOrderListProps) {
   const router = useRouter()
   const [addressModalOpen, setAddressModalOpen] = useState(false)
+  const [errorMsg, setErrorMsg] = useState("")
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedDetailsItem, setSelectedDetailsItem] = useState<any>(null)
