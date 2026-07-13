@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard } from "lucide-react"
+import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard, Globe, ExternalLink } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { AddressSelectionModal } from "../inquiries/AddressSelectionModal"
 
 interface UnifiedOrderListProps {
@@ -17,8 +18,9 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   const router = useRouter()
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null)
-  const [errorMsg, setErrorMsg] = useState("")
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [selectedDetailsItem, setSelectedDetailsItem] = useState<any>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const openAddressModal = (quotationId: string) => {
     setSelectedQuotationId(quotationId)
@@ -173,7 +175,17 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                 {items && items.length > 0 ? (
                   items.map((item) => (
                     <tr key={item.id} className="border-b hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-primary">{item.order_number || item.inquiry_number}</td>
+                      <td className="px-6 py-4 font-medium text-primary">
+                        <span 
+                          onClick={() => {
+                            setSelectedDetailsItem(item);
+                            setIsDetailsOpen(true);
+                          }}
+                          className="cursor-pointer hover:underline"
+                        >
+                          {item.order_number || item.inquiry_number}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-slate-600">
                         {item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH', {
                           year: 'numeric',
@@ -249,6 +261,87 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         onClose={() => setAddressModalOpen(false)}
         onConfirm={handleConfirmOrder}
       />
+
+      {/* Details Modal */}
+      {selectedDetailsItem && (
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900 font-bold text-xl">รายละเอียดคำสั่งซื้อ {selectedDetailsItem.order_number || selectedDetailsItem.inquiry_number}</DialogTitle>
+              <DialogDescription>
+                รายการสินค้าทั้งหมดในออเดอร์นี้
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="overflow-x-auto mt-4 rounded-lg border border-slate-200">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold w-16 text-center">ลำดับ</th>
+                    <th className="px-4 py-3 font-semibold w-24">รูปภาพ</th>
+                    <th className="px-4 py-3 font-semibold">ลิงก์สินค้า</th>
+                    <th className="px-4 py-3 font-semibold">รายละเอียด / ความต้องการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {(() => {
+                    let parsedItems = []
+                    if (selectedDetailsItem.items) {
+                      parsedItems = typeof selectedDetailsItem.items === 'string' ? JSON.parse(selectedDetailsItem.items) : selectedDetailsItem.items
+                    }
+                    if (!parsedItems || parsedItems.length === 0) {
+                      if (selectedDetailsItem.product_url) {
+                        parsedItems = [{
+                          url: selectedDetailsItem.product_url,
+                          image_url: selectedDetailsItem.image_url,
+                          quantity: selectedDetailsItem.quantity,
+                          remark: selectedDetailsItem.remark
+                        }]
+                      }
+                    }
+                    
+                    return parsedItems.map((item: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-4 font-bold text-slate-900 text-center">{idx + 1}</td>
+                        <td className="px-4 py-4">
+                          {item.image_url ? (
+                            <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+                              <img src={item.image_url} alt={`Item ${idx + 1}`} className="h-16 w-16 object-cover rounded border border-slate-200 hover:opacity-80 transition-opacity cursor-zoom-in" />
+                            </a>
+                          ) : (
+                            <div className="h-16 w-16 flex items-center justify-center bg-slate-50 rounded border border-dashed border-slate-200 text-xs text-slate-400">
+                              ไม่มีรูป
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 max-w-[200px]">
+                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 break-all truncate">
+                            <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span className="truncate">{item.url}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                          </a>
+                          <div className="mt-2 text-xs font-semibold text-slate-700 bg-slate-100 inline-block px-2 py-1 rounded">
+                            จำนวน {item.quantity} ชิ้น
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 max-w-[250px] text-xs text-slate-600 whitespace-pre-wrap">
+                          {item.remark || "-"}
+                        </td>
+                      </tr>
+                    ))
+                  })()}
+                </tbody>
+              </table>
+            </div>
+
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="outline" onClick={() => setIsDetailsOpen(false)} className="w-full sm:w-auto">
+                ปิดหน้าต่าง
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
