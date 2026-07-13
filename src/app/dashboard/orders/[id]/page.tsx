@@ -116,8 +116,20 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  const quotation = order.quotation as any
-  const inquiry = quotation?.inquiry as any
+  // Safely extract relations which might be arrays
+  const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
+  const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
+  const address = Array.isArray(order.address) ? order.address[0] : order.address
+
+  // Safely parse items if it's a string
+  let inquiryItems = inquiry?.items || [];
+  if (typeof inquiryItems === 'string') {
+    try {
+      inquiryItems = JSON.parse(inquiryItems);
+    } catch (e) {
+      inquiryItems = [];
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -232,10 +244,10 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                     </span>
                   </div>
                   
-                  {inquiry.items && inquiry.items.length > 0 ? (
+                  {inquiryItems && inquiryItems.length > 0 ? (
                     <div className="space-y-4">
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">รายการสินค้า ({inquiry.items.length} รายการ)</h4>
-                      {inquiry.items.map((item: any, idx: number) => (
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">รายการสินค้า ({inquiryItems.length} รายการ)</h4>
+                      {inquiryItems.map((item: any, idx: number) => (
                         <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col sm:flex-row gap-4">
                           {item.image_url && (
                             <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
@@ -311,9 +323,9 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                 <div className="pt-4 border-t">
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">จัดส่งไปที่</h4>
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <p className="font-semibold text-slate-900">{(Array.isArray(order.address) ? order.address[0] : order.address)?.full_name}</p>
-                    <p className="text-slate-600 text-xs mb-1">โทร: {(Array.isArray(order.address) ? order.address[0] : order.address)?.phone}</p>
-                    <p className="text-slate-700 text-sm">{(Array.isArray(order.address) ? order.address[0] : order.address)?.address_line} ต.{(Array.isArray(order.address) ? order.address[0] : order.address)?.subdistrict} อ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.district} จ.{(Array.isArray(order.address) ? order.address[0] : order.address)?.province} {(Array.isArray(order.address) ? order.address[0] : order.address)?.postal_code}</p>
+                    <p className="font-semibold text-slate-900">{address?.full_name}</p>
+                    <p className="text-slate-600 text-xs mb-1">โทร: {address?.phone}</p>
+                    <p className="text-slate-700 text-sm">{address?.address_line} ต.{address?.subdistrict} อ.{address?.district} จ.{address?.province} {address?.postal_code}</p>
                   </div>
                 </div>
               )}
