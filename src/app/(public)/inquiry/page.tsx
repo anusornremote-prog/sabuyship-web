@@ -92,11 +92,17 @@ export default function InquiryForm() {
       return
     }
 
-    setIsSubmitting(true)
-    setError(null)
-    
     // Capture form data synchronously before any await
     const formData = new FormData(e.currentTarget)
+    
+    // Validate shipping type
+    if (!formData.get("shippingType")) {
+      setError(locale === 'en' ? 'Please select a shipping method.' : locale === 'zh' ? '请选择运输方式。' : 'กรุณาเลือกรูปแบบการขนส่ง')
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
 
     try {
       const supabase = createClient()
@@ -150,7 +156,7 @@ export default function InquiryForm() {
         customer_name: formData.get("customerName"),
         phone: formData.get("phone"),
         line_id: formData.get("lineId"),
-        shipping_type: formData.get("shippingType") || "CAR",
+        shipping_type: formData.get("shippingType"),
         items: uploadedItems
       }
 
@@ -246,11 +252,11 @@ export default function InquiryForm() {
                 </div>
                 <div className="flex gap-6 pt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="shippingType" value="CAR" defaultChecked className="w-4 h-4 text-primary" />
+                    <input type="radio" name="shippingType" value="CAR" required className="w-4 h-4 text-primary" />
                     <span>{locale === 'en' ? 'By Car (ทางรถ)' : locale === 'zh' ? '陆运 (ทางรถ)' : 'ทางรถ (Car)'}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="shippingType" value="BOAT" className="w-4 h-4 text-primary" />
+                    <input type="radio" name="shippingType" value="BOAT" required className="w-4 h-4 text-primary" />
                     <span>{locale === 'en' ? 'By Boat (ทางเรือ)' : locale === 'zh' ? '海运 (ทางเรือ)' : 'ทางเรือ (Boat)'}</span>
                   </label>
                 </div>
