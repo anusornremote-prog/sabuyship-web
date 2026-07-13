@@ -468,7 +468,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 <Button type="button" variant="outline" onClick={() => setIsQuotingOpen(false)}>
                   ยกเลิก
                 </Button>
-                <Button type="submit" disabled={isSubmitting} variant="primary">
+                <Button type="submit" disabled={isSubmitting} variant="default" className="w-full sm:w-auto">
                   {isSubmitting ? "กำลังบันทึก..." : "ส่งใบเสนอราคาให้ลูกค้า"}
                 </Button>
               </DialogFooter>

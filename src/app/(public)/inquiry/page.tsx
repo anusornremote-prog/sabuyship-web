@@ -67,7 +67,7 @@ export default function InquiryForm() {
   const labelLineId = locale === 'en' ? 'LINE ID / WeChat ID (Recommended)' : locale === 'zh' ? 'LINE ID / 微信 (推荐)' : 'LINE ID / WeChat ID (แนะนำ)'
   const labelSuccessTitle = locale === 'en' ? 'Submitted Successfully!' : locale === 'zh' ? '提交成功！' : 'ส่งคำขอสำเร็จ!'
   const labelSuccessDesc = locale === 'en' ? 'We have received your product link for quotation.\nOur team will review it and reply within 24 hours.' : locale === 'zh' ? '我们已收到您的报价申请。\n团队将审核并于24小时内与您联系。' : 'ทีมงานได้รับคำขอให้ประเมินราคาเรียบร้อยแล้ว\nเราจะทำการตรวจสอบและติดต่อกลับภายใน 24 ชั่วโมง'
-  const labelNewInquiry = locale === 'en' ? 'Submit Another Request' : locale === 'zh' ? '提交新申请' : 'ส่งคำขอใหม่'
+  const labelViewOrders = locale === 'en' ? 'View Orders' : locale === 'zh' ? '查看订单' : 'ดูคำสั่งซื้อ'
 
   const handleAddItem = () => {
     setItems([...items, { url: '', quantity: 1, remark: '', file: null }])
@@ -187,7 +187,7 @@ export default function InquiryForm() {
           <p className="text-slate-600 mb-8 whitespace-pre-line">
             {labelSuccessDesc}
           </p>
-          <Button onClick={() => setSuccess(false)} variant="outline" className="w-full cursor-pointer">{labelNewInquiry}</Button>
+          <Button onClick={() => router.push("/dashboard/orders")} variant="default" className="w-full cursor-pointer bg-primary text-white hover:bg-primary/90">{labelViewOrders}</Button>
         </Card>
       </div>
     )
