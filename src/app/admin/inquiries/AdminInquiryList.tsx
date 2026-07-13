@@ -426,13 +426,22 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                   <label className="text-sm font-medium">ค่าจัดส่ง จีน-จีน (ถ้ามี)</label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-500">฿</span>
-                    <Input 
-                      type="number" 
-                      min="0"
-                      className="pl-8 bg-white"
-                      value={shippingCostCnCn}
-                      onChange={(e) => setShippingCostCnCn(e.target.value)}
-                    />
+                    {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
+                      <Input 
+                        type="number" 
+                        disabled
+                        className="pl-8 bg-slate-100 font-bold"
+                        value={Object.values(itemShippingCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)}
+                      />
+                    ) : (
+                      <Input 
+                        type="number" 
+                        min="0"
+                        className="pl-8 bg-white"
+                        value={shippingCostCnCn}
+                        onChange={(e) => setShippingCostCnCn(e.target.value)}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
