@@ -253,11 +253,11 @@ export default function InquiryForm() {
                 <div className="flex gap-6 pt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="shippingType" value="CAR" required className="w-4 h-4 text-primary" />
-                    <span>{locale === 'en' ? 'By Car (ทางรถ)' : locale === 'zh' ? '陆运 (ทางรถ)' : 'ทางรถ (Car)'}</span>
+                    <span>{locale === 'en' ? 'By Truck (ทางรถ)' : locale === 'zh' ? '陆运 (ทางรถ)' : 'ทางรถ (Truck)'}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="shippingType" value="BOAT" required className="w-4 h-4 text-primary" />
-                    <span>{locale === 'en' ? 'By Boat (ทางเรือ)' : locale === 'zh' ? '海运 (ทางเรือ)' : 'ทางเรือ (Boat)'}</span>
+                    <span>{locale === 'en' ? 'By Sea (ทางเรือ)' : locale === 'zh' ? '海运 (ทางเรือ)' : 'ทางเรือ (Sea)'}</span>
                   </label>
                 </div>
               </div>
