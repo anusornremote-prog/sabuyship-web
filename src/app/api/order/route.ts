@@ -38,6 +38,7 @@ export async function POST(request: Request) {
 
     // 2. Validate Ownership and Get Inquiry Number
     let orderNumber = ""
+    let inquiryId = null
     
     if (!apiKey) {
       const { data: quoteCheck, error: quoteError } = await supabase
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       }
       
       orderNumber = (quoteCheck.inquiries as any)?.inquiry_number
+      inquiryId = quoteCheck.inquiry_id
     } else {
       // For API key flow, we still need to get the inquiry number
       const { data: quoteCheck, error: quoteError } = await supabase
@@ -105,8 +107,8 @@ export async function POST(request: Request) {
     await supabase.from("quotations").update({ status: "ACCEPTED" }).eq("id", body.quotation_id)
     
     // Also update inquiry status so it's formally closed
-    if (!apiKey && quoteCheck?.inquiry_id) {
-      await supabase.from("inquiries").update({ status: "ORDERED" }).eq("id", quoteCheck.inquiry_id)
+    if (!apiKey && inquiryId) {
+      await supabase.from("inquiries").update({ status: "ORDERED" }).eq("id", inquiryId)
     }
 
     return NextResponse.json({ success: true, data: orderData }, { status: 201 })
