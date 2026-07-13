@@ -37,6 +37,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   // Form input fields
   const [productCost, setProductCost] = useState("")
   const [itemCosts, setItemCosts] = useState<Record<number, string>>({})
+  const [itemShippingCosts, setItemShippingCosts] = useState<Record<number, string>>({})
   const [shippingCostCnCn, setShippingCostCnCn] = useState("")
   const [otherFee, setOtherFee] = useState("")
 
@@ -45,7 +46,9 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
     setProductCost("")
     setItemCosts({})
     setShippingCostCnCn("")
-    setOtherFee("0")
+    setOtherFee("")
+    setItemCosts({})
+    setItemShippingCosts({})
     setErrorMsg("")
     setIsQuotingOpen(true)
   }
@@ -64,16 +67,21 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
     try {
       const isMultiItem = selectedInquiry.items && selectedInquiry.items.length > 0;
       let totalProductCost = 0;
+      let totalItemShippingCost = 0;
       let updatedItems = selectedInquiry.items;
 
       if (isMultiItem) {
-        let sum = 0;
+        let sumCost = 0;
+        let sumShipping = 0;
         updatedItems = selectedInquiry.items.map((item: any, idx: number) => {
           const cost = parseFloat(itemCosts[idx]) || 0;
-          sum += cost;
-          return { ...item, quoted_price: cost };
+          const shipping = parseFloat(itemShippingCosts[idx]) || 0;
+          sumCost += cost;
+          sumShipping += shipping;
+          return { ...item, quoted_price: cost, quoted_shipping_cn_cn: shipping };
         });
-        totalProductCost = sum;
+        totalProductCost = sumCost;
+        totalItemShippingCost = sumShipping;
       } else {
         totalProductCost = parseFloat(productCost) || 0;
       }
@@ -81,7 +89,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
       const payload = {
         inquiry_id: selectedInquiry.id,
         product_cost: totalProductCost,
-        shipping_cost_cn_cn: parseFloat(shippingCostCnCn) || 0,
+        shipping_cost_cn_cn: (parseFloat(shippingCostCnCn) || 0) + totalItemShippingCost,
         other_fee: parseFloat(otherFee) || 0,
         updated_items: isMultiItem ? updatedItems : null,
       }
@@ -356,17 +364,30 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                            </a>
                            <span className="font-semibold text-slate-600 whitespace-nowrap">จำนวน: {item.quantity}</span>
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <label className="text-xs font-semibold text-slate-700 whitespace-nowrap">ค่าสินค้า (บาท):</label>
-                          <Input
-                            required
-                            type="number"
-                            min="0"
-                            placeholder="ราคาชิ้นนี้"
-                            className="h-8 text-xs"
-                            value={itemCosts[idx] || ""}
-                            onChange={(e) => setItemCosts({ ...itemCosts, [idx]: e.target.value })}
-                          />
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-semibold text-slate-500 uppercase">ค่าสินค้า (บาท):</label>
+                            <Input
+                              required
+                              type="number"
+                              min="0"
+                              placeholder="ราคาชิ้นนี้"
+                              className="h-8 text-xs"
+                              value={itemCosts[idx] || ""}
+                              onChange={(e) => setItemCosts({ ...itemCosts, [idx]: e.target.value })}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-semibold text-slate-500 uppercase">ค่าจัดส่งจีน-จีน (ถ้ามี):</label>
+                            <Input
+                              type="number"
+                              min="0"
+                              placeholder="ค่าจัดส่งชิ้นนี้"
+                              className="h-8 text-xs"
+                              value={itemShippingCosts[idx] || ""}
+                              onChange={(e) => setItemShippingCosts({ ...itemShippingCosts, [idx]: e.target.value })}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -434,7 +455,8 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 <span className="text-primary text-base">
                   ฿ {(
                     (selectedInquiry?.items && selectedInquiry.items.length > 0 
-                      ? Object.values(itemCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)
+                      ? Object.values(itemCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0) +
+                        Object.values(itemShippingCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)
                       : parseFloat(productCost) || 0) +
                     (parseFloat(shippingCostCnCn) || 0) +
                     (parseFloat(otherFee) || 0)
