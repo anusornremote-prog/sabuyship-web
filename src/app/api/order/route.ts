@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         .from('quotations')
         .select(`inquiry_id, inquiries!inner(customer_id, inquiry_number)`)
         .eq('id', body.quotation_id)
-        .single()
+        .maybeSingle()
         
       if (quoteError || !quoteCheck || (quoteCheck.inquiries as any)?.customer_id !== targetCustomerId) {
         return NextResponse.json({ error: "Invalid quotation or unauthorized" }, { status: 403 })
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         .from('quotations')
         .select(`inquiries!inner(inquiry_number)`)
         .eq('id', body.quotation_id)
-        .single()
+        .maybeSingle()
         
       if (!quoteError && quoteCheck) {
         orderNumber = (quoteCheck.inquiries as any)?.inquiry_number
@@ -90,9 +90,10 @@ export async function POST(request: Request) {
           shipping_address_id: body.shipping_address_id || null
         })
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
+      if (!data) throw new Error("Failed to insert order or RLS prevented reading the inserted row")
       orderData = data
 
       // Initial tracking log (catch error silently in case of RLS issues)
