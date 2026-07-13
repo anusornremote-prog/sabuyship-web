@@ -67,32 +67,49 @@ export async function POST(request: Request) {
       }
     }
 
-    const { data, error } = await supabase
+    // Check if order already exists to prevent duplicate key errors
+    const { data: existingOrder } = await supabase
       .from("orders")
-      .insert({
-        order_number: orderNumber,
-        customer_id: targetCustomerId,
-        quotation_id: body.quotation_id,
-        status: "NEW",
-        admin_notes: body.admin_notes || null,
-        shipping_address_id: body.shipping_address_id || null
-      })
-      .select()
+      .select("id")
+      .eq("order_number", orderNumber)
       .single()
 
-    if (error) throw error
+    let orderData = existingOrder;
 
-    // Initial tracking log
-    await supabase.from("tracking_logs").insert({
-      order_id: data.id,
-      status: "NEW",
-      notes: "Order created"
-    })
+    if (!existingOrder) {
+      const { data, error } = await supabase
+        .from("orders")
+        .insert({
+          order_number: orderNumber,
+          customer_id: targetCustomerId,
+          quotation_id: body.quotation_id,
+          status: "NEW",
+          admin_notes: body.admin_notes || null,
+          shipping_address_id: body.shipping_address_id || null
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      orderData = data
+
+      // Initial tracking log (catch error silently in case of RLS issues)
+      await supabase.from("tracking_logs").insert({
+        order_id: data.id,
+        status: "NEW",
+        notes: "Order created"
+      }).catch(console.error)
+    }
 
     // Update quotation status to ACCEPTED
     await supabase.from("quotations").update({ status: "ACCEPTED" }).eq("id", body.quotation_id)
+    
+    // Also update inquiry status so it's formally closed
+    if (!apiKey && quoteCheck?.inquiry_id) {
+      await supabase.from("inquiries").update({ status: "ORDERED" }).eq("id", quoteCheck.inquiry_id)
+    }
 
-    return NextResponse.json({ success: true, data }, { status: 201 })
+    return NextResponse.json({ success: true, data: orderData }, { status: 201 })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
