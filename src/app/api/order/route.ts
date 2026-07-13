@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     // Check if order already exists to prevent duplicate key errors
     const { data: existingOrder } = await supabase
       .from("orders")
-      .select("id")
+      .select("id, order_number")
       .eq("order_number", orderNumber)
       .maybeSingle()
 
