@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox, AlertTriangle, FileText, CheckCircle } from "lucide-react"
+import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard } from "lucide-react"
 import { AddressSelectionModal } from "../inquiries/AddressSelectionModal"
 
 interface UnifiedOrderListProps {
@@ -140,6 +140,13 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
     }
   }
 
+  const isWaitingPayment = (item: any) => {
+    return item.status === 'WAITING_PAYMENT' || 
+           item.payment_round_1_status === 'PENDING' || 
+           ((item.status === 'CHINA_WAREHOUSE' || item.status === 'SHIPPING') && item.payment_round_2_status === 'PENDING') ||
+           ((item.status === 'THAILAND_WAREHOUSE' || item.status === 'OUT_FOR_DELIVERY') && item.payment_round_3_status === 'PENDING');
+  }
+
   return (
     <div className="space-y-4">
       {errorMsg && (
@@ -193,15 +200,24 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                             onClick={() => openAddressModal(item.quotation_id)}
                             disabled={processingId === item.quotation_id}
                           >
-                            ยืนยันสั่งซื้อ
+                            ยืนยันคำสั่งซื้อ
                           </Button>
                         )}
                         
                         {item.type === 'ORDER' && (
-                          <Link href={`/dashboard/orders/${item.order_number}`}>
-                            <Button variant="ghost" size="sm" className="cursor-pointer">
-                              <Eye className="h-4 w-4 mr-2" />
-                              ดูรายละเอียด
+                          <Link href={`/dashboard/orders/${item.order_number}${isWaitingPayment(item) ? '#payment' : ''}`}>
+                            <Button variant={isWaitingPayment(item) ? "default" : "ghost"} size="sm" className="cursor-pointer">
+                              {isWaitingPayment(item) ? (
+                                <>
+                                  <CreditCard className="h-4 w-4 mr-2" />
+                                  ดำเนินการชำระเงิน
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  ดูรายละเอียด
+                                </>
+                              )}
                             </Button>
                           </Link>
                         )}

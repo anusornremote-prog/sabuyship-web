@@ -188,59 +188,6 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
         <div className="md:col-span-2 space-y-6">
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle>ข้อมูลใบเสนอราคา (Quotation)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {quotation ? (
-                <div className="space-y-4">
-                  <div className="flex justify-between border-b pb-2 text-sm">
-                    <span className="text-slate-600">ค่าสินค้า (Product Cost)</span>
-                    <span className="font-medium">{formatCurrency(quotation.product_cost)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center pb-2 border-b">
-                    <span className="text-slate-600">ค่าจัดส่ง จีน-จีน</span>
-                    <span className="font-medium">{formatCurrency(quotation.shipping_cost_cn_cn)}</span>
-                  </div>
-                  {/* Only show Round 2 cost if Round 1 is PAID or cost > 0 */}
-                  {(order.payment_round_1_status === 'PAID' || (quotation.shipping_cost_cn_th || 0) > 0) && (
-                    <div className="flex justify-between items-center pb-2 border-b">
-                      <span className="text-slate-600">ค่าจัดส่ง จีน-ไทย</span>
-                      <div className="text-right">
-                        <span className="font-medium">{(quotation.shipping_cost_cn_th || 0) > 0 ? formatCurrency(quotation.shipping_cost_cn_th) : "กำลังประเมิน"}</span>
-                        {order.payment_round_2_status === 'PAID' && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
-                      </div>
-                    </div>
-                  )}
-                  {/* Only show Round 3 cost if Round 2 is PAID or cost > 0 */}
-                  {(order.payment_round_2_status === 'PAID' || (quotation.shipping_cost_th_th || 0) > 0) && (
-                    <div className="flex justify-between items-center pb-2 border-b">
-                      <span className="text-slate-600">ค่าจัดส่ง ไทย-ไทย</span>
-                      <div className="text-right">
-                        <span className="font-medium">
-                          {(quotation.shipping_cost_th_th || 0) > 0 ? formatCurrency(quotation.shipping_cost_th_th) : "รับเองที่โกดัง / ไม่มีค่าใช้จ่าย"}
-                        </span>
-                        {order.payment_round_3_status === 'PAID' && (quotation.shipping_cost_th_th || 0) > 0 && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex justify-between border-b pb-2 text-sm">
-                    <span className="text-slate-600">ค่าบริการอื่นๆ (Other Fee)</span>
-                    <span className="font-medium">{formatCurrency(quotation.other_fee)}</span>
-                  </div>
-                  <div className="flex justify-between pt-2">
-                    <span className="font-bold text-lg text-slate-950">ยอดรวมทั้งสิ้น (รวมทุกรอบ)</span>
-                    <span className="font-bold text-lg text-primary">{formatCurrency((quotation.total_price || 0) + (quotation.shipping_cost_cn_th || 0) + (quotation.shipping_cost_th_th || 0))}</span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-slate-400 text-center py-4 text-sm">ไม่พบข้อมูลใบเสนอราคา</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-sm">
-            <CardHeader>
               <CardTitle>ข้อมูลอ้างอิง</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
@@ -328,15 +275,73 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   <p className="text-slate-800 italic bg-slate-50 p-3 rounded-lg border border-slate-100">{order.admin_notes}</p>
                 </div>
               )}
-              {order.address && (
-                <div className="pt-4 border-t">
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">จัดส่งไปที่</h4>
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <p className="font-semibold text-slate-900">{address?.full_name}</p>
-                    <p className="text-slate-600 text-xs mb-1">โทร: {address?.phone}</p>
-                    <p className="text-slate-700 text-sm">{address?.address_line} ต.{address?.subdistrict} อ.{address?.district} จ.{address?.province} {address?.postal_code}</p>
+            </CardContent>
+          </Card>
+
+          {order.address && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>จัดส่งไปที่</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                  <p className="font-semibold text-slate-900">{address?.full_name}</p>
+                  <p className="text-slate-600 text-sm mb-2 mt-1">โทร: {address?.phone}</p>
+                  <p className="text-slate-700 text-sm leading-relaxed">{address?.address_line} ต.{address?.subdistrict} อ.{address?.district} จ.{address?.province} {address?.postal_code}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>ข้อมูลใบเสนอราคา (Quotation)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {quotation ? (
+                <div className="space-y-4">
+                  <div className="flex justify-between border-b pb-2 text-sm">
+                    <span className="text-slate-600">ค่าสินค้า (Product Cost)</span>
+                    <span className="font-medium">{formatCurrency(quotation.product_cost)}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span className="text-slate-600">ค่าจัดส่ง จีน-จีน</span>
+                    <span className="font-medium">{formatCurrency(quotation.shipping_cost_cn_cn)}</span>
+                  </div>
+                  {/* Only show Round 2 cost if Round 1 is PAID or cost > 0 */}
+                  {(order.payment_round_1_status === 'PAID' || (quotation.shipping_cost_cn_th || 0) > 0) && (
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <span className="text-slate-600">ค่าจัดส่ง จีน-ไทย</span>
+                      <div className="text-right">
+                        <span className="font-medium">{(quotation.shipping_cost_cn_th || 0) > 0 ? formatCurrency(quotation.shipping_cost_cn_th) : "กำลังประเมิน"}</span>
+                        {order.payment_round_2_status === 'PAID' && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
+                      </div>
+                    </div>
+                  )}
+                  {/* Only show Round 3 cost if Round 2 is PAID or cost > 0 */}
+                  {(order.payment_round_2_status === 'PAID' || (quotation.shipping_cost_th_th || 0) > 0) && (
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <span className="text-slate-600">ค่าจัดส่ง ไทย-ไทย</span>
+                      <div className="text-right">
+                        <span className="font-medium">
+                          {(quotation.shipping_cost_th_th || 0) > 0 ? formatCurrency(quotation.shipping_cost_th_th) : "รับเองที่โกดัง / ไม่มีค่าใช้จ่าย"}
+                        </span>
+                        {order.payment_round_3_status === 'PAID' && (quotation.shipping_cost_th_th || 0) > 0 && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-b pb-2 text-sm">
+                    <span className="text-slate-600">ค่าบริการอื่นๆ (Other Fee)</span>
+                    <span className="font-medium">{formatCurrency(quotation.other_fee)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2">
+                    <span className="font-bold text-lg text-slate-950">ยอดรวมทั้งสิ้น (รวมทุกรอบ)</span>
+                    <span className="font-bold text-lg text-primary">{formatCurrency((quotation.total_price || 0) + (quotation.shipping_cost_cn_th || 0) + (quotation.shipping_cost_th_th || 0))}</span>
                   </div>
                 </div>
+              ) : (
+                <p className="text-slate-400 text-center py-4 text-sm">ไม่พบข้อมูลใบเสนอราคา</p>
               )}
             </CardContent>
           </Card>
