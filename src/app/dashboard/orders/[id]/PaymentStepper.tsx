@@ -1,8 +1,10 @@
 'use client'
 
 import { Package, Truck, Home } from "lucide-react"
+import { PaymentSection } from "./PaymentSection"
 
 interface PaymentStepperProps {
+  orderId: string
   status: string
   paymentRound1Status: string
   paymentRound2Status: string
@@ -12,6 +14,7 @@ interface PaymentStepperProps {
 }
 
 export function PaymentStepper({ 
+  orderId,
   status, 
   paymentRound1Status, 
   paymentRound2Status, 
@@ -23,28 +26,34 @@ export function PaymentStepper({
   // Logic for steps
   const steps = [
     {
+      round: 1,
       title: "รอบ 1: ค่าสินค้า + จีน-จีน",
-      description: paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : "รอการชำระเงิน",
+      description: paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : "รอการชำระเงิน",
       isCompleted: paymentRound1Status === 'PAID',
       isActive: paymentRound1Status !== 'PAID',
+      status: paymentRound1Status,
       icon: Package
     },
     {
+      round: 2,
       title: "รอบ 2: ค่าขนส่ง จีน-ไทย",
       description: status === 'SHIPPING' || status === 'ARRIVED' || status === 'DELIVERED'
-        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "กำลังประเมินยอด"))
+        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "กำลังประเมินยอด"))
         : "รอสินค้าจัดส่งมาไทย",
       isCompleted: paymentRound2Status === 'PAID',
       isActive: paymentRound1Status === 'PAID' && paymentRound2Status !== 'PAID',
+      status: paymentRound2Status,
       icon: Truck
     },
     {
+      round: 3,
       title: "รอบ 3: ค่าจัดส่ง ไทย-ไทย",
       description: status === 'ARRIVED' || status === 'DELIVERED'
-        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอสรุปยอด / รับเองที่โกดัง"))
+        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอสรุปยอด / รับเองที่โกดัง"))
         : "รอสินค้าถึงโกดังไทย",
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
       isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID' && shippingCostThTh > 0,
+      status: paymentRound3Status,
       icon: Home
     }
   ]
@@ -73,6 +82,10 @@ export function PaymentStepper({
                     {step.title}
                   </h4>
                   <p className="text-sm text-slate-500 mt-0.5">{step.description}</p>
+                  
+                  {step.isActive && step.status !== 'UPLOADED' && step.description === "รอการชำระเงิน" && (
+                    <PaymentSection orderId={orderId} paymentRound={step.round as 1 | 2 | 3} />
+                  )}
                 </div>
               </div>
             )

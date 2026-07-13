@@ -50,7 +50,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
 
       const order = result.data
 
-      router.push(`/dashboard/orders/${order.order_number}`)
+      router.push(`/dashboard/orders/${order.order_number}#payment`)
       router.refresh()
     } catch (err: any) {
       console.error(err)

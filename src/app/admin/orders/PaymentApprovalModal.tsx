@@ -35,10 +35,24 @@ export function PaymentApprovalModal({
       
       if (paymentError) throw paymentError
 
-      // 2. Update order status
+      // 2. Determine which round to update to PAID
+      const roundToUpdate = order.payment_round_1_status === 'UPLOADED' ? 'payment_round_1_status' :
+                            order.payment_round_2_status === 'UPLOADED' ? 'payment_round_2_status' :
+                            order.payment_round_3_status === 'UPLOADED' ? 'payment_round_3_status' : null;
+
+      let updates: any = { status: 'PAID' };
+      if (roundToUpdate) {
+        updates[roundToUpdate] = 'PAID';
+        
+        // Also update order overall status based on the round
+        if (roundToUpdate === 'payment_round_1_status') updates.status = 'PURCHASED'; // Changed from PAID to PURCHASED to signify we bought the items
+        else if (roundToUpdate === 'payment_round_2_status') updates.status = 'ARRIVED'; // Not fully accurate, but status logic usually handled elsewhere or manually. Wait, maybe keep status as what it was unless it's round 1.
+        // Actually, let's keep it simple: just update the round status. Admin can update overall status manually if needed.
+      }
+
       const { error: orderError } = await supabase
         .from('orders')
-        .update({ status: 'PAID' })
+        .update(roundToUpdate ? { [roundToUpdate]: 'PAID' } : { status: 'PAID' }) // If we can't infer, fallback to status
         .eq('id', order.id)
 
       if (orderError) throw orderError
@@ -70,6 +84,18 @@ export function PaymentApprovalModal({
         .eq('id', payment.id)
       
       if (error) throw error
+
+      const roundToUpdate = order.payment_round_1_status === 'UPLOADED' ? 'payment_round_1_status' :
+                            order.payment_round_2_status === 'UPLOADED' ? 'payment_round_2_status' :
+                            order.payment_round_3_status === 'UPLOADED' ? 'payment_round_3_status' : null;
+
+      if (roundToUpdate) {
+        await supabase
+          .from('orders')
+          .update({ [roundToUpdate]: 'PENDING' })
+          .eq('id', order.id)
+      }
+
       alert('ปฏิเสธการชำระเงินแล้ว')
       onSuccess()
     } catch (err: any) {

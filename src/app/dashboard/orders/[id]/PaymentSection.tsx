@@ -8,7 +8,7 @@ import { X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
-export function PaymentSection({ orderId, currentStatus }: { orderId: string, currentStatus: string }) {
+export function PaymentSection({ orderId, paymentRound }: { orderId: string, paymentRound: 1 | 2 | 3 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [amount, setAmount] = useState('')
   const [paymentDate, setPaymentDate] = useState('')
@@ -16,9 +16,6 @@ export function PaymentSection({ orderId, currentStatus }: { orderId: string, cu
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-
-  // Show button only if status is WAITING_PAYMENT
-  if (currentStatus !== 'WAITING_PAYMENT') return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +53,15 @@ export function PaymentSection({ orderId, currentStatus }: { orderId: string, cu
 
         if (insertError) throw insertError
 
+        // Update the specific payment round status to UPLOADED
+        const roundColumn = `payment_round_${paymentRound}_status`
+        const { error: orderError } = await supabase
+          .from('orders')
+          .update({ [roundColumn]: 'UPLOADED' })
+          .eq('id', orderId)
+
+        if (orderError) throw orderError
+
         alert('แจ้งชำระเงินสำเร็จ กรุณารอเจ้าหน้าที่ตรวจสอบ')
         setIsOpen(false)
         router.refresh()
@@ -69,15 +75,15 @@ export function PaymentSection({ orderId, currentStatus }: { orderId: string, cu
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)} className="bg-primary text-white hover:bg-primary/90 font-medium">
-        แจ้งชำระเงิน
+      <Button onClick={() => setIsOpen(true)} size="sm" className="bg-primary text-white hover:bg-primary/90 font-medium w-full mt-2">
+        แนบหลักฐานชำระเงิน รอบที่ {paymentRound}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && setIsOpen(false)}>
         <DialogContent>
           <div className="flex justify-between items-start">
             <DialogHeader>
-              <DialogTitle>แจ้งชำระเงิน</DialogTitle>
+              <DialogTitle>แจ้งชำระเงิน รอบที่ {paymentRound}</DialogTitle>
               <DialogDescription>กรุณากรอกข้อมูลการโอนเงินและแนบสลิปหลักฐาน</DialogDescription>
             </DialogHeader>
             <Button variant="ghost" size="icon" onClick={() => !isSubmitting && setIsOpen(false)} className="h-8 w-8 rounded-full">
