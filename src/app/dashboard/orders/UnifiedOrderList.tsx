@@ -194,9 +194,9 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                       <td className="px-6 py-4 text-right">
                         {item.type === 'INQUIRY' && item.status === 'QUOTED' && item.quotation_id && (
                           <Button 
-                            variant="green" 
+                            variant="default" 
                             size="sm" 
-                            className="cursor-pointer mr-2"
+                            className="bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer mr-2"
                             onClick={() => openAddressModal(item.quotation_id)}
                             disabled={processingId === item.quotation_id}
                           >
