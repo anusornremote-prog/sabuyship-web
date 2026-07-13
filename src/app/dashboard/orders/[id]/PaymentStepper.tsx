@@ -9,6 +9,8 @@ interface PaymentStepperProps {
   paymentRound1Status: string
   paymentRound2Status: string
   paymentRound3Status: string
+  productCost: number
+  shippingCostCnCn: number
   shippingCostCnTh: number
   shippingCostThTh: number
 }
@@ -19,16 +21,23 @@ export function PaymentStepper({
   paymentRound1Status, 
   paymentRound2Status, 
   paymentRound3Status,
+  productCost,
+  shippingCostCnCn,
   shippingCostCnTh,
   shippingCostThTh
 }: PaymentStepperProps) {
   
+  const formatCurrency = (amount: number) => {
+    return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+
   // Logic for steps
   const steps = [
     {
       round: 1,
       title: "รอบ 1: ค่าสินค้า + จีน-จีน",
       description: paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : "รอการชำระเงิน",
+      amount: productCost + shippingCostCnCn,
       isCompleted: paymentRound1Status === 'PAID',
       isActive: paymentRound1Status !== 'PAID',
       status: paymentRound1Status,
@@ -40,6 +49,7 @@ export function PaymentStepper({
       description: status === 'SHIPPING' || status === 'ARRIVED' || status === 'DELIVERED'
         ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "กำลังประเมินยอด"))
         : "รอสินค้าจัดส่งมาไทย",
+      amount: shippingCostCnTh,
       isCompleted: paymentRound2Status === 'PAID',
       isActive: paymentRound1Status === 'PAID' && paymentRound2Status !== 'PAID',
       status: paymentRound2Status,
@@ -51,6 +61,7 @@ export function PaymentStepper({
       description: status === 'ARRIVED' || status === 'DELIVERED'
         ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอสรุปยอด / รับเองที่โกดัง"))
         : "รอสินค้าถึงโกดังไทย",
+      amount: shippingCostThTh,
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
       isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID' && shippingCostThTh > 0,
       status: paymentRound3Status,
@@ -81,9 +92,17 @@ export function PaymentStepper({
                   <h4 className={`font-bold ${step.isCompleted ? 'text-emerald-700' : step.isActive ? 'text-blue-700' : 'text-slate-500'}`}>
                     {step.title}
                   </h4>
+                  
+                  {/* Display amount if it exists and step is active/completed OR if it's round 1 where we always know the amount */}
+                  {(step.amount > 0 || step.round === 1) && (step.isActive || step.isCompleted) && (
+                    <p className={`text-lg font-bold mt-1 mb-0.5 ${step.isCompleted ? 'text-emerald-600' : step.isActive ? 'text-blue-600' : 'text-slate-500'}`}>
+                      {step.amount > 0 ? formatCurrency(step.amount) : "฿ 0.00"}
+                    </p>
+                  )}
+                  
                   <p className="text-sm text-slate-500 mt-0.5">{step.description}</p>
                   
-                  {step.isActive && step.status !== 'UPLOADED' && step.description === "รอการชำระเงิน" && (
+                  {step.isActive && step.status !== 'UPLOADED' && step.description === "รอการชำระเงิน" && step.amount > 0 && (
                     <PaymentSection orderId={orderId} paymentRound={step.round as 1 | 2 | 3} />
                   )}
                 </div>
