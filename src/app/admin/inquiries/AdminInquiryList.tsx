@@ -423,7 +423,11 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                   </div>
                 )}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">ค่าจัดส่ง จีน-จีน (ถ้ามี)</label>
+                  <label className="text-sm font-medium">
+                    {selectedInquiry.items && selectedInquiry.items.length > 0 
+                      ? 'ค่าส่งรวมทั้งหมด (จีน-จีน)' 
+                      : 'ค่าจัดส่ง จีน-จีน (ถ้ามี)'}
+                  </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-500">฿</span>
                     {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
