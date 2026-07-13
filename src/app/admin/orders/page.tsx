@@ -38,6 +38,9 @@ export default function AdminOrders() {
           order_number,
           status,
           created_at,
+          payment_round_1_status,
+          payment_round_2_status,
+          payment_round_3_status,
           customer_id,
           customer:customer_id (
             id,
@@ -167,30 +170,62 @@ export default function AdminOrders() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, order: any) => {
+    // Check Payment Round 1
+    if (order.payment_round_1_status === 'PENDING') return 'bg-amber-100 text-amber-800'
+    if (order.payment_round_1_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
+    
+    // Check Payment Round 2 (When in China Warehouse)
+    if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING' || status === 'THAILAND_WAREHOUSE' || status === 'DELIVERED') {
+      if (order.payment_round_2_status === 'PENDING') return 'bg-amber-100 text-amber-800'
+      if (order.payment_round_2_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
+    }
+    
+    // Check Payment Round 3 (When in Thai Warehouse)
+    if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED') {
+      if (order.payment_round_3_status === 'PENDING') return 'bg-amber-100 text-amber-800'
+      if (order.payment_round_3_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
+    }
+
     switch (status) {
-      case 'NEW': return 'bg-blue-100 text-blue-800'
-      case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800'
-      case 'PAID': return 'bg-green-100 text-green-800'
+      case 'ORDERED': return 'bg-blue-100 text-blue-800'
       case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
       case 'SHIPPING': return 'bg-sky-100 text-sky-800'
       case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
+      case 'OUT_FOR_DELIVERY': return 'bg-orange-100 text-orange-800'
       case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
+      case 'PAID': return 'bg-green-100 text-green-800'
       default: return 'bg-slate-100 text-slate-800'
     }
   }
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: string, order: any) => {
+    // Payment Round 1
+    if (order.payment_round_1_status === 'PENDING') return 'รอชำระเงิน รอบ 1 (ค่าสินค้า)'
+    if (order.payment_round_1_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 1 (รอตรวจสอบ)'
+    
+    // Payment Round 2
+    if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING') {
+       if (order.payment_round_2_status === 'PENDING') return 'รอชำระเงิน รอบ 2 (ค่าขนส่งจีน-ไทย)'
+       if (order.payment_round_2_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 2 (รอตรวจสอบ)'
+    }
+    
+    // Payment Round 3
+    if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY') {
+       if (order.payment_round_3_status === 'PENDING') return 'รอชำระเงิน รอบ 3 (ค่าจัดส่งในไทย)'
+       if (order.payment_round_3_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 3 (รอตรวจสอบ)'
+    }
+
     switch (status) {
-      case 'NEW': return 'รอดำเนินการ (NEW)'
-      case 'WAITING_PAYMENT': return 'รอชำระเงิน (WAITING PAYMENT)'
-      case 'PAID': return 'ชำระเงินแล้ว (PAID)'
-      case 'ORDERED': return 'สั่งซื้อสำเร็จ (ORDERED)'
-      case 'CHINA_WAREHOUSE': return 'ถึงโกดังจีน (CHINA WAREHOUSE)'
-      case 'SHIPPING': return 'อยู่ระหว่างส่งมาไทย (SHIPPING)'
-      case 'THAILAND_WAREHOUSE': return 'ถึงโกดังไทย (THAILAND WAREHOUSE)'
-      case 'OUT_FOR_DELIVERY': return 'กำลังนำจ่าย (OUT FOR DELIVERY)'
-      case 'DELIVERED': return 'จัดส่งสำเร็จ (DELIVERED)'
+      case 'NEW': return 'รอดำเนินการ'
+      case 'WAITING_PAYMENT': return 'รอชำระเงิน'
+      case 'PAID': return 'ชำระรอบ 1 แล้ว (รอแอดมินสั่งของ)'
+      case 'ORDERED': return 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
+      case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน (รอคำนวณค่าขนส่ง)'
+      case 'SHIPPING': return 'ชำระรอบ 2 แล้ว (กำลังส่งมาไทย)'
+      case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย (รอคำนวณค่าส่งในไทย)'
+      case 'OUT_FOR_DELIVERY': return 'ชำระครบถ้วน (กำลังนำส่งไปบ้านลูกค้า)'
+      case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
       default: return status
     }
   }
@@ -238,12 +273,13 @@ export default function AdminOrders() {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="ALL">สถานะทั้งหมด</option>
-            <option value="NEW">NEW (รอดำเนินการ)</option>
-            <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน)</option>
-            <option value="PAID">PAID (ชำระเงินแล้ว)</option>
-            <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน)</option>
-            <option value="SHIPPING">SHIPPING (กำลังส่งมาไทย)</option>
-            <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย)</option>
+            <option value="NEW">NEW (รอชำระเงิน/อัปสลิป)</option>
+            <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
+            <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
+            <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
+            <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
+            <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
+            <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
             <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
           </select>
         </CardContent>
@@ -291,8 +327,8 @@ export default function AdminOrders() {
                         </p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(order.status)}`}>
-                          {getStatusText(order.status)}
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(order.status, order)}`}>
+                          {getStatusText(order.status, order)}
                         </span>
                         <p className="text-xs text-slate-500 mt-1">
                           อัปเดต: {order.created_at ? new Date(order.created_at).toLocaleDateString('th-TH') : '-'}
@@ -405,13 +441,14 @@ export default function AdminOrders() {
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
                   >
-                    <option value="NEW">NEW (รอดำเนินการ)</option>
-                    <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน)</option>
-                    <option value="PAID">PAID (ชำระเงินแล้ว)</option>
-                    <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน)</option>
-                    <option value="SHIPPING">SHIPPING (อยู่ระหว่างส่งมาไทย)</option>
-                    <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย)</option>
-                    <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (อยู่ระหว่างนำจ่าย)</option>
+                    <option value="NEW">NEW (รอชำระเงิน/อัปสลิป)</option>
+                    <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
+                    <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
+                    <option value="ORDERED">ORDERED (ร้านจีนเตรียมจัดส่ง)</option>
+                    <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
+                    <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
+                    <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
+                    <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
                     <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
                   </select>
                 </div>

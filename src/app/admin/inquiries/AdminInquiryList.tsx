@@ -275,9 +275,9 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                           }`}
                         >
                           {inq.status === "PENDING"
-                            ? "รอประเมินราคา"
+                            ? "รอแอดมินประเมินราคา"
                             : inq.status === "QUOTED"
-                            ? "ส่งใบเสนอราคาแล้ว"
+                            ? "แอดมินเสนอราคาแล้ว (รอสั่งซื้อ)"
                             : "ยกเลิกคำขอ"}
                         </span>
                       </td>
