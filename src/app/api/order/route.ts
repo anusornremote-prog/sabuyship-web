@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       .from("orders")
       .select("id")
       .eq("order_number", orderNumber)
-      .single()
+      .maybeSingle()
 
     let orderData = existingOrder;
 
