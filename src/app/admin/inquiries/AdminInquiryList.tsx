@@ -227,7 +227,9 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                       <td className="px-6 py-4 font-bold text-slate-900">{inq.inquiry_number}</td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-slate-800">{inq.customer_name}</p>
-                        <p className="text-xs text-slate-500">{inq.phone}</p>
+                        <p className="text-sm font-semibold text-primary mt-1">
+                          {inq.customer?.customer_code || "ไม่มีรหัส"} {inq.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
+                        </p>
                       </td>
                       <td className="px-6 py-4">
                         {inq.items && inq.items.length > 1 ? (
@@ -268,11 +270,6 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                             )}
                           </>
                         )}
-                        <div className="mt-2">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
-                            {inq.shipping_type === 'BOAT' ? '🛳️ ทางเรือ (Boat)' : '🚚 ทางรถ (Car)'}
-                          </span>
-                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span
