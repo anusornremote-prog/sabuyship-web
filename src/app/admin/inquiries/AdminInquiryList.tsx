@@ -29,6 +29,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   // Modal states
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null)
   const [selectedDetailsInquiry, setSelectedDetailsInquiry] = useState<any | null>(null)
+  const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
   const [isQuotingOpen, setIsQuotingOpen] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -190,6 +191,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
             <option value="ALL">สถานะทั้งหมด</option>
             <option value="PENDING">PENDING (รอประเมิน)</option>
             <option value="QUOTED">QUOTED (ส่งใบเสนอราคาแล้ว)</option>
+            <option value="ORDERED">ORDERED (สั่งซื้อแล้ว)</option>
             <option value="REJECTED">REJECTED (ยกเลิก)</option>
           </select>
           <Button 
@@ -311,6 +313,16 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                                 <XCircle className="h-4 w-4" />
                               </Button>
                             </>
+                          ) : inq.quotations && inq.quotations.length > 0 ? (
+                            <Button
+                              size="sm"
+                              variant="orange"
+                              className="font-bold cursor-pointer"
+                              onClick={() => setSelectedQuote({ ...inq.quotations[0], inquiry: inq })}
+                            >
+                              <FileText className="h-4 w-4 mr-1.5" />
+                              ดูใบเสนอราคา
+                            </Button>
                           ) : (
                             <span className="text-xs text-slate-400 font-medium py-1 px-2 flex items-center gap-1">
                               <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -550,6 +562,70 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 ปิดหน้าต่าง
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Quotation Detail Modal */}
+      {selectedQuote && (
+        <Dialog open={!!selectedQuote} onOpenChange={(open) => !open && setSelectedQuote(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader className="border-b border-slate-100 pb-4">
+              <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                รายละเอียดใบเสนอราคา
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 font-medium mt-1">
+                รหัสอ้างอิง: <span className="text-slate-800 font-bold">{selectedQuote.inquiry?.inquiry_number}</span>
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4 space-y-5">
+              <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">ชื่อลูกค้า</span>
+                  <span className="font-semibold text-slate-800">{selectedQuote.inquiry?.customer_name || "-"}</span>
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">สถานะปัจจุบัน</span>
+                  <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full inline-block ${
+                      selectedQuote.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-800' :
+                      selectedQuote.status === 'SENT' ? 'bg-blue-100 text-blue-800' :
+                      'bg-slate-200 text-slate-800'
+                    }`}>
+                      {selectedQuote.status}
+                    </span>
+                </div>
+              </div>
+
+              <div className="space-y-3 p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                <h4 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2 mb-3">สรุปค่าใช้จ่าย</h4>
+                
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 font-medium">ค่าสินค้า</span>
+                  <span className="font-bold text-slate-900">฿ {Number(selectedQuote.product_cost || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 font-medium">ค่าจัดส่ง จีน-จีน</span>
+                  <span className="font-bold text-slate-900">฿ {Number(selectedQuote.shipping_cost_cn_cn || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 font-medium">ค่าธรรมเนียมอื่น ๆ</span>
+                  <span className="font-bold text-slate-900">฿ {Number(selectedQuote.other_fee || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                </div>
+                
+                <div className="flex justify-between items-center pt-3 mt-3 border-t border-dashed border-slate-200">
+                  <span className="font-bold text-slate-900 text-base">ยอดรวมสุทธิ</span>
+                  <span className="text-xl font-black text-primary">฿ {Number(selectedQuote.total_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button type="button" variant="outline" className="font-bold cursor-pointer" onClick={() => setSelectedQuote(null)}>
+                ปิดหน้าต่าง
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}

@@ -51,7 +51,6 @@ export default function AdminLayout({
     { href: "/admin", icon: LayoutDashboard, label: "ภาพรวม" },
     { href: "/admin/customers", icon: Users, label: "ลูกค้า" },
     { href: "/admin/inquiries", icon: FileQuestion, label: "คำขอประเมินราคา", badge: badgeCounts.inquiriesCount },
-    { href: "/admin/quotations", icon: FileText, label: "ใบเสนอราคา" },
     { href: "/admin/orders", icon: Package, label: "คำสั่งซื้อ", badge: badgeCounts.ordersCount },
     { href: "/admin/tracking", icon: Truck, label: "จัดการ Tracking", badge: badgeCounts.trackingCount },
     { href: "/admin/settings", icon: Settings, label: "ตั้งค่า" },
