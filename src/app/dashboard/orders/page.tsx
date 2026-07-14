@@ -23,7 +23,14 @@ export default async function MyOrders() {
         payment_round_2_status,
         payment_round_3_status,
         quotation:quotation_id (
-          total_price
+          total_price,
+          inquiry:inquiry_id (
+            items,
+            product_url,
+            image_url,
+            quantity,
+            remark
+          )
         )
       `)
       .eq("customer_id", user.id)
@@ -59,11 +66,19 @@ export default async function MyOrders() {
     const orderNumbers = new Set(orders.map(o => o.order_number))
 
     // Map Orders
-    const formattedOrders = orders.map(o => ({
-      ...o,
-      type: 'ORDER',
-      total_price: (o as any).quotation?.total_price
-    }))
+    const formattedOrders = orders.map(o => {
+      const inquiry = (o as any).quotation?.inquiry;
+      return {
+        ...o,
+        type: 'ORDER',
+        total_price: (o as any).quotation?.total_price,
+        items: inquiry?.items,
+        product_url: inquiry?.product_url,
+        image_url: inquiry?.image_url,
+        quantity: inquiry?.quantity,
+        remark: inquiry?.remark
+      }
+    })
 
     // Map Inquiries (skip if order already exists for this number)
     const formattedInquiries = inquiries
