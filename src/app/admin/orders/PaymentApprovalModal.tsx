@@ -58,12 +58,25 @@ export function PaymentApprovalModal({
       if (orderError) throw orderError
 
       // 3. Add tracking log
+      let logStatus = 'PAID'
+      let logNotes = 'ยืนยันการชำระเงินเรียบร้อยแล้ว'
+      if (roundToUpdate === 'payment_round_1_status') {
+        logStatus = 'PAID_ROUND_1'
+        logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว (ค่าสินค้า)'
+      } else if (roundToUpdate === 'payment_round_2_status') {
+        logStatus = 'PAID_ROUND_2'
+        logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว (ค่าขนส่งจีน-ไทย)'
+      } else if (roundToUpdate === 'payment_round_3_status') {
+        logStatus = 'PAID_ROUND_3'
+        logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (ค่าจัดส่งในไทย)'
+      }
+
       await supabase
         .from('tracking_logs')
         .insert({
           order_id: order.id,
-          status: 'PAID',
-          notes: 'ยืนยันการชำระเงินเรียบร้อยแล้ว'
+          status: logStatus,
+          notes: logNotes
         })
 
       alert('ยืนยันการชำระเงินสำเร็จ')
@@ -94,6 +107,19 @@ export function PaymentApprovalModal({
           .from('orders')
           .update({ [roundToUpdate]: 'REJECTED' })
           .eq('id', order.id)
+          
+        let rejectNotes = 'สลิปถูกปฏิเสธ'
+        if (roundToUpdate === 'payment_round_1_status') rejectNotes = 'ปฏิเสธสลิปชำระเงินรอบที่ 1 (กรุณาแนบใหม่)'
+        if (roundToUpdate === 'payment_round_2_status') rejectNotes = 'ปฏิเสธสลิปชำระเงินรอบที่ 2 (กรุณาแนบใหม่)'
+        if (roundToUpdate === 'payment_round_3_status') rejectNotes = 'ปฏิเสธสลิปชำระเงินรอบที่ 3 (กรุณาแนบใหม่)'
+
+        await supabase
+          .from('tracking_logs')
+          .insert({
+            order_id: order.id,
+            status: 'PAYMENT_REJECTED',
+            notes: rejectNotes
+          })
       }
 
       alert('ปฏิเสธการชำระเงินแล้ว')
