@@ -172,17 +172,20 @@ export default function AdminOrders() {
 
   const getStatusBadge = (status: string, order: any) => {
     // Check Payment Round 1
+    if (order.payment_round_1_status === 'REJECTED') return 'bg-red-100 text-red-800'
     if (order.payment_round_1_status === 'PENDING') return 'bg-amber-100 text-amber-800'
     if (order.payment_round_1_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
     
     // Check Payment Round 2 (When in China Warehouse)
     if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING' || status === 'THAILAND_WAREHOUSE' || status === 'DELIVERED') {
+      if (order.payment_round_2_status === 'REJECTED') return 'bg-red-100 text-red-800'
       if (order.payment_round_2_status === 'PENDING') return 'bg-amber-100 text-amber-800'
       if (order.payment_round_2_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
     }
     
     // Check Payment Round 3 (When in Thai Warehouse)
     if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED') {
+      if (order.payment_round_3_status === 'REJECTED') return 'bg-red-100 text-red-800'
       if (order.payment_round_3_status === 'PENDING') return 'bg-amber-100 text-amber-800'
       if (order.payment_round_3_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
     }
@@ -201,17 +204,20 @@ export default function AdminOrders() {
 
   const getStatusText = (status: string, order: any) => {
     // Payment Round 1
+    if (order.payment_round_1_status === 'REJECTED') return 'สลิปถูกปฏิเสธ รอบ 1'
     if (order.payment_round_1_status === 'PENDING') return 'รอชำระเงิน รอบ 1 (ค่าสินค้า)'
     if (order.payment_round_1_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 1 (รอตรวจสอบ)'
     
     // Payment Round 2
     if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING') {
+       if (order.payment_round_2_status === 'REJECTED') return 'สลิปถูกปฏิเสธ รอบ 2'
        if (order.payment_round_2_status === 'PENDING') return 'รอชำระเงิน รอบ 2 (ค่าขนส่งจีน-ไทย)'
        if (order.payment_round_2_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 2 (รอตรวจสอบ)'
     }
     
     // Payment Round 3
     if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY') {
+       if (order.payment_round_3_status === 'REJECTED') return 'สลิปถูกปฏิเสธ รอบ 3'
        if (order.payment_round_3_status === 'PENDING') return 'รอชำระเงิน รอบ 3 (ค่าจัดส่งในไทย)'
        if (order.payment_round_3_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 3 (รอตรวจสอบ)'
     }

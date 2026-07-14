@@ -92,7 +92,7 @@ export function PaymentApprovalModal({
       if (roundToUpdate) {
         await supabase
           .from('orders')
-          .update({ [roundToUpdate]: 'PENDING' })
+          .update({ [roundToUpdate]: 'REJECTED' })
           .eq('id', order.id)
       }
 

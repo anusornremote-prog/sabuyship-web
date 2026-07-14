@@ -36,7 +36,7 @@ export function PaymentStepper({
     {
       round: 1,
       title: "รอบ 1: ค่าสินค้า + จีน-จีน",
-      description: paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : "รอการชำระเงิน",
+      description: paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound1Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : "รอการชำระเงิน",
       amount: productCost + shippingCostCnCn,
       isCompleted: paymentRound1Status === 'PAID',
       isActive: paymentRound1Status !== 'PAID',
@@ -47,7 +47,7 @@ export function PaymentStepper({
       round: 2,
       title: "รอบ 2: ค่าขนส่ง จีน-ไทย",
       description: status === 'SHIPPING' || status === 'ARRIVED' || status === 'DELIVERED'
-        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "กำลังประเมินยอด"))
+        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound2Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "กำลังประเมินยอด"))
         : "รอสินค้าจัดส่งมาไทย",
       amount: shippingCostCnTh,
       isCompleted: paymentRound2Status === 'PAID',
@@ -59,7 +59,7 @@ export function PaymentStepper({
       round: 3,
       title: "รอบ 3: ค่าจัดส่ง ไทย-ไทย",
       description: status === 'ARRIVED' || status === 'DELIVERED'
-        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอสรุปยอด / รับเองที่โกดัง"))
+        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound3Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอสรุปยอด / รับเองที่โกดัง"))
         : "รอสินค้าถึงโกดังไทย",
       amount: shippingCostThTh,
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
@@ -82,14 +82,16 @@ export function PaymentStepper({
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border-4 ${
                   step.isCompleted 
                     ? "bg-emerald-100 border-emerald-50 text-emerald-600" 
-                    : step.isActive 
-                      ? "bg-blue-100 border-blue-50 text-blue-600" 
-                      : "bg-slate-100 border-white text-slate-400"
+                    : step.status === 'REJECTED'
+                      ? "bg-red-100 border-red-50 text-red-600"
+                      : step.isActive 
+                        ? "bg-blue-100 border-blue-50 text-blue-600" 
+                        : "bg-slate-100 border-white text-slate-400"
                 }`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className={`font-bold ${step.isCompleted ? 'text-emerald-700' : step.isActive ? 'text-blue-700' : 'text-slate-500'}`}>
+                  <h4 className={`font-bold ${step.isCompleted ? 'text-emerald-700' : step.status === 'REJECTED' ? 'text-red-700' : step.isActive ? 'text-blue-700' : 'text-slate-500'}`}>
                     {step.title}
                   </h4>
                   
@@ -100,10 +102,10 @@ export function PaymentStepper({
                     </p>
                   )}
                   
-                  <p className="text-sm text-slate-500 mt-0.5">{step.description}</p>
+                  <p className={`text-sm mt-0.5 ${step.status === 'REJECTED' ? 'text-red-500 font-medium' : 'text-slate-500'}`}>{step.description}</p>
                   
-                  {step.isActive && step.status !== 'UPLOADED' && step.description === "รอการชำระเงิน" && step.amount > 0 && (
-                    <PaymentSection orderId={orderId} paymentRound={step.round as 1 | 2 | 3} />
+                  {step.isActive && step.status !== 'UPLOADED' && (step.description === "รอการชำระเงิน" || step.status === 'REJECTED') && step.amount > 0 && (
+                    <PaymentSection orderId={orderId} paymentRound={step.round as 1 | 2 | 3} isRejected={step.status === 'REJECTED'} />
                   )}
                 </div>
               </div>

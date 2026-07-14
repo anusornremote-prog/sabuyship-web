@@ -8,7 +8,7 @@ import { X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
-export function PaymentSection({ orderId, paymentRound }: { orderId: string, paymentRound: 1 | 2 | 3 }) {
+export function PaymentSection({ orderId, paymentRound, isRejected = false }: { orderId: string, paymentRound: 1 | 2 | 3, isRejected?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const [amount, setAmount] = useState('')
   const [paymentDate, setPaymentDate] = useState('')
@@ -70,8 +70,13 @@ export function PaymentSection({ orderId, paymentRound }: { orderId: string, pay
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)} size="sm" className="bg-primary text-white hover:bg-primary/90 font-medium w-full mt-2">
-        แนบหลักฐานชำระเงิน รอบที่ {paymentRound}
+      <Button 
+        onClick={() => setIsOpen(true)} 
+        size="sm" 
+        variant={isRejected ? "destructive" : "default"}
+        className={isRejected ? "w-full mt-2 font-medium" : "bg-primary text-white hover:bg-primary/90 font-medium w-full mt-2"}
+      >
+        {isRejected ? `แนบสลีปใหม่อีกครั้ง รอบที่ ${paymentRound}` : `แนบหลักฐานชำระเงิน รอบที่ ${paymentRound}`}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && setIsOpen(false)}>
