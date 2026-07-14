@@ -22,7 +22,6 @@ export default async function MyOrders() {
         payment_round_1_status,
         payment_round_2_status,
         payment_round_3_status,
-        items,
         quotation:quotation_id (
           total_price
         )
