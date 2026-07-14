@@ -199,6 +199,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
       setSelectedIds([])
       setIsDeleteModalOpen(false)
       setDeletePin("")
+      router.refresh()
       alert("ลบรายการที่เลือกเรียบร้อยแล้ว")
     } catch (error: any) {
       alert("เกิดข้อผิดพลาด: " + error.message)
@@ -208,7 +209,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   }
 
   // Filter logic
-  const filtered = initialInquiries.filter((inq) => {
+  const filtered = inquiries.filter((inq: any) => {
     const matchesSearch =
       inq.inquiry_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inq.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
