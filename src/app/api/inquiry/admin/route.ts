@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 // POST /api/inquiry/admin - Create a new inquiry as an admin for a customer
 export async function POST(request: Request) {
@@ -79,7 +80,12 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 })
     }
 
-    const { error } = await supabase
+    // Try to use service role key to bypass RLS, fallback to normal client
+    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+      : supabase
+
+    const { error } = await adminSupabase
       .from("inquiries")
       .delete()
       .in("id", body.ids)
