@@ -69,10 +69,7 @@ export default async function MyOrders() {
     const formattedInquiries = inquiries
       .filter(inq => !orderNumbers.has(inq.inquiry_number))
       .map(inq => ({
-        id: inq.id,
-        inquiry_number: inq.inquiry_number,
-        status: inq.status,
-        created_at: inq.created_at,
+        ...inq,
         type: 'INQUIRY',
         total_price: inq.quotations?.[0]?.total_price,
         quotation_id: inq.quotations?.[0]?.id
