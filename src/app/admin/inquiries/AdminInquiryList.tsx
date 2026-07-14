@@ -297,8 +297,8 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                             <>
                               <Button
                                 size="sm"
-                                variant="orange"
-                                className="cursor-pointer font-bold"
+                                variant="default"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold"
                                 onClick={() => openQuoteModal(inq)}
                               >
                                 <PlusCircle className="h-4 w-4 mr-1.5" />
