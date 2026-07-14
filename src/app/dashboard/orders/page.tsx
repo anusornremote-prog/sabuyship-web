@@ -40,11 +40,15 @@ export default async function MyOrders() {
         product_url,
         image_url,
         quantity,
-        remark,
+        shipping_type,
         quotations(
           id,
-          total_price
-        )
+          total_price,
+          product_cost,
+          shipping_cost_cn_cn,
+          other_fee
+        ),
+        customer:customer_id(customer_code)
       `)
       .eq("customer_id", user.id)
 

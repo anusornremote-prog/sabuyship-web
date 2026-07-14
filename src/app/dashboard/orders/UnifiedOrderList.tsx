@@ -22,6 +22,9 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedDetailsItem, setSelectedDetailsItem] = useState<any>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [previewQuotationItem, setPreviewQuotationItem] = useState<any>(null)
+
+  const formatCurrency = (amount: any) => amount ? new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount) : '฿ 0.00'
 
   const openAddressModal = (quotationId: string) => {
     setSelectedQuotationId(quotationId)
@@ -210,7 +213,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                             variant="default" 
                             size="sm" 
                             className="bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer mr-2"
-                            onClick={() => openAddressModal(item.quotation_id)}
+                            onClick={() => setPreviewQuotationItem(item)}
                             disabled={processingId === item.quotation_id}
                           >
                             ยืนยันคำสั่งซื้อ
@@ -262,6 +265,82 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         onClose={() => setAddressModalOpen(false)}
         onConfirm={handleConfirmOrder}
       />
+
+      {/* Quotation Preview Modal */}
+      {previewQuotationItem && previewQuotationItem.quotations && previewQuotationItem.quotations[0] && (
+        <Dialog open={!!previewQuotationItem} onOpenChange={(open) => !open && setPreviewQuotationItem(null)}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                ใบเสนอราคาประเมินเรียบร้อย
+              </DialogTitle>
+              <DialogDescription className="text-slate-500">
+                รหัสอ้างอิง: {previewQuotationItem.inquiry_number} | {previewQuotationItem.customer?.customer_code || "ไม่มีรหัส"} {previewQuotationItem.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-2 space-y-4">
+              <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-sm text-slate-800 border-b pb-2">รายละเอียดราคานำเข้าพัสดุ</h4>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between pb-1 border-b text-slate-600">
+                    <span>ค่าสินค้า (Product Cost)</span>
+                    <span className="font-semibold text-slate-900">{formatCurrency(previewQuotationItem.quotations[0].product_cost)}</span>
+                  </div>
+
+                  {previewQuotationItem.items && previewQuotationItem.items.length > 0 && (
+                    <div className="py-2 space-y-2 border-b border-dashed border-slate-200">
+                      <p className="text-xs font-bold text-slate-500 mb-1">รายการสินค้า:</p>
+                      {previewQuotationItem.items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between text-xs text-slate-600 pl-2">
+                          <span className="truncate max-w-[200px] flex-1">{idx + 1}. {item.url} (x{item.quantity})</span>
+                          <div className="text-right">
+                            <span className="font-semibold text-slate-800 ml-2">{formatCurrency(item.quoted_price || 0)}</span>
+                            <div className="text-[10px] text-slate-400">ค่าส่ง: {formatCurrency(item.quoted_shipping_cn_cn || 0)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-sm pt-2">
+                    <span className="text-slate-600 font-medium">ค่าจัดส่ง จีน-จีน</span>
+                    <span className="font-semibold text-slate-900">{formatCurrency(previewQuotationItem.quotations[0].shipping_cost_cn_cn)}</span>
+                  </div>
+                  <div className="flex justify-between pb-1 border-b text-slate-600">
+                    <span>ค่าธรรมเนียมอื่น ๆ (Other Fee)</span>
+                    <span className="font-semibold text-slate-900">{formatCurrency(previewQuotationItem.quotations[0].other_fee)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 text-base font-bold">
+                    <span className="text-slate-900">ยอดสุทธิ (Grand Total)</span>
+                    <span className="text-primary text-lg">{formatCurrency(previewQuotationItem.quotations[0].total_price)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-4 gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setPreviewQuotationItem(null)}>
+                ยกเลิก
+              </Button>
+              <Button 
+                type="button" 
+                variant="orange" 
+                onClick={() => {
+                  const qId = previewQuotationItem.quotation_id
+                  setPreviewQuotationItem(null)
+                  openAddressModal(qId)
+                }}
+                className="font-bold cursor-pointer"
+              >
+                ยืนยันและยอมรับราคา
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Details Modal */}
       {selectedDetailsItem && (
