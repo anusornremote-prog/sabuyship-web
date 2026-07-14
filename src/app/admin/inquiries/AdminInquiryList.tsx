@@ -585,7 +585,10 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">ชื่อลูกค้า</span>
-                  <span className="font-semibold text-slate-800">{selectedQuote.inquiry?.customer_name || "-"}</span>
+                  <span className="font-semibold text-slate-800 block">{selectedQuote.inquiry?.customer_name || "-"}</span>
+                  <span className="text-xs font-semibold text-primary mt-0.5 inline-block bg-primary/10 px-1.5 py-0.5 rounded">
+                    {selectedQuote.inquiry?.customer?.customer_code || "ไม่มีรหัส"} {selectedQuote.inquiry?.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">สถานะปัจจุบัน</span>
@@ -600,7 +603,28 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               </div>
 
               <div className="space-y-3 p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-                <h4 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2 mb-3">สรุปค่าใช้จ่าย</h4>
+                <h4 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2 mb-3">รายละเอียดสินค้าที่สั่งซื้อ</h4>
+                
+                {selectedQuote.inquiry?.items && selectedQuote.inquiry.items.length > 0 ? (
+                  <div className="space-y-3 mb-4">
+                    {selectedQuote.inquiry.items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-start text-xs border-b border-dashed border-slate-100 pb-2">
+                        <div className="flex-1 pr-2 truncate">
+                          <span className="font-semibold block truncate text-slate-700">รายการที่ {idx + 1}: {item.url}</span>
+                          <span className="text-slate-500">จำนวน: {item.quantity} ชิ้น</span>
+                        </div>
+                        <div className="text-right whitespace-nowrap">
+                          <div className="font-bold text-slate-800">฿ {Number(item.quoted_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                          <div className="text-[10px] text-slate-500">ค่าส่ง: ฿ {Number(item.quoted_shipping_cn_cn || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-500 mb-4 italic">ไม่พบรายละเอียดสินค้าย่อย</div>
+                )}
+
+                <h4 className="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2 mb-3">สรุปค่าใช้จ่ายทั้งหมด</h4>
                 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-600 font-medium">ค่าสินค้า</span>

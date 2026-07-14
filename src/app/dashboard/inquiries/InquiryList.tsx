@@ -304,7 +304,10 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
             <div className="flex justify-between items-center bg-green-50/40 p-3 rounded-lg border border-green-100/30">
               <div>
                 <span className="text-xs text-green-700 font-semibold">ใบเสนอราคาประเมินเรียบร้อย</span>
-                <p className="text-lg font-bold text-slate-900 mt-0.5">
+                <p className="text-sm font-semibold text-primary mt-1">
+                  รหัสอ้างอิง: {inq.inquiry_number} | {profile?.customer_code || "ไม่มีรหัส"} {inq.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
+                </p>
+                <p className="text-lg font-bold text-slate-900 mt-1">
                   ยอดชำระทั้งสิ้น: <span className="text-primary font-extrabold">{formatCurrency(quotation.total_price)}</span>
                 </p>
               </div>
@@ -340,7 +343,22 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
                     <span className="font-semibold text-slate-900">{formatCurrency(quotation.product_cost)}</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-sm">
+                  {inq.items && inq.items.length > 0 && (
+                    <div className="py-2 space-y-2 border-b border-dashed border-slate-200">
+                      <p className="text-xs font-bold text-slate-500 mb-1">รายการสินค้า:</p>
+                      {inq.items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between text-xs text-slate-600 pl-2">
+                          <span className="truncate max-w-[200px] flex-1">{idx + 1}. {item.url} (x{item.quantity})</span>
+                          <div className="text-right">
+                            <span className="font-semibold text-slate-800 ml-2">{formatCurrency(item.quoted_price || 0)}</span>
+                            <div className="text-[10px] text-slate-400">ค่าส่ง: {formatCurrency(item.quoted_shipping_cn_cn || 0)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-sm pt-2">
                     <span className="text-slate-600 font-medium">ค่าจัดส่ง จีน-จีน</span>
                     <span className="font-semibold text-slate-900">{formatCurrency(quotation.shipping_cost_cn_cn)}</span>
                   </div>
