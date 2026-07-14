@@ -156,23 +156,23 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
             {getStatusText(order.status)}
           </Badge>
           
-          <Button variant="outline" size="sm" className="hidden sm:flex gap-2" asChild>
-            <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">
+          <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">
+            <Button variant="outline" size="sm" className="hidden sm:flex gap-2">
               <Printer className="h-4 w-4" />
               <span>พิมพ์ใบแจ้งหนี้/ใบเสร็จ</span>
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </div>
       
       {/* Mobile Invoice Button */}
       <div className="sm:hidden">
-        <Button variant="outline" className="w-full flex gap-2" asChild>
-          <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">
+        <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">
+          <Button variant="outline" className="w-full flex gap-2">
             <Printer className="h-4 w-4" />
             <span>พิมพ์ใบแจ้งหนี้/ใบเสร็จ</span>
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
 
       <div id="payment">
