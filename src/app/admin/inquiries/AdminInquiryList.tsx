@@ -257,7 +257,7 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
           {selectedIds.length > 0 && (
             <Button
               variant="destructive"
-              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 font-bold"
+              className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-700 font-bold"
               onClick={() => {
                 setDeletePin("")
                 setIsDeleteModalOpen(true)
@@ -734,6 +734,43 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
           </DialogContent>
         </Dialog>
       )}
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-rose-600 flex items-center gap-2">
+              <XCircle className="h-5 w-5" />
+              ยืนยันการลบรายการ
+            </DialogTitle>
+            <DialogDescription>
+              คุณกำลังจะลบรายการคำขอประเมินราคาจำนวน {selectedIds.length} รายการ การกระทำนี้ไม่สามารถย้อนกลับได้ กรุณาใส่รหัส PIN 4 หลักเพื่อยืนยัน
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              type="password"
+              placeholder="รหัส PIN (1234)"
+              value={deletePin}
+              onChange={(e) => setDeletePin(e.target.value)}
+              className="text-center text-xl tracking-widest font-bold"
+              maxLength={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button 
+              variant="destructive" 
+              className="bg-red-600 text-white hover:bg-red-700" 
+              onClick={handleDeleteSelected}
+              disabled={isDeleting || deletePin.length !== 4}
+            >
+              {isDeleting ? "กำลังลบ..." : "ยืนยันการลบ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
