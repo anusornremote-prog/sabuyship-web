@@ -85,6 +85,33 @@ export async function DELETE(request: Request) {
       ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
       : supabase
 
+    // Find all quotations related to these inquiries
+    const { data: quotations } = await adminSupabase
+      .from("quotations")
+      .select("id")
+      .in("inquiry_id", body.ids)
+
+    if (quotations && quotations.length > 0) {
+      const quotationIds = quotations.map((q: any) => q.id)
+
+      // 1. Delete associated orders first to avoid foreign key constraint violations
+      const { error: orderError } = await adminSupabase
+        .from("orders")
+        .delete()
+        .in("quotation_id", quotationIds)
+
+      if (orderError) throw orderError
+
+      // 2. Delete quotations
+      const { error: quotationError } = await adminSupabase
+        .from("quotations")
+        .delete()
+        .in("id", quotationIds)
+        
+      if (quotationError) throw quotationError
+    }
+
+    // 3. Finally delete inquiries
     const { error } = await adminSupabase
       .from("inquiries")
       .delete()
