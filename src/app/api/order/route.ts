@@ -97,11 +97,15 @@ export async function POST(request: Request) {
       orderData = data
 
       // Initial tracking log (catch error silently in case of RLS issues)
-      await supabase.from("tracking_logs").insert({
-        order_id: data.id,
-        status: "NEW",
-        notes: "Order created"
-      }).catch(console.error)
+      try {
+        await supabase.from("tracking_logs").insert({
+          order_id: data.id,
+          status: "NEW",
+          notes: "Order created"
+        })
+      } catch (err) {
+        console.error(err)
+      }
     }
 
     // Update quotation status to ACCEPTED

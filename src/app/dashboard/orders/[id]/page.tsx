@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Timeline, TimelineItem } from "@/components/ui/timeline"
 import { ArrowLeft, FileText, Globe, Truck, Printer } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { PaymentStepper } from "./PaymentStepper"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {

@@ -58,7 +58,7 @@ export default async function MyOrders() {
     const formattedOrders = orders.map(o => ({
       ...o,
       type: 'ORDER',
-      total_price: o.quotation?.total_price
+      total_price: (o as any).quotation?.total_price
     }))
 
     // Map Inquiries (skip if order already exists for this number)

@@ -17,7 +17,7 @@ export default function InquiryForm() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null }>([{ url: '', quantity: 1, remark: '', file: null }])
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null }[]>([{ url: '', quantity: 1, remark: '', file: null }])
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {

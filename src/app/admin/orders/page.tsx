@@ -117,7 +117,7 @@ export default function AdminOrders() {
         .insert({
           order_id: editingOrder.id,
           status: newStatus,
-          notes: trackingNotes || `อัปเดตสถานะเป็น: ${getStatusText(newStatus)}`
+          notes: trackingNotes || `อัปเดตสถานะเป็น: ${getStatusText(newStatus, editingOrder)}`
         })
 
       if (logError) throw logError
