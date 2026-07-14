@@ -35,6 +35,12 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
+  // Delete states
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deletePin, setDeletePin] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+
   // Form input fields
   const [productCost, setProductCost] = useState("")
   const [itemCosts, setItemCosts] = useState<Record<number, string>>({})
@@ -150,9 +156,54 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
       router.refresh()
     } catch (err: any) {
       console.error(err)
-      alert("เกิดข้อผิดพลาดในการล้างรูปภาพ: " + err.message)
+      alert("เกิดข้อผิดพลาด: " + err.message)
     } finally {
       setIsCleaning(false)
+    }
+  }
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filtered.map((inq: any) => inq.id))
+    } else {
+      setSelectedIds([])
+    }
+  }
+
+  const handleSelectRow = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleDeleteSelected = async () => {
+    if (deletePin !== "1234") {
+      alert("รหัส PIN ไม่ถูกต้อง")
+      return
+    }
+
+    try {
+      setIsDeleting(true)
+      const res = await fetch("/api/inquiry/admin", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      })
+
+      if (!res.ok) {
+        const result = await res.json()
+        throw new Error(result.error || "Failed to delete inquiries")
+      }
+
+      setInquiries(prev => prev.filter((inq: any) => !selectedIds.includes(inq.id)))
+      setSelectedIds([])
+      setIsDeleteModalOpen(false)
+      setDeletePin("")
+      alert("ลบรายการที่เลือกเรียบร้อยแล้ว")
+    } catch (error: any) {
+      alert("เกิดข้อผิดพลาด: " + error.message)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -202,6 +253,19 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
           >
             {isCleaning ? 'กำลังล้าง...' : 'ล้างรูปภาพเก่า (เกิน 90 วัน)'}
           </Button>
+
+          {selectedIds.length > 0 && (
+            <Button
+              variant="destructive"
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 font-bold"
+              onClick={() => {
+                setDeletePin("")
+                setIsDeleteModalOpen(true)
+              }}
+            >
+              ลบรายการที่เลือก ({selectedIds.length})
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -212,6 +276,14 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                 <tr>
+                  <th className="px-6 py-4 w-12">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                      checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                      onChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-4 font-semibold">รหัสคำขอ</th>
                   <th className="px-6 py-4 font-semibold">ลูกค้า</th>
                   <th className="px-6 py-4 font-semibold">ลิงก์สินค้า</th>
@@ -224,6 +296,14 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 {filtered.length > 0 ? (
                   filtered.map((inq: any) => (
                     <tr key={inq.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                          checked={selectedIds.includes(inq.id)}
+                          onChange={() => handleSelectRow(inq.id)}
+                        />
+                      </td>
                       <td className="px-6 py-4 font-bold text-slate-900">{inq.inquiry_number}</td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-slate-800">{inq.customer_name}</p>
