@@ -53,8 +53,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
 
       const order = result.data
 
-      router.push(`/dashboard/orders/${order.order_number}#payment`)
-      router.refresh()
+      alert("ยืนยันคำสั่งซื้อสำเร็จ!")
+      window.location.reload()
     } catch (err: any) {
       console.error(err)
       setErrorMsg(err.message || "เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ")
