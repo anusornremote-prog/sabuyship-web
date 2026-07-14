@@ -5,7 +5,7 @@ export default async function AdminInquiries() {
   const supabase = await createClient()
   const { data: inquiries } = await supabase
     .from("inquiries")
-    .select("*, quotations(*)")
+    .select("*, quotations(*, orders(*))")
     .order("created_at", { ascending: false })
 
   return (

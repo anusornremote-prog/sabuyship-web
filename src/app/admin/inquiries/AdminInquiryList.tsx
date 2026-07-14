@@ -277,14 +277,18 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                       <td className="px-6 py-4">
                         <span
                           className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                            inq.status === "PENDING"
+                            (inq.status === "ORDERED" || (inq.quotations && inq.quotations.some((q: any) => q.orders && q.orders.length > 0)))
+                              ? "bg-emerald-100 text-emerald-800"
+                              : inq.status === "PENDING"
                               ? "bg-amber-100 text-amber-800"
                               : inq.status === "QUOTED"
-                              ? "bg-green-100 text-green-800"
+                              ? "bg-blue-100 text-blue-800"
                               : "bg-rose-100 text-rose-800"
                           }`}
                         >
-                          {inq.status === "PENDING"
+                          {(inq.status === "ORDERED" || (inq.quotations && inq.quotations.some((q: any) => q.orders && q.orders.length > 0)))
+                            ? "ลูกค้าสั่งซื้อแล้ว"
+                            : inq.status === "PENDING"
                             ? "รอแอดมินประเมินราคา"
                             : inq.status === "QUOTED"
                             ? "แอดมินเสนอราคาแล้ว (รอสั่งซื้อ)"
