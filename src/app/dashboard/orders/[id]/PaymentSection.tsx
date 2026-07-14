@@ -23,52 +23,47 @@ export function PaymentSection({ orderId, paymentRound }: { orderId: string, pay
 
     setIsSubmitting(true)
     try {
-      // For mock, read file as base64 for slip_url
-      const reader = new FileReader()
-      reader.onload = async () => {
-        const base64Str = reader.result as string
-        
-        // Upload to storage (mocked to just return the data url or a fake path)
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('payment_slips')
-          .upload(`slip-${orderId}-${Date.now()}`, base64Str)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `slip-${orderId}-${Date.now()}.${fileExt}`
 
-        if (uploadError) throw uploadError
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment_slips')
+        .upload(fileName, file)
 
-        const { data: publicUrlData } = supabase.storage
-          .from('payment_slips')
-          .getPublicUrl(uploadData.path)
+      if (uploadError) throw uploadError
 
-        const slipUrl = publicUrlData.publicUrl
+      const { data: publicUrlData } = supabase.storage
+        .from('payment_slips')
+        .getPublicUrl(uploadData.path)
 
-        const { error: insertError } = await supabase
-          .from('payments')
-          .insert({
-            order_id: orderId,
-            amount: parseFloat(amount),
-            payment_date: new Date(paymentDate).toISOString(),
-            slip_url: slipUrl,
-            status: 'PENDING'
-          })
+      const slipUrl = publicUrlData.publicUrl
 
-        if (insertError) throw insertError
+      const { error: insertError } = await supabase
+        .from('payments')
+        .insert({
+          order_id: orderId,
+          amount: parseFloat(amount),
+          payment_date: new Date(paymentDate).toISOString(),
+          slip_url: slipUrl,
+          status: 'PENDING'
+        })
 
-        // Update the specific payment round status to UPLOADED
-        const roundColumn = `payment_round_${paymentRound}_status`
-        const { error: orderError } = await supabase
-          .from('orders')
-          .update({ [roundColumn]: 'UPLOADED' })
-          .eq('id', orderId)
+      if (insertError) throw insertError
 
-        if (orderError) throw orderError
+      const roundColumn = `payment_round_${paymentRound}_status`
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update({ [roundColumn]: 'UPLOADED' })
+        .eq('id', orderId)
 
-        alert('แจ้งชำระเงินสำเร็จ กรุณารอเจ้าหน้าที่ตรวจสอบ')
-        setIsOpen(false)
-        router.refresh()
-      }
-      reader.readAsDataURL(file)
+      if (orderError) throw orderError
+
+      alert('แจ้งชำระเงินสำเร็จ กรุณารอเจ้าหน้าที่ตรวจสอบ')
+      setIsOpen(false)
+      window.location.reload()
     } catch (err: any) {
-      alert('เกิดข้อผิดพลาด: ' + err.message)
+      alert('เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองอีกครั้ง'))
+    } finally {
       setIsSubmitting(false)
     }
   }
