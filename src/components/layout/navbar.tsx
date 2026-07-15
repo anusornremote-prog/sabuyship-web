@@ -216,22 +216,51 @@ export function Navbar() {
           </nav>
           <div className="pt-4 border-t flex flex-col gap-2">
             {user ? (
-              <>
-                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="w-full">
-                  <Button variant="ghost" className="w-full justify-center font-bold text-primary">{dashboardLabel}</Button>
-                </Link>
-                <div className="px-4 py-2 mt-2 border-t">
-                  <span className="text-xs text-slate-500 font-semibold mb-2 block text-center">เปลี่ยนภาษา / Language</span>
-                  <div className="flex gap-1.5 justify-center max-w-[200px] mx-auto">
-                    <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇹🇭 TH</button>
-                    <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇺🇸 EN</button>
-                    <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇨🇳 ZH</button>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-slate-50 rounded-xl border border-slate-100">
+                  {user?.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white shadow-sm">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-900 line-clamp-1">
+                      {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.phone || 'ผู้ใช้งาน'}
+                    </span>
+                    <span className="text-xs text-slate-500 line-clamp-1">{user.email || user.phone}</span>
                   </div>
                 </div>
-              </>
+                
+                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                  <User className="h-5 w-5 text-primary" /> แผงควบคุม (Dashboard)
+                </Link>
+                <Link href="/dashboard/orders" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                  <Package className="h-5 w-5 text-primary" /> คำสั่งซื้อของฉัน
+                </Link>
+                <Link href="/inquiry" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-primary font-bold transition-colors bg-primary/5">
+                  <FileQuestion className="h-5 w-5" /> ขอใบเสนอราคา
+                </Link>
+                
+                <div className="px-4 py-4 mt-2 border-t">
+                  <span className="text-xs text-slate-500 font-semibold mb-3 block text-center">เปลี่ยนภาษา / Language</span>
+                  <div className="flex gap-2 justify-center">
+                    <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsOpen(false) }} className={`flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇹🇭 TH</button>
+                    <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsOpen(false) }} className={`flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇺🇸 EN</button>
+                    <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsOpen(false) }} className={`flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇨🇳 ZH</button>
+                  </div>
+                </div>
+
+                <div className="border-t">
+                  <button onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-4 mt-1 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                    <LogOut className="h-5 w-5" /> ออกจากระบบ
+                  </button>
+                </div>
+              </div>
             ) : (
               <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
-                <Button variant="ghost" className="w-full justify-center">{t.navLogin}</Button>
+                <Button className="w-full justify-center h-12 text-base shadow-sm">{t.navLogin}</Button>
               </Link>
             )}
           </div>
