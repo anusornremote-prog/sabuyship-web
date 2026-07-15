@@ -160,8 +160,24 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
           
           {items.length > 0 && (
             <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
-              <h4 className="text-sm font-bold text-slate-800 border-b pb-2">แจกแจงค่าขนส่งรายชิ้น (Optional)</h4>
-              <p className="text-xs text-slate-500">กรอกค่าส่งแต่ละชิ้น ระบบจะคำนวณยอดรวมให้อัตโนมัติ หากไม่ต้องการแยกชิ้น สามารถข้ามไปกรอกยอดรวมด้านล่างได้เลย</p>
+              <div className="flex justify-between items-end border-b pb-2">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800">แจกแจงค่าขนส่งรายชิ้น (Optional)</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">กรอกค่าส่งแต่ละชิ้น ระบบจะคำนวณยอดรวมให้อัตโนมัติ หากไม่ต้องการแยกชิ้น สามารถข้ามไปกรอกยอดรวมด้านล่างได้เลย</p>
+                </div>
+                {round === 2 && items.some(i => i.wooden_crate) && (
+                  <div className="text-[10px] text-slate-500 bg-white p-2 rounded border border-slate-200 shadow-sm hidden sm:block">
+                    <span className="font-semibold block mb-1">เรทค่าตีลังไม้:</span>
+                    <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                      <li>&lt; 0.2 คิว: 200 บ.</li>
+                      <li>0.2-0.5 คิว: 350 บ.</li>
+                      <li>0.5-1 คิว: 550 บ.</li>
+                      <li>1-2 คิว: 950 บ.</li>
+                      <li>&gt; 2 คิว: 1,250 บ.</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
               
               <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
                 {items.map((item, idx) => (

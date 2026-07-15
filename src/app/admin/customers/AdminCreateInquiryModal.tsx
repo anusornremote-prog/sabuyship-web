@@ -234,17 +234,29 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
                     ></textarea>
                   </div>
 
-                  <div className="flex items-center space-x-2 pt-1 border-t mt-4">
-                    <input
-                      type="checkbox"
-                      id={`admin-wooden-crate-${idx}`}
-                      checked={item.wooden_crate || false}
-                      onChange={(e) => updateItem(idx, 'wooden_crate', e.target.checked)}
-                      className="w-4 h-4 text-primary rounded border-slate-300"
-                    />
-                    <label htmlFor={`admin-wooden-crate-${idx}`} className="text-sm font-medium text-slate-700 cursor-pointer">
-                      ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)
-                    </label>
+                  <div className="flex flex-col space-y-2 pt-1 border-t mt-4">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`admin-wooden-crate-${idx}`}
+                        checked={item.wooden_crate || false}
+                        onChange={(e) => updateItem(idx, 'wooden_crate', e.target.checked)}
+                        className="w-4 h-4 text-primary rounded border-slate-300"
+                      />
+                      <label htmlFor={`admin-wooden-crate-${idx}`} className="text-sm font-medium text-slate-700 cursor-pointer">
+                        ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)
+                      </label>
+                    </div>
+                    <div className="text-[10px] text-slate-500 bg-slate-100 p-2 rounded ml-6">
+                      <span className="font-semibold block mb-1">อัตราค่าบริการตีลังไม้:</span>
+                      <ul className="list-disc list-inside grid grid-cols-1 sm:grid-cols-2 gap-x-2">
+                        <li>ต่ำกว่า 0.2 คิว: 200 บาท</li>
+                        <li>0.2 - 0.5 คิว: 350 บาท</li>
+                        <li>0.5 - 1 คิว: 550 บาท</li>
+                        <li>1 - 2 คิว: 950 บาท</li>
+                        <li>2 คิวขึ้นไป: 1,250 บาท</li>
+                      </ul>
+                    </div>
                   </div>
                   
                   <div className="space-y-2 pt-2">

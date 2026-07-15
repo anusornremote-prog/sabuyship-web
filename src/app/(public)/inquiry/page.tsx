@@ -308,17 +308,29 @@ export default function InquiryForm() {
                       ></textarea>
                     </div>
                     
-                    <div className="flex items-center space-x-2 pt-1 border-t mt-4">
-                      <input
-                        type="checkbox"
-                        id={`wooden-crate-${index}`}
-                        checked={item.wooden_crate || false}
-                        onChange={(e) => handleItemChange(index, 'wooden_crate', e.target.checked)}
-                        className="w-4 h-4 text-primary rounded border-slate-300"
-                      />
-                      <label htmlFor={`wooden-crate-${index}`} className="text-sm font-medium text-slate-700 cursor-pointer">
-                        {locale === 'en' ? 'Require Wooden Crate (ตีลังไม้)' : locale === 'zh' ? '需要木箱包装 (ตีลังไม้)' : 'ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)'}
-                      </label>
+                    <div className="flex flex-col space-y-2 pt-1 border-t mt-4">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`wooden-crate-${index}`}
+                          checked={item.wooden_crate || false}
+                          onChange={(e) => handleItemChange(index, 'wooden_crate', e.target.checked)}
+                          className="w-4 h-4 text-primary rounded border-slate-300"
+                        />
+                        <label htmlFor={`wooden-crate-${index}`} className="text-sm font-medium text-slate-700 cursor-pointer">
+                          {locale === 'en' ? 'Require Wooden Crate (ตีลังไม้)' : locale === 'zh' ? '需要木箱包装 (ตีลังไม้)' : 'ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)'}
+                        </label>
+                      </div>
+                      <div className="text-[10px] text-slate-500 bg-slate-100 p-2 rounded ml-6">
+                        <span className="font-semibold block mb-1">อัตราค่าบริการตีลังไม้ (ชำระพร้อมค่าขนส่งรอบ 2):</span>
+                        <ul className="list-disc list-inside grid grid-cols-1 sm:grid-cols-2 gap-x-2">
+                          <li>ต่ำกว่า 0.2 คิว: 200 บาท</li>
+                          <li>0.2 - 0.5 คิว: 350 บาท</li>
+                          <li>0.5 - 1 คิว: 550 บาท</li>
+                          <li>1 - 2 คิว: 950 บาท</li>
+                          <li>2 คิวขึ้นไป: 1,250 บาท</li>
+                        </ul>
+                      </div>
                     </div>
                     <div className="space-y-2 pt-2">
                       <label className="text-sm font-medium">{locale === 'en' ? 'Product Image (Optional)' : locale === 'zh' ? '商品图片 (选填)' : 'รูปภาพสินค้าเพิ่มเติม (ถ้ามี)'}</label>
