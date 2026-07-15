@@ -7,6 +7,7 @@ import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus } from "lucide-r
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
+import * as XLSX from "xlsx"
 import { PaymentApprovalModal } from "./PaymentApprovalModal"
 import { QuoteModal } from "./QuoteModal"
 
@@ -111,6 +112,76 @@ export default function AdminOrders() {
     fetchOrders()
   }, [currentPage, statusFilter]) // We don't auto-fetch on searchQuery to avoid spam, we rely on a submit or debounce if needed. Wait, we should fetch on search. 
   // Let's add a debounced search later, or just fetch on Enter/Search button. For now, fetch when search is applied.
+
+  const handleExport = async () => {
+    try {
+      // ดึงข้อมูลตาม Filter และ Search ปัจจุบัน แต่ดึงทั้งหมดโดยไม่จำกัดหน้า
+      let query = supabase
+        .from("orders")
+        .select(`
+          order_number,
+          status,
+          created_at,
+          payment_round_1_status,
+          payment_round_2_status,
+          payment_round_3_status,
+          customer:customer_id (
+            full_name,
+            customer_code
+          ),
+          quotation:quotation_id (
+            total_price,
+            inquiry:inquiry_id (
+              shipping_type
+            )
+          )
+        `)
+        
+      if (statusFilter !== "ALL") {
+        query = query.eq("status", statusFilter)
+      }
+
+      if (searchQuery) {
+        query = query.ilike("order_number", `%${searchQuery}%`)
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false })
+      if (error) throw error
+
+      if (!data || data.length === 0) {
+        alert("ไม่มีข้อมูลสำหรับส่งออก")
+        return
+      }
+
+      const exportData = data.map(order => {
+        const shippingType = order.quotation?.inquiry?.shipping_type === "CARGO_EK" ? "(EK)" : order.quotation?.inquiry?.shipping_type === "CARGO_SEA" ? "(SEA)" : ""
+        const customerCode = order.customer?.customer_code ? `${order.customer.customer_code} ${shippingType}`.trim() : `ไม่ระบุ ${shippingType}`.trim()
+
+        return {
+          "วันที่สั่งซื้อ": new Date(order.created_at).toLocaleString('th-TH'),
+          "เลขออเดอร์": order.order_number,
+          "รหัสลูกค้า": customerCode,
+          "ชื่อลูกค้า": order.customer?.full_name || "ไม่ระบุ",
+          "สถานะ": getStatusText(order.status, order),
+          "ยอดรวมสุทธิ (บาท)": order.quotation?.total_price || 0,
+          "ชำระรอบ 1": order.payment_round_1_status === 'PAID' ? 'จ่ายแล้ว' : order.payment_round_1_status,
+          "ชำระรอบ 2": order.payment_round_2_status === 'PAID' ? 'จ่ายแล้ว' : order.payment_round_2_status,
+          "ชำระรอบ 3": order.payment_round_3_status === 'PAID' ? 'จ่ายแล้ว' : order.payment_round_3_status,
+        }
+      })
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Orders")
+      
+      const fileName = `sabuyship-orders-${new Date().toISOString().split('T')[0]}.xlsx`
+      XLSX.writeFile(workbook, fileName)
+      
+    } catch (err: any) {
+      console.error("Export error:", err.message)
+      alert("เกิดข้อผิดพลาดในการส่งออกไฟล์")
+    }
+  }
 
 
   const handleOpenPaymentModal = (order: any, payment: any) => {
@@ -295,12 +366,18 @@ export default function AdminOrders() {
           <h1 className="text-3xl font-bold text-slate-900">จัดการคำสั่งซื้อ (Orders)</h1>
           <p className="text-slate-600">ตรวจสอบและอัปเดตสถานะคำสั่งซื้อพัสดุทั้งหมด</p>
         </div>
-        <Link href="/admin/orders/new">
-          <Button className="bg-primary hover:bg-primary/90 text-white shadow-sm flex items-center gap-2">
-            <PackagePlus className="w-4 h-4" />
-            สร้างออเดอร์ (Manual)
+        <div className="flex gap-2">
+          <Button variant="outline" className="border-slate-300 shadow-sm flex items-center gap-2" onClick={handleExport}>
+            <FileText className="w-4 h-4 text-emerald-600" />
+            Export Excel
           </Button>
-        </Link>
+          <Link href="/admin/orders/new">
+            <Button className="bg-primary hover:bg-primary/90 text-white shadow-sm flex items-center gap-2">
+              <PackagePlus className="w-4 h-4" />
+              สร้างออเดอร์ (Manual)
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="shadow-sm">
