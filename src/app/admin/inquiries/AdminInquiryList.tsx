@@ -456,6 +456,11 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">
                              {idx + 1}. {item.url}
                            </a>
+                           {item.wooden_crate && (
+                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 ml-2 whitespace-nowrap">
+                               📦 ตีลังไม้
+                             </span>
+                           )}
                            <span className="font-semibold text-slate-600 whitespace-nowrap">จำนวน: {item.quantity}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mt-1">
@@ -692,7 +697,14 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                       <div key={idx} className="flex justify-between items-start text-xs border-b border-dashed border-slate-100 pb-2">
                         <div className="flex-1 pr-2 truncate">
                           <span className="font-semibold block truncate text-slate-700">รายการที่ {idx + 1}: {item.url}</span>
-                          <span className="text-slate-500">จำนวน: {item.quantity} ชิ้น</span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-slate-500">จำนวน: {item.quantity} ชิ้น</span>
+                            {item.wooden_crate && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 whitespace-nowrap">
+                                📦 ตีลังไม้
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="text-right whitespace-nowrap">
                           <div className="font-bold text-slate-800">฿ {Number(item.quoted_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>

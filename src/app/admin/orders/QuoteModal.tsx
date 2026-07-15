@@ -32,7 +32,8 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
       // Initialize shipping cost fields for UI state
       const initializedItems = inquiryItems.map((item: any) => ({
         ...item,
-        inputCost: round === 2 ? (item.shipping_cost_cn_th || "") : (item.shipping_cost_th_th || "")
+        inputCost: round === 2 ? (item.shipping_cost_cn_th || "") : (item.shipping_cost_th_th || ""),
+        inputWoodenCrateCost: round === 2 && item.wooden_crate ? (item.wooden_crate_cost || "") : ""
       }))
       setItems(initializedItems)
       
@@ -40,22 +41,34 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
     }
   }, [isOpen, order, round])
 
-  const handleItemCostChange = (idx: number, value: string) => {
+  const handleItemCostChange = (idx: number, field: 'inputCost' | 'inputWoodenCrateCost', value: string) => {
     const newItems = [...items]
-    newItems[idx].inputCost = value
+    newItems[idx][field] = value
     setItems(newItems)
 
     // Auto sum
     let sum = 0
     let hasInput = false
     newItems.forEach(item => {
+      let itemSum = 0
+      let itemHasInput = false
+
       if (item.inputCost !== undefined && item.inputCost !== "") {
+        itemHasInput = true
+        if (!isNaN(Number(item.inputCost))) itemSum += Number(item.inputCost)
+      }
+      
+      if (item.inputWoodenCrateCost !== undefined && item.inputWoodenCrateCost !== "") {
+        itemHasInput = true
+        if (!isNaN(Number(item.inputWoodenCrateCost))) itemSum += Number(item.inputWoodenCrateCost)
+      }
+
+      if (itemHasInput) {
         hasInput = true
-        if (!isNaN(Number(item.inputCost))) {
-          sum += Number(item.inputCost)
-        }
+        sum += itemSum
       }
     })
+    
     if (hasInput) {
       setCost(sum >= 0 ? sum.toString() : "")
     }
@@ -79,11 +92,15 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
       // Update items array with the new costs
       const updatedItems = items.map(item => {
         const costVal = item.inputCost && !isNaN(Number(item.inputCost)) ? Number(item.inputCost) : 0
+        const woodenCostVal = item.inputWoodenCrateCost && !isNaN(Number(item.inputWoodenCrateCost)) ? Number(item.inputWoodenCrateCost) : 0
+        
         return {
           ...item,
           shipping_cost_cn_th: round === 2 ? costVal : (item.shipping_cost_cn_th || 0),
           shipping_cost_th_th: round === 3 ? costVal : (item.shipping_cost_th_th || 0),
-          inputCost: undefined // remove UI only field
+          wooden_crate_cost: round === 2 && item.wooden_crate ? woodenCostVal : (item.wooden_crate_cost || 0),
+          inputCost: undefined, // remove UI only field
+          inputWoodenCrateCost: undefined
         }
       })
 
@@ -161,16 +178,35 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
                       </a>
                       <p className="text-xs text-slate-500 mt-1">จำนวน: {item.quantity} ชิ้น</p>
                     </div>
-                    <div className="w-full sm:w-32 shrink-0">
+                    <div className="w-full sm:w-32 shrink-0 space-y-2">
                       <Input
                         type="number"
                         min="0"
                         step="0.01"
                         value={item.inputCost}
-                        onChange={(e) => handleItemCostChange(idx, e.target.value)}
+                        onChange={(e) => handleItemCostChange(idx, 'inputCost', e.target.value)}
                         placeholder="ค่าจัดส่ง (บาท)"
                         className="h-8 text-sm"
+                        title="ค่าจัดส่ง"
                       />
+                      {round === 2 && item.wooden_crate && (
+                        <div className="relative">
+                          <span className="absolute -top-1.5 -right-1 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                          </span>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.inputWoodenCrateCost}
+                            onChange={(e) => handleItemCostChange(idx, 'inputWoodenCrateCost', e.target.value)}
+                            placeholder="ค่าตีลังไม้ (บาท)"
+                            className="h-8 text-sm border-amber-300 focus-visible:ring-amber-500 bg-amber-50"
+                            title="ค่าตีลังไม้"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -227,7 +227,14 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                               <Globe className="h-4 w-4 shrink-0" />
                               <span className="line-clamp-1">{item.url}</span>
                             </a>
-                            <div className="flex justify-between items-end flex-wrap gap-4">
+                            {item.wooden_crate && (
+                              <div className="inline-block mt-1">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wide">
+                                  📦 ต้องการตีลังไม้
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex justify-between items-end flex-wrap gap-4 mt-2">
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase">จำนวนที่สั่ง</p>
                                 <p className="text-sm font-medium text-slate-900">{item.quantity} ชิ้น</p>
@@ -243,6 +250,12 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                                   <div>
                                     <p className="text-xs font-semibold text-slate-500 uppercase">ค่าส่ง จีน-ไทย</p>
                                     <p className="text-sm font-bold text-purple-600">{formatCurrency(item.shipping_cost_cn_th)}</p>
+                                  </div>
+                                )}
+                                {item.wooden_crate_cost !== undefined && item.wooden_crate_cost > 0 && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase">ค่าตีลังไม้</p>
+                                    <p className="text-sm font-bold text-amber-600">{formatCurrency(item.wooden_crate_cost)}</p>
                                   </div>
                                 )}
                                 {item.shipping_cost_th_th !== undefined && item.shipping_cost_th_th > 0 && (

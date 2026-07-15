@@ -17,7 +17,7 @@ export default function InquiryForm() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null }[]>([{ url: '', quantity: 1, remark: '', file: null }])
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean }>([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false }])
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function InquiryForm() {
   const labelViewOrders = locale === 'en' ? 'View Orders' : locale === 'zh' ? '查看订单' : 'ดูคำสั่งซื้อ'
 
   const handleAddItem = () => {
-    setItems([...items, { url: '', quantity: 1, remark: '', file: null }])
+    setItems([...items, { url: '', quantity: 1, remark: '', file: null, wooden_crate: false }])
   }
 
   const handleRemoveItem = (index: number) => {
@@ -148,6 +148,7 @@ export default function InquiryForm() {
           url: item.url,
           quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
           remark: item.remark,
+          wooden_crate: item.wooden_crate,
           image_url
         }
       }))
@@ -305,6 +306,19 @@ export default function InquiryForm() {
                         className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder={labelRemarkPlaceholder}
                       ></textarea>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 pt-1 border-t mt-4">
+                      <input
+                        type="checkbox"
+                        id={`wooden-crate-${index}`}
+                        checked={item.wooden_crate || false}
+                        onChange={(e) => handleItemChange(index, 'wooden_crate', e.target.checked)}
+                        className="w-4 h-4 text-primary rounded border-slate-300"
+                      />
+                      <label htmlFor={`wooden-crate-${index}`} className="text-sm font-medium text-slate-700 cursor-pointer">
+                        {locale === 'en' ? 'Require Wooden Crate (ตีลังไม้)' : locale === 'zh' ? '需要木箱包装 (ตีลังไม้)' : 'ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)'}
+                      </label>
                     </div>
                     <div className="space-y-2 pt-2">
                       <label className="text-sm font-medium">{locale === 'en' ? 'Product Image (Optional)' : locale === 'zh' ? '商品图片 (选填)' : 'รูปภาพสินค้าเพิ่มเติม (ถ้ามี)'}</label>

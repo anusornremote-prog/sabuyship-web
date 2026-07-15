@@ -28,12 +28,10 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
   const [errorMsg, setErrorMsg] = useState("")
   const [shippingType, setShippingType] = useState("CAR")
 
-  const [items, setItems] = useState([
-    { url: "", quantity: 1 as number | string, remark: "", file: null as File | null }
-  ])
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean }>([{ url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])
 
   const handleAddItem = () => {
-    setItems([...items, { url: "", quantity: 1, remark: "", file: null }])
+    setItems([...items, { url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])
   }
 
   const handleRemoveItem = (index: number) => {
@@ -104,6 +102,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
           url: item.url,
           quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
           remark: item.remark,
+          wooden_crate: item.wooden_crate,
           image_url
         }
       }))
@@ -129,7 +128,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
       alert(`สร้างคำขอประเมินราคาสำเร็จ! หมายเลข: ${data.inquiry_number}`)
       
       // Reset form
-      setItems([{ url: "", quantity: 1, remark: "", file: null }])
+      setItems([{ url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])
       onClose()
       router.refresh()
     } catch (err: any) {
@@ -226,13 +225,26 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">หมายเหตุ / รายละเอียดเพิ่มเติม (สี, ไซส์)</label>
+                    <label className="text-sm font-medium">หมายเหตุ / สี / ไซส์ (ถ้ามี)</label>
                     <textarea 
                       value={item.remark}
                       onChange={(e) => updateItem(idx, 'remark', e.target.value)}
-                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="เช่น เอาสีดำ ไซส์ M อย่างละ 2 ตัว"
+                      className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="เช่น สีดำ ไซส์ M 2 ชิ้น"
                     ></textarea>
+                  </div>
+
+                  <div className="flex items-center space-x-2 pt-1 border-t mt-4">
+                    <input
+                      type="checkbox"
+                      id={`admin-wooden-crate-${idx}`}
+                      checked={item.wooden_crate || false}
+                      onChange={(e) => updateItem(idx, 'wooden_crate', e.target.checked)}
+                      className="w-4 h-4 text-primary rounded border-slate-300"
+                    />
+                    <label htmlFor={`admin-wooden-crate-${idx}`} className="text-sm font-medium text-slate-700 cursor-pointer">
+                      ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)
+                    </label>
                   </div>
                   
                   <div className="space-y-2 pt-2">
