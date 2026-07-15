@@ -7,6 +7,7 @@ import { ArrowLeft, FileText, Globe, Truck, Printer } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
 import { PaymentStepper } from "./PaymentStepper"
+import { ConfirmReceiptButton } from "./ConfirmReceiptButton"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
@@ -166,6 +167,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               <span>พิมพ์ใบแจ้งหนี้/ใบเสร็จ</span>
             </Button>
           </Link>
+
+          <ConfirmReceiptButton orderId={order.id} status={order.status} />
         </div>
       </div>
       

@@ -2,6 +2,8 @@
 
 import { Package, Truck, Home } from "lucide-react"
 import { PaymentSection } from "./PaymentSection"
+import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 interface PaymentStepperProps {
   orderId: string
@@ -27,8 +29,28 @@ export function PaymentStepper({
   shippingCostThTh
 }: PaymentStepperProps) {
   
+  const supabase = createClient()
+  const [shippingMethod, setShippingMethod] = useState<string>('')
+  const [isUpdatingMethod, setIsUpdatingMethod] = useState(false)
+
   const formatCurrency = (amount: number) => {
     return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+
+  const handleUpdateShippingMethod = async (method: string) => {
+    try {
+      setIsUpdatingMethod(true)
+      const { error } = await supabase
+        .from("orders")
+        .update({ shipping_company: method }) // Reusing this text column to store the method
+        .eq("id", orderId)
+      if (error) throw error
+      setShippingMethod(method)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsUpdatingMethod(false)
+    }
   }
 
   // Logic for steps
@@ -46,9 +68,9 @@ export function PaymentStepper({
     {
       round: 2,
       title: "รอบ 2: ค่าขนส่ง จีน-ไทย",
-      description: status === 'SHIPPING' || status === 'ARRIVED' || status === 'DELIVERED'
-        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound2Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "กำลังประเมินยอด"))
-        : "รอสินค้าจัดส่งมาไทย",
+      description: status === 'SHIPPING' || status === 'THAILAND_WAREHOUSE' || status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED'
+        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound2Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย"))
+        : (paymentRound1Status === 'PAID' ? "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย" : "รอสินค้าจัดส่งมาไทย"),
       amount: shippingCostCnTh,
       isCompleted: paymentRound2Status === 'PAID',
       isActive: paymentRound1Status === 'PAID' && paymentRound2Status !== 'PAID',
@@ -58,9 +80,9 @@ export function PaymentStepper({
     {
       round: 3,
       title: "รอบ 3: ค่าจัดส่ง ไทย-ไทย",
-      description: status === 'ARRIVED' || status === 'DELIVERED'
-        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound3Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอสรุปยอด / รับเองที่โกดัง"))
-        : "รอสินค้าถึงโกดังไทย",
+      description: status === 'THAILAND_WAREHOUSE' || status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED'
+        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound3Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "ยืนยันยอดการโอนรอสินค้าถึงโกดังไทย"))
+        : (paymentRound2Status === 'PAID' ? "ยืนยันยอดการโอนรอสินค้าถึงโกดังไทย" : "รอสินค้าถึงโกดังไทย"),
       amount: shippingCostThTh,
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
       isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID' && shippingCostThTh > 0,
@@ -103,12 +125,36 @@ export function PaymentStepper({
                   )}
                   
                   <p className={`text-sm mt-0.5 ${step.status === 'REJECTED' ? 'text-red-500 font-medium' : 'text-slate-500'}`}>{step.description}</p>
-                  
-                  {step.isActive && step.status !== 'UPLOADED' && (step.description === "รอการชำระเงิน" || step.status === 'REJECTED') && step.amount > 0 && (
-                    <PaymentSection orderId={orderId} paymentRound={step.round as 1 | 2 | 3} isRejected={step.status === 'REJECTED'} />
-                  )}
-                </div>
-              </div>
+                  {/* Render Payment Button/Section if Active */}
+                  {step.isActive && step.amount > 0 && (
+                    <div className="mt-3 text-center md:text-left">
+                      {step.round === 3 && paymentRound3Status !== 'PAID' && paymentRound3Status !== 'UPLOADED' && (
+                        <div className="mb-3 text-sm">
+                          <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่ง:</p>
+                          <select 
+                            className="w-full text-sm p-1.5 rounded border border-slate-300 bg-white"
+                            onChange={(e) => handleUpdateShippingMethod(e.target.value)}
+                            value={shippingMethod}
+                            disabled={isUpdatingMethod}
+                          >
+                            <option value="">-- กรุณาเลือกวิธีจัดส่ง --</option>
+                            <option value="รับของเองที่โกดัง">รับของเองที่โกดัง (ไม่มีค่าจัดส่งเพิ่มเติม)</option>
+                            <option value="จัดส่งแบบเหมาจ่าย">จัดส่งแบบเหมาจ่าย</option>
+                            <option value="จัดส่งโดยขนส่งในประเทศ">จัดส่งโดยขนส่งในประเทศ</option>
+                          </select>
+                        </div>
+                      )}
+                      
+                      {/* Only allow upload for Round 3 if a shipping method is selected, unless it's not Round 3 */}
+                      {(step.round !== 3 || shippingMethod || step.amount === 0) && (
+                        <PaymentSection 
+                          orderId={orderId} 
+                          paymentRound={step.round as 1 | 2 | 3} 
+                          isRejected={step.status === 'REJECTED'} 
+                        />
+                      )}
+                    </div>
+                  )}</div>
             )
           })}
         </div>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { PaymentApprovalModal } from "./PaymentApprovalModal"
+import { QuoteModal } from "./QuoteModal"
 
 export default function AdminOrders() {
   const supabase = createClient()
@@ -27,6 +28,11 @@ export default function AdminOrders() {
   // Payment Modal states
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<any>(null)
+
+  // Quote Modal states
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false)
+  const [quoteOrder, setQuoteOrder] = useState<any>(null)
+  const [quoteRound, setQuoteRound] = useState<2 | 3>(2)
 
   const fetchOrders = async () => {
     try {
@@ -84,6 +90,12 @@ export default function AdminOrders() {
   const handleOpenPaymentModal = (order: any, payment: any) => {
     setSelectedPayment({ ...payment, order })
     setPaymentModalOpen(true)
+  }
+
+  const handleOpenQuoteModal = (order: any, round: 2 | 3) => {
+    setQuoteOrder(order)
+    setQuoteRound(round)
+    setQuoteModalOpen(true)
   }
 
   const handleOpenStatusModal = (order: any) => {
@@ -350,6 +362,27 @@ export default function AdminOrders() {
                             ตรวจสลิป
                           </Button>
                         )}
+                        
+                        {order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleOpenQuoteModal(order, 2)}
+                            className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
+                          >
+                            แจ้งค่าขนส่ง จีน-ไทย
+                          </Button>
+                        )}
+
+                        {order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleOpenQuoteModal(order, 3)}
+                            className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
+                          >
+                            แจ้งค่าจัดส่งในไทย
+                          </Button>
+                        )}
+
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -405,6 +438,15 @@ export default function AdminOrders() {
           setPaymentModalOpen(false)
           fetchOrders()
         }}
+      />
+
+      {/* Quote Modal */}
+      <QuoteModal
+        isOpen={quoteModalOpen}
+        onClose={() => setQuoteModalOpen(false)}
+        order={quoteOrder}
+        round={quoteRound}
+        onSuccess={fetchOrders}
       />
 
       {/* Status Update Modal */}
