@@ -61,9 +61,10 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col hidden md:flex">
         <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950">
-          <Link href="/admin" className="flex items-center gap-2 text-white">
-            <ShieldAlert className="h-6 w-6 text-orange-500" />
-            <span className="font-bold text-lg tracking-tight">Sabuy Admin</span>
+          <Link href="/admin" className="flex items-center justify-center w-full h-full p-2">
+            <div className="bg-white w-full h-full rounded-md flex items-center overflow-hidden relative">
+              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="absolute -left-2 top-1/2 -translate-y-1/2 h-24 w-auto object-contain max-w-none" />
+            </div>
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -97,9 +98,10 @@ export default function AdminLayout({
       <div className="flex-1 flex flex-col max-w-full overflow-hidden">
         {/* Mobile Header */}
         <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:hidden">
-          <Link href="/admin" className="flex items-center gap-2 text-white">
-            <ShieldAlert className="h-6 w-6 text-orange-500" />
-            <span className="font-bold text-lg">Sabuy Admin</span>
+          <Link href="/admin" className="flex items-center justify-center h-full py-2">
+            <div className="bg-white w-40 h-full rounded-md flex items-center overflow-hidden relative">
+              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="absolute -left-2 top-1/2 -translate-y-1/2 h-20 w-auto object-contain max-w-none" />
+            </div>
           </Link>
           <Button variant="ghost" size="icon" onClick={handleLogout} className="text-slate-400">
              <LogOut className="h-5 w-5" />
