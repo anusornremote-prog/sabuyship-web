@@ -363,34 +363,35 @@ export default function AdminOrders() {
                           </Button>
                         )}
                         
-                        {order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status && (
+                        {(order.status === 'ORDERED' || order.status === 'CHINA_WAREHOUSE') && !order.payment_round_2_status && (
                           <Button 
                             size="sm" 
                             onClick={() => handleOpenQuoteModal(order, 2)}
                             className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
                           >
-                            แจ้งค่าขนส่ง จีน-ไทย
+                            ถึงโกดังจีน (แจ้งบิล)
                           </Button>
                         )}
 
-                        {order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status && (
+                        {(order.status === 'SHIPPING' || order.status === 'THAILAND_WAREHOUSE') && !order.payment_round_3_status && (
                           <Button 
                             size="sm" 
                             onClick={() => handleOpenQuoteModal(order, 3)}
                             className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
                           >
-                            แจ้งค่าจัดส่งในไทย
+                            ถึงโกดังไทย (แจ้งบิล)
                           </Button>
                         )}
 
                         <Button 
                           size="sm" 
-                          variant="outline" 
-                          className="text-orange-600 border-orange-200 hover:bg-orange-50 cursor-pointer w-full max-w-[120px] mb-2"
+                          variant="ghost" 
+                          className="text-slate-400 hover:text-slate-600 cursor-pointer w-full max-w-[120px] mb-2 text-xs"
                           onClick={() => handleOpenStatusModal(order)}
+                          title="แก้ไขสถานะแมนนวล (ฉุกเฉินเท่านั้น)"
                         >
-                          <MapPin className="h-4 w-4 mr-1" />
-                          อัปเดตสถานะ
+                          <MapPin className="h-3 w-3 mr-1" />
+                          แก้แมนนวล
                         </Button>
                         <Button 
                           size="sm" 

@@ -66,13 +66,16 @@ export async function POST(
 
     if (updateError) throw updateError
 
-    // Update Order payment_round_3_status to PENDING if not already paid
+    // Update Order payment_round_3_status to PENDING and status to THAILAND_WAREHOUSE
+    const orderUpdates: any = { status: 'THAILAND_WAREHOUSE' }
     if (order.payment_round_3_status !== 'PAID') {
-      await supabase
-        .from("orders")
-        .update({ payment_round_3_status: 'PENDING' })
-        .eq("id", orderId)
+      orderUpdates.payment_round_3_status = 'PENDING'
     }
+
+    await supabase
+      .from("orders")
+      .update(orderUpdates)
+      .eq("id", orderId)
 
     // Add tracking log
     await supabase.from("tracking_logs").insert({

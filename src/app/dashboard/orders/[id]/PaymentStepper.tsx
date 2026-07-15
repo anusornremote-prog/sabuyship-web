@@ -85,7 +85,7 @@ export function PaymentStepper({
         : (paymentRound2Status === 'PAID' ? "ยืนยันยอดการโอนรอสินค้าถึงโกดังไทย" : "รอสินค้าถึงโกดังไทย"),
       amount: shippingCostThTh,
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
-      isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID' && shippingCostThTh > 0,
+      isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID',
       status: paymentRound3Status,
       icon: Home
     }
@@ -125,12 +125,13 @@ export function PaymentStepper({
                   )}
                   
                   <p className={`text-sm mt-0.5 ${step.status === 'REJECTED' ? 'text-red-500 font-medium' : 'text-slate-500'}`}>{step.description}</p>
+                  
                   {/* Render Payment Button/Section if Active */}
-                  {step.isActive && step.amount > 0 && (
+                  {step.isActive && (
                     <div className="mt-3 text-center md:text-left">
                       {step.round === 3 && paymentRound3Status !== 'PAID' && paymentRound3Status !== 'UPLOADED' && (
                         <div className="mb-3 text-sm">
-                          <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่ง:</p>
+                          <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่ง (เพื่อให้แอดมินประเมินราคา):</p>
                           <select 
                             className="w-full text-sm p-1.5 rounded border border-slate-300 bg-white"
                             onChange={(e) => handleUpdateShippingMethod(e.target.value)}
@@ -145,8 +146,8 @@ export function PaymentStepper({
                         </div>
                       )}
                       
-                      {/* Only allow upload for Round 3 if a shipping method is selected, unless it's not Round 3 */}
-                      {(step.round !== 3 || shippingMethod || step.amount === 0) && (
+                      {/* Only allow upload if amount > 0 and if it's Round 3, a shipping method is selected */}
+                      {step.amount > 0 && (step.round !== 3 || shippingMethod) && (
                         <PaymentSection 
                           orderId={orderId} 
                           paymentRound={step.round as 1 | 2 | 3} 
