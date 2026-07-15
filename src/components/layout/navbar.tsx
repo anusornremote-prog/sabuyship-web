@@ -183,7 +183,7 @@ export function Navbar() {
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="md:hidden border-b bg-background px-4 py-4 space-y-4 animate-in slide-in-from-top duration-200">
+        <div className="md:hidden border-b bg-background px-4 py-4 pb-8 space-y-4 animate-in slide-in-from-top duration-200 max-h-[calc(100vh-6rem)] overflow-y-auto">
           
           <div className="flex flex-col gap-2">
             {user ? (
