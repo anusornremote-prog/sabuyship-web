@@ -33,78 +33,91 @@ export default function TrackOrder() {
     setPackageInfo(null)
 
     try {
-      // 1. Fetch Local Data (Shipments table)
-      const { data: localShipment } = await supabase
-        .from("shipments")
-        .select("*")
-        .eq("tracking_number", trackingNumber.trim())
+      const searchNumber = trackingNumber.trim().toUpperCase()
+      
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .select(`
+          id,
+          order_number,
+          status,
+          created_at,
+          quotation:quotation_id (
+            inquiry:inquiry_id (
+              product_url,
+              items,
+              shipping_type
+            )
+          ),
+          shipments (
+            tracking_number,
+            container_date,
+            arrival_date,
+            thailand_tracking_number,
+            status
+          )
+        `)
+        .eq("order_number", searchNumber)
         .maybeSingle()
 
-      // 2. Fetch External Data (API)
-      const res = await fetch(`/api/track/external?tracking_number=${trackingNumber.trim()}`)
-      const externalData = await res.json()
-
-      if (!localShipment && (!externalData.success || !externalData.data)) {
-        setError("ไม่พบข้อมูลพัสดุในระบบ กรุณาตรวจสอบหมายเลขอีกครั้ง")
+      if (orderError || !order) {
+        setError("ไม่พบข้อมูลคำสั่งซื้อในระบบ กรุณาตรวจสอบหมายเลข Order ID อีกครั้ง")
         setLoading(false)
         return
       }
 
-      // Combine Data
+      setPackageInfo({
+        tracking_number: order.order_number,
+        product_name: order.quotation?.inquiry?.shipping_type === 'BOAT' ? 'ขนส่งทางเรือ (SEA)' : order.quotation?.inquiry?.shipping_type === 'CAR' ? 'ขนส่งทางรถ (EK)' : 'สินค้าจาก SabuyShip',
+      })
+
+      const statusMap: Record<string, number> = {
+        'NEW': 0,
+        'QUOTED': 0,
+        'WAITING_PAYMENT': 0,
+        'ORDERED': 1,
+        'CHINA_WAREHOUSE': 2,
+        'THAILAND_WAREHOUSE': 3,
+        'OUT_FOR_DELIVERY': 4,
+        'DELIVERED': 5
+      }
+
+      const currentStep = statusMap[order.status] || 0
+      
+      const allSteps = [
+        { status: 'รับเข้าระบบ / กำลังดำเนินการสั่งซื้อ', location: 'SabuyShip', icon: Package, color: 'text-slate-500' },
+        { status: 'สั่งซื้อสินค้าจากจีนเรียบร้อยแล้ว', location: 'ร้านค้าจีน', icon: Truck, color: 'text-blue-500' },
+        { status: 'พัสดุถึงโกดังจีน (China Warehouse)', location: 'Guangzhou', icon: MapPin, color: 'text-orange-500' },
+        { status: 'พัสดุถึงโกดังไทย (Thailand Warehouse)', location: 'Bangkok', icon: CheckCircle2, color: 'text-indigo-500' },
+        { status: 'กำลังนำส่งไปที่บ้านลูกค้า', location: 'Thailand', icon: Truck, color: 'text-amber-500' },
+        { status: 'จัดส่งสำเร็จ', location: 'Customer', icon: CheckCircle2, color: 'text-green-500' }
+      ]
+
       let combinedTimeline: TimelineEvent[] = []
       
-      // External Timeline
-      if (externalData.success && externalData.data?.timeline) {
-        combinedTimeline = externalData.data.timeline.map((item: any) => ({
-          date: item.date,
-          status: item.status,
-          location: item.location,
-          icon: Package,
-          color: "text-blue-500"
-        }))
-      }
-
-      // Local Timeline (If exists)
-      if (localShipment) {
-        setPackageInfo(localShipment)
+      for (let i = currentStep; i >= 0; i--) {
+        // If it's NEW or WAITING_PAYMENT, we just show step 0
+        if (i === 0 && currentStep > 0 && order.status !== 'ORDERED') continue; 
         
-        // Add container date if exists
-        if (localShipment.container_date) {
-          // Attempt to parse container_date or just use a generic date
-          // If it's just text, we'll place it at the end of the timeline
-          combinedTimeline.push({
-            date: new Date().toISOString(), // Mocking date for display if container_date is string
-            status: `พัสดุขึ้นตู้แล้ว (วันที่: ${localShipment.container_date})`,
-            location: "China Warehouse",
-            icon: Truck,
-            color: "text-orange-500"
-          })
+        let dateStr = new Date(order.created_at).toISOString() // Default to created_at
+        
+        // If there's shipments data, try to use it for dates
+        if (order.shipments && order.shipments.length > 0) {
+          const shipment = order.shipments[0]
+          if (i === 2 && shipment.container_date) dateStr = new Date(shipment.container_date).toISOString()
+          if (i === 3 && shipment.arrival_date) dateStr = new Date(shipment.arrival_date).toISOString()
         }
 
-        // Add arrival date if exists
-        if (localShipment.arrival_date) {
-          combinedTimeline.push({
-            date: new Date().toISOString(),
-            status: `พัสดุถึงไทยแล้ว (วันที่: ${localShipment.arrival_date})`,
-            location: "Thailand Warehouse",
-            icon: CheckCircle2,
-            color: "text-green-500"
-          })
-        }
-      }
-
-      // Sort timeline (assuming date format is ISO string, latest first)
-      // For local items with mocked date, they will appear at the top.
-      combinedTimeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      setTimeline(combinedTimeline)
-      
-      if (!packageInfo && externalData.data) {
-        setPackageInfo({
-          tracking_number: externalData.data.tracking_number,
-          carrier: externalData.data.carrier
+        combinedTimeline.push({
+          date: dateStr,
+          status: allSteps[i].status,
+          location: allSteps[i].location,
+          icon: allSteps[i].icon,
+          color: allSteps[i].color
         })
       }
 
+      setTimeline(combinedTimeline)
     } catch (err: any) {
       console.error(err)
       setError("เกิดข้อผิดพลาดในการเชื่อมต่อระบบ กรุณาลองใหม่อีกครั้ง")
@@ -117,9 +130,9 @@ export default function TrackOrder() {
     <div className="py-20 px-4 md:px-8 min-h-screen bg-slate-50">
       <div className="container max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">ติดตามสถานะพัสดุจีน</h1>
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">ติดตามสถานะออเดอร์</h1>
           <p className="text-lg text-slate-600">
-            กรอกหมายเลขพัสดุ (Tracking Number) เพื่อดูสถานะล่าสุดจาก 17TRACK
+            กรอกหมายเลขคำสั่งซื้อ (Order ID) เพื่อดูสถานะสินค้าล่าสุด
           </p>
         </div>
 
@@ -129,13 +142,13 @@ export default function TrackOrder() {
               <Input 
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="ตัวอย่าง: YT1234567890" 
-                className="h-14 text-lg px-6 rounded-full"
+                placeholder="ตัวอย่าง: ORD-26077893" 
+                className="h-14 text-lg px-6 rounded-full uppercase"
                 required
               />
               <Button type="submit" size="lg" className="h-14 px-10 rounded-full" variant="orange" disabled={loading}>
                 {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}
-                {loading ? "กำลังค้นหา..." : "ติดตามพัสดุ"}
+                {loading ? "กำลังค้นหา..." : "ติดตามออเดอร์"}
               </Button>
             </form>
             {error && (
@@ -149,7 +162,7 @@ export default function TrackOrder() {
             <CardHeader className="pb-2 border-b bg-slate-50/50">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                 <div>
-                  <p className="text-sm text-slate-500 font-medium">หมายเลขพัสดุ</p>
+                  <p className="text-sm text-slate-500 font-medium">หมายเลข Order ID</p>
                   <CardTitle className="text-2xl font-mono text-slate-800 tracking-wider">
                     {packageInfo.tracking_number}
                   </CardTitle>
