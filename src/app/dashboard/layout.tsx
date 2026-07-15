@@ -68,8 +68,8 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r bg-white flex-shrink-0 flex flex-col hidden md:flex">
         <div className="h-16 flex items-center px-6 border-b">
-          <Link href="/" className="flex items-center h-full relative w-48 overflow-visible">
-            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="absolute -left-3 top-1/2 -translate-y-1/2 h-28 w-auto object-contain max-w-none" />
+          <Link href="/" className="flex items-center justify-center w-full h-full pt-1">
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-[250%] w-auto object-contain transform origin-left -ml-4" />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-2">
@@ -114,8 +114,8 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col max-w-full overflow-hidden">
         {/* Mobile Header */}
         <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:hidden">
-          <Link href="/" className="flex items-center h-full relative w-40 overflow-visible">
-            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="absolute -left-3 top-1/2 -translate-y-1/2 h-24 w-auto object-contain max-w-none" />
+          <Link href="/" className="flex items-center justify-center h-full pt-1 overflow-visible">
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-[250%] w-auto object-contain transform origin-left -ml-2" />
           </Link>
           <Button variant="ghost" size="icon" onClick={handleLogout}>
              <LogOut className="h-5 w-5 text-destructive" />
