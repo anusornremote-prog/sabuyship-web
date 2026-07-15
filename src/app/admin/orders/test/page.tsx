@@ -32,7 +32,7 @@ export default function TestPage() {
             subdistrict,
             district,
             province,
-            postalCode
+            postal_code
           ),
           quotation:quotation_id (
             total_price

@@ -59,7 +59,7 @@ export default function AdminOrders() {
             subdistrict,
             district,
             province,
-            postalCode
+            postal_code
           ),
           quotation:quotation_id (
             total_price
@@ -331,9 +331,9 @@ export default function AdminOrders() {
                         <p className="font-medium text-slate-900">{order.customer?.full_name || '-'}</p>
                         <p className="text-xs text-slate-500 mb-1">{order.customer?.phone || '-'}</p>
                         {order.address && (
-                          <div className="text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100 max-w-[200px] line-clamp-2" title={`${order.address.address_line} ต.${order.address.subdistrict} อ.${order.address.district} จ.${order.address.province} ${order.address.postalCode}`}>
+                          <div className="text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100 max-w-[200px] line-clamp-2" title={`${order.address.address_line} ต.${order.address.subdistrict} อ.${order.address.district} จ.${order.address.province} ${order.address.postal_code}`}>
                             <MapPin className="inline w-3 h-3 mr-1 text-slate-400" />
-                            {order.address.province} {order.address.postalCode}
+                            {order.address.province} {order.address.postal_code}
                           </div>
                         )}
                       </td>
