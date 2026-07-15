@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 
 interface QuoteModalProps {
@@ -82,7 +81,7 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="cost">ระบุราคา (บาท)</Label>
+            <label htmlFor="cost" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">ระบุราคา (บาท)</label>
             <Input
               id="cost"
               type="number"

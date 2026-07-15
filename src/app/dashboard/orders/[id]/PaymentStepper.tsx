@@ -154,7 +154,9 @@ export function PaymentStepper({
                         />
                       )}
                     </div>
-                  )}</div>
+                  )}
+                </div>
+              </div>
             )
           })}
         </div>
