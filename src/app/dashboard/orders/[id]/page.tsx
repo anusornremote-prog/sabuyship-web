@@ -227,17 +227,31 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                               <Globe className="h-4 w-4 shrink-0" />
                               <span className="line-clamp-1">{item.url}</span>
                             </a>
-                            <div className="flex justify-between items-end">
+                            <div className="flex justify-between items-end flex-wrap gap-4">
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase">จำนวนที่สั่ง</p>
                                 <p className="text-sm font-medium text-slate-900">{item.quantity} ชิ้น</p>
                               </div>
-                              {item.quoted_price !== undefined && (
-                                <div className="text-right">
-                                  <p className="text-xs font-semibold text-slate-500 uppercase">ราคาประเมิน</p>
-                                  <p className="text-sm font-bold text-primary">{formatCurrency(item.quoted_price)}</p>
-                                </div>
-                              )}
+                              <div className="flex gap-4 text-right flex-wrap justify-end">
+                                {item.quoted_price !== undefined && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase">ราคาประเมิน</p>
+                                    <p className="text-sm font-bold text-primary">{formatCurrency(item.quoted_price)}</p>
+                                  </div>
+                                )}
+                                {item.shipping_cost_cn_th !== undefined && item.shipping_cost_cn_th > 0 && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase">ค่าส่ง จีน-ไทย</p>
+                                    <p className="text-sm font-bold text-purple-600">{formatCurrency(item.shipping_cost_cn_th)}</p>
+                                  </div>
+                                )}
+                                {item.shipping_cost_th_th !== undefined && item.shipping_cost_th_th > 0 && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase">ค่าจัดส่งในไทย</p>
+                                    <p className="text-sm font-bold text-teal-600">{formatCurrency(item.shipping_cost_th_th)}</p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             {item.remark && (
                               <div>

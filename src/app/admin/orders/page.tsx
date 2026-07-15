@@ -62,7 +62,11 @@ export default function AdminOrders() {
             postal_code
           ),
           quotation:quotation_id (
-            total_price
+            total_price,
+            inquiry:inquiry_id (
+              id,
+              items
+            )
           ),
           payments (
             id,

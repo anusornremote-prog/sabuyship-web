@@ -66,7 +66,17 @@ export async function POST(
 
     if (updateError) throw updateError
 
-    // Update Order payment_round_3_status to PENDING and status to THAILAND_WAREHOUSE
+    // 2. Update inquiry items if provided
+    if (body.updated_items && body.inquiry_id) {
+      const { error: inquiryError } = await supabase
+        .from("inquiries")
+        .update({ items: body.updated_items })
+        .eq("id", body.inquiry_id)
+      
+      if (inquiryError) throw inquiryError
+    }
+
+    // 3. Update Order payment_round_3_status to PENDING and status to THAILAND_WAREHOUSE
     const orderUpdates: any = { status: 'THAILAND_WAREHOUSE' }
     if (order.payment_round_3_status !== 'PAID') {
       orderUpdates.payment_round_3_status = 'PENDING'
