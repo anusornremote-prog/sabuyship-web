@@ -109,7 +109,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          <LanguageSwitcher />
+          {!user && <LanguageSwitcher />}
           {user ? (
             <div className="relative user-dropdown">
               <Button 
@@ -146,6 +146,15 @@ export function Navbar() {
                     <FileQuestion className="h-4 w-4" /> ขอใบเสนอราคา
                   </Link>
                   <div className="border-t my-1"></div>
+                  <div className="px-4 py-2">
+                    <span className="text-xs text-slate-500 font-semibold mb-2 block">เปลี่ยนภาษา / Language</span>
+                    <div className="flex gap-1.5">
+                      <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsDropdownOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇹🇭 TH</button>
+                      <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsDropdownOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇺🇸 EN</button>
+                      <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsDropdownOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇨🇳 ZH</button>
+                    </div>
+                  </div>
+                  <div className="border-t my-1"></div>
                   <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer">
                     <LogOut className="h-4 w-4" /> ออกจากระบบ
                   </button>
@@ -161,7 +170,7 @@ export function Navbar() {
 
         {/* Mobile Navigation Toggle & Switcher */}
         <div className="flex md:hidden items-center gap-2">
-          <LanguageSwitcher />
+          {!user && <LanguageSwitcher />}
           <button 
             onClick={() => setIsOpen(!isOpen)} 
             className="p-2 text-muted-foreground hover:text-foreground cursor-pointer"
@@ -207,9 +216,19 @@ export function Navbar() {
           </nav>
           <div className="pt-4 border-t flex flex-col gap-2">
             {user ? (
-              <Link href="/dashboard" onClick={() => setIsOpen(false)} className="w-full">
-                <Button variant="ghost" className="w-full justify-center font-bold text-primary">{dashboardLabel}</Button>
-              </Link>
+              <>
+                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="w-full">
+                  <Button variant="ghost" className="w-full justify-center font-bold text-primary">{dashboardLabel}</Button>
+                </Link>
+                <div className="px-4 py-2 mt-2 border-t">
+                  <span className="text-xs text-slate-500 font-semibold mb-2 block text-center">เปลี่ยนภาษา / Language</span>
+                  <div className="flex gap-1.5 justify-center max-w-[200px] mx-auto">
+                    <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇹🇭 TH</button>
+                    <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇺🇸 EN</button>
+                    <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsOpen(false) }} className={`flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>🇨🇳 ZH</button>
+                  </div>
+                </div>
+              </>
             ) : (
               <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
                 <Button variant="ghost" className="w-full justify-center">{t.navLogin}</Button>
