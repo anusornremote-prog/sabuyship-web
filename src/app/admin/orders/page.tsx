@@ -363,7 +363,7 @@ export default function AdminOrders() {
                           </Button>
                         )}
                         
-                        {(order.status === 'ORDERED' || order.status === 'CHINA_WAREHOUSE') && !order.payment_round_2_status && (
+                        {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status)) && (
                           <Button 
                             size="sm" 
                             onClick={() => handleOpenQuoteModal(order, 2)}
@@ -373,7 +373,7 @@ export default function AdminOrders() {
                           </Button>
                         )}
 
-                        {(order.status === 'SHIPPING' || order.status === 'THAILAND_WAREHOUSE') && !order.payment_round_3_status && (
+                        {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status)) && (
                           <Button 
                             size="sm" 
                             onClick={() => handleOpenQuoteModal(order, 3)}
