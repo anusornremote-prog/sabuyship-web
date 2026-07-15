@@ -67,10 +67,12 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-white flex-shrink-0 flex flex-col hidden md:flex">
-        <div className="h-16 flex items-center px-6 border-b">
-          <Link href="/" className="flex items-center justify-center w-full h-full pt-1">
-            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-[250%] w-auto object-contain transform origin-left -ml-4" />
-          </Link>
+        <div className="h-16 flex items-center px-6 border-b overflow-visible">
+          <div className="relative w-full h-full shrink-0">
+            <Link href="/" className="absolute -top-[52px] -left-2 z-50">
+              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
+            </Link>
+          </div>
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <Link href="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname === '/dashboard' ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
@@ -113,10 +115,12 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col max-w-full overflow-hidden">
         {/* Mobile Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:hidden">
-          <Link href="/" className="flex items-center justify-center h-full pt-1 overflow-visible">
-            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-[250%] w-auto object-contain transform origin-left -ml-2" />
-          </Link>
+        <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:hidden overflow-visible relative">
+          <div className="relative w-40 h-full shrink-0">
+            <Link href="/" className="absolute -top-[52px] -left-2.5 z-50">
+              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
+            </Link>
+          </div>
           <Button variant="ghost" size="icon" onClick={handleLogout}>
              <LogOut className="h-5 w-5 text-destructive" />
           </Button>
