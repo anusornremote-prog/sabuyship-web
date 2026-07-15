@@ -154,7 +154,7 @@ export default function AdminOrders() {
       }
 
       const exportData = data.map(order => {
-        const shippingType = order.quotation?.inquiry?.shipping_type === "CARGO_EK" ? "(EK)" : order.quotation?.inquiry?.shipping_type === "CARGO_SEA" ? "(SEA)" : ""
+        const shippingType = order.quotation?.inquiry?.shipping_type === "CAR" ? "(EK)" : order.quotation?.inquiry?.shipping_type === "BOAT" ? "(SEA)" : ""
         const customerCode = order.customer?.customer_code ? `${order.customer.customer_code} ${shippingType}`.trim() : `ไม่ระบุ ${shippingType}`.trim()
 
         return {
