@@ -16,10 +16,15 @@ export default function AdminCustomers() {
   const [isCreateInquiryModalOpen, setIsCreateInquiryModalOpen] = useState(false)
   const [selectedCustomerForInquiry, setSelectedCustomerForInquiry] = useState<any | null>(null)
 
+  const ITEMS_PER_PAGE = 20
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+
   const fetchCustomers = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from("profiles")
         .select(`
           id,
@@ -29,13 +34,21 @@ export default function AdminCustomers() {
           line_id,
           created_at,
           role
-        `)
+        `, { count: 'exact' })
         .eq('role', 'CUSTOMER')
+
+      if (searchQuery) {
+        query = query.or(`full_name.ilike.%${searchQuery}%,customer_code.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%,line_id.ilike.%${searchQuery}%`)
+      }
+
+      const { data, count, error } = await query
         .order("created_at", { ascending: false })
+        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
 
       if (error) throw error
 
       setCustomers(data || [])
+      setTotalCount(count || 0)
     } catch (error) {
       console.error("Error fetching customers:", error)
     } finally {
@@ -45,17 +58,15 @@ export default function AdminCustomers() {
 
   useEffect(() => {
     fetchCustomers()
-  }, [])
+  }, [currentPage])
 
-  const filteredCustomers = customers.filter(customer => {
-    const searchLower = searchQuery.toLowerCase()
-    return (
-      (customer.full_name?.toLowerCase() || "").includes(searchLower) ||
-      (customer.customer_code?.toLowerCase() || "").includes(searchLower) ||
-      (customer.phone || "").includes(searchLower) ||
-      (customer.line_id?.toLowerCase() || "").includes(searchLower)
-    )
-  })
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setCurrentPage(1)
+    fetchCustomers()
+  }
+
+  const filteredCustomers = customers
 
   return (
     <div className="space-y-6">
@@ -71,15 +82,15 @@ export default function AdminCustomers() {
 
       <Card className="shadow-sm">
         <CardContent className="p-4 bg-white flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 flex">
             <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
             <Input 
-              placeholder="ค้นหา รหัสลูกค้า, ชื่อ, เบอร์โทร, LINE ID..." 
-              className="pl-9"
+              placeholder="ค้นหา รหัสลูกค้า, ชื่อ, เบอร์โทร, LINE ID... (กด Enter)" 
+              className="pl-9 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+          </form>
         </CardContent>
       </Card>
 
@@ -152,6 +163,33 @@ export default function AdminCustomers() {
                   )}
                 </tbody>
               </table>
+          </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalCount > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between p-4 border-t">
+              <span className="text-sm text-slate-500">
+                แสดง {(currentPage - 1) * ITEMS_PER_PAGE + 1} ถึง {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} จากทั้งหมด {totalCount} รายการ
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1 || loading}
+                >
+                  ก่อนหน้า
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage * ITEMS_PER_PAGE >= totalCount || loading}
+                >
+                  ถัดไป
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

@@ -34,10 +34,15 @@ export default function AdminOrders() {
   const [quoteOrder, setQuoteOrder] = useState<any>(null)
   const [quoteRound, setQuoteRound] = useState<2 | 3>(2)
 
+  const ITEMS_PER_PAGE = 20
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from("orders")
         .select(`
           id,
@@ -77,11 +82,23 @@ export default function AdminOrders() {
             slip_url,
             status
           )
-        `)
+        `, { count: 'exact' })
+
+      if (statusFilter !== "ALL") {
+        query = query.eq("status", statusFilter)
+      }
+
+      if (searchQuery) {
+        query = query.ilike("order_number", `%${searchQuery}%`)
+      }
+
+      const { data, count, error } = await query
         .order("created_at", { ascending: false })
+        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
 
       if (error) throw error
       setOrders(data || [])
+      setTotalCount(count || 0)
     } catch (err: any) {
       console.error("Error fetching orders:", err.message)
     } finally {
@@ -89,9 +106,12 @@ export default function AdminOrders() {
     }
   }
 
+  // Re-fetch when page, search, or filter changes
   useEffect(() => {
     fetchOrders()
-  }, [])
+  }, [currentPage, statusFilter]) // We don't auto-fetch on searchQuery to avoid spam, we rely on a submit or debounce if needed. Wait, we should fetch on search. 
+  // Let's add a debounced search later, or just fetch on Enter/Search button. For now, fetch when search is applied.
+
 
   const handleOpenPaymentModal = (order: any, payment: any) => {
     setSelectedPayment({ ...payment, order })
@@ -254,16 +274,19 @@ export default function AdminOrders() {
     }
   }
 
-  // Filter orders client-side
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.customer?.full_name || "").toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesStatus = statusFilter === "ALL" || order.status === statusFilter
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setCurrentPage(1)
+    fetchOrders()
+  }
 
-    return matchesSearch && matchesStatus
-  })
+  const handleFilterChange = (val: string) => {
+    setStatusFilter(val)
+    setCurrentPage(1)
+  }
+
+  // We no longer filter client-side because we have server-side pagination
+  const filteredOrders = orders
 
   return (
     <div className="space-y-6">
@@ -282,19 +305,19 @@ export default function AdminOrders() {
 
       <Card className="shadow-sm">
         <CardContent className="p-4 border-b bg-slate-50/50 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 flex">
              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
              <Input 
-               placeholder="ค้นหา Order ID, ชื่อลูกค้า..." 
-               className="pl-9" 
+               placeholder="ค้นหา Order ID... (กด Enter)" 
+               className="pl-9 w-full" 
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
              />
-          </div>
+          </form>
           <select 
             className="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => handleFilterChange(e.target.value)}
           >
             <option value="ALL">สถานะทั้งหมด</option>
             <option value="NEW">NEW (รอชำระเงิน/อัปสลิป)</option>
@@ -428,13 +451,40 @@ export default function AdminOrders() {
                 ) : (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
-                      ไม่พบข้อมูลคำสั่งซื้อที่ค้นหา
+                      ไม่พบข้อมูลคำสั่งซื้อ
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalCount > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between p-4 border-t">
+              <span className="text-sm text-slate-500">
+                แสดง {(currentPage - 1) * ITEMS_PER_PAGE + 1} ถึง {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} จากทั้งหมด {totalCount} รายการ
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1 || loading}
+                >
+                  ก่อนหน้า
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage * ITEMS_PER_PAGE >= totalCount || loading}
+                >
+                  ถัดไป
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

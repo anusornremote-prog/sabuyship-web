@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import imageCompression from 'browser-image-compression'
 import { useRouter } from "next/navigation"
 
 export function PaymentSection({ orderId, paymentRound, isRejected = false }: { orderId: string, paymentRound: 1 | 2 | 3, isRejected?: boolean }) {
@@ -23,12 +24,19 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false }: { 
 
     setIsSubmitting(true)
     try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      }
+      const compressedFile = await imageCompression(file, options)
+
       const fileExt = file.name.split('.').pop()
       const fileName = `slip-${orderId}-${Date.now()}.${fileExt}`
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('payment_slips')
-        .upload(fileName, file)
+        .upload(fileName, compressedFile)
 
       if (uploadError) throw uploadError
 

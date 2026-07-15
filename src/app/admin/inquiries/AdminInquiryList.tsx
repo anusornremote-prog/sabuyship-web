@@ -17,14 +17,27 @@ import {
 
 interface InquiryListProps {
   initialInquiries: any[]
+  totalCount?: number
+  currentPage?: number
+  itemsPerPage?: number
 }
 
-export default function AdminInquiryList({ initialInquiries }: InquiryListProps) {
+export default function AdminInquiryList({ 
+  initialInquiries, 
+  totalCount = 0,
+  currentPage = 1,
+  itemsPerPage = 20
+}: InquiryListProps) {
   const router = useRouter()
   const [inquiries, setInquiries] = useState(initialInquiries)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [isCleaning, setIsCleaning] = useState(false)
+
+  import { useEffect } from "react"
+  useEffect(() => {
+    setInquiries(initialInquiries)
+  }, [initialInquiries])
   
   // Modal states
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null)
@@ -425,6 +438,33 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalCount > itemsPerPage && (
+            <div className="flex items-center justify-between p-4 border-t">
+              <span className="text-sm text-slate-500">
+                แสดง {(currentPage - 1) * itemsPerPage + 1} ถึง {Math.min(currentPage * itemsPerPage, totalCount)} จากทั้งหมด {totalCount} รายการ
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => router.push(`?page=${currentPage - 1}`)}
+                  disabled={currentPage === 1}
+                >
+                  ก่อนหน้า
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => router.push(`?page=${currentPage + 1}`)}
+                  disabled={currentPage * itemsPerPage >= totalCount}
+                >
+                  ถัดไป
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -744,11 +784,11 @@ export default function AdminInquiryList({ initialInquiries }: InquiryListProps)
                 ปิดหน้าต่าง
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
-      {/* Delete Confirmation Modal */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        </CardContent>
+      </Card>
+      
+      {/* Detail Modal */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-rose-600 flex items-center gap-2">

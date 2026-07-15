@@ -1,12 +1,20 @@
 import { createClient } from "@/lib/supabase/server"
 import AdminInquiryList from "./AdminInquiryList"
 
-export default async function AdminInquiries() {
+export default async function AdminInquiries({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
+  const page = parseInt(searchParams.page || "1")
+  const ITEMS_PER_PAGE = 20
+  
   const supabase = await createClient()
-  const { data: inquiries } = await supabase
+  const { data: inquiries, count } = await supabase
     .from("inquiries")
-    .select("*, quotations(*, orders(*)), customer:customer_id(customer_code)")
+    .select("*, quotations(*, orders(*)), customer:customer_id(customer_code)", { count: 'exact' })
     .order("created_at", { ascending: false })
+    .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
 
   if (inquiries && inquiries.length > 0) {
     const missingPhones = inquiries.filter(i => !i.customer && i.phone).map(i => i.phone);
@@ -36,7 +44,12 @@ export default async function AdminInquiries() {
         <p className="text-slate-600">รายการลูกค้าส่งลิงก์สินค้าให้ประเมินราคาและสร้างใบเสนอราคา</p>
       </div>
 
-      <AdminInquiryList initialInquiries={inquiries || []} />
+      <AdminInquiryList 
+        initialInquiries={inquiries || []} 
+        totalCount={count || 0}
+        currentPage={page}
+        itemsPerPage={ITEMS_PER_PAGE}
+      />
     </div>
   )
 }
