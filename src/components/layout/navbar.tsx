@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
 export function Navbar() {
-  const { t, locale } = useTranslation()
+  const { t, locale, setLanguage } = useTranslation()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
