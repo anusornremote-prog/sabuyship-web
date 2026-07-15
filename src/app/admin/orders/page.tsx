@@ -426,7 +426,7 @@ export default function AdminOrders() {
           </select>
         </CardContent>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                 <tr>
@@ -568,6 +568,101 @@ export default function AdminOrders() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col">
+            <div className="bg-slate-50 border-b p-3 flex items-center gap-2">
+               <input 
+                  type="checkbox" 
+                  onChange={handleSelectAll} 
+                  checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedOrderIds.includes(o.id))} 
+                  className="rounded border-slate-300 text-primary focus:ring-primary w-5 h-5"
+                />
+                <span className="text-xs font-semibold text-slate-500">เลือกทั้งหมดในหน้านี้</span>
+            </div>
+            {loading ? (
+              <div className="p-12 text-center text-slate-400 flex flex-col justify-center items-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span>กำลังโหลดข้อมูลคำสั่งซื้อ...</span>
+              </div>
+            ) : filteredOrders.length > 0 ? (
+              filteredOrders.map((order) => (
+                <div key={order.id} className="p-4 border-b border-slate-100 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedOrderIds.includes(order.id)} 
+                        onChange={() => handleSelectRow(order.id)} 
+                        className="rounded border-slate-300 text-primary focus:ring-primary w-5 h-5"
+                      />
+                      <span className="font-bold text-primary text-base">{order.order_number}</span>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded ${getStatusBadge(order.status, order)}`}>
+                      {getStatusText(order.status, order)}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1">
+                    <p className="font-medium text-slate-900 text-sm">{order.customer?.full_name || '-'}</p>
+                    <p className="text-xs text-slate-500">
+                      {order.customer?.customer_code || order.customer?.phone || '-'}
+                      {order.quotation?.inquiry?.shipping_type === 'BOAT' ? ' (SEA)' : order.quotation?.inquiry?.shipping_type === 'CAR' ? ' (EK)' : ''}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500">ยอดชำระ:</span>
+                    <span className="font-bold text-slate-900 text-lg">
+                      {order.quotation?.total_price !== undefined 
+                        ? `฿ ${Number(order.quotation.total_price).toLocaleString('th-TH', { minimumFractionDigits: 2 })}` 
+                        : '-'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {order.payments?.some((p: any) => p.status === 'PENDING') && (
+                      <Button size="sm" onClick={() => handleOpenPaymentModal(order, order.payments.find((p: any) => p.status === 'PENDING'))} className="bg-amber-500 hover:bg-amber-600 min-h-[44px]">
+                        ตรวจสลิป
+                      </Button>
+                    )}
+                    {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status)) && (
+                      <Button size="sm" onClick={() => handleOpenQuoteModal(order, 2)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
+                        ถึงโกดังจีน
+                      </Button>
+                    )}
+                    {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status)) && (
+                      <Button size="sm" onClick={() => handleOpenQuoteModal(order, 3)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
+                        ถึงโกดังไทย
+                      </Button>
+                    )}
+                    <Button size="sm" variant="ghost" className="text-slate-500 border border-slate-200 min-h-[44px]" onClick={() => handleOpenStatusModal(order)}>
+                      แก้แมนนวล
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-200 min-h-[44px]" onClick={() => handleManualPayment(order)}>
+                      รับเงิน (โอนตรง)
+                    </Button>
+                    <div className="col-span-2 flex justify-between gap-2">
+                      <Button variant="outline" className="flex-1 min-h-[44px]" asChild>
+                        <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">
+                          <FileText className="h-4 w-4 mr-2 text-blue-500" /> Invoice
+                        </Link>
+                      </Button>
+                      <Button variant="outline" className="flex-1 min-h-[44px]" asChild>
+                        <Link href={`/dashboard/orders/${order.order_number}`} target="_blank">
+                          <Eye className="h-4 w-4 mr-2" /> รายละเอียด
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-12 text-center text-slate-400">
+                ไม่พบข้อมูลคำสั่งซื้อ
+              </div>
+            )}
           </div>
 
           {/* Pagination Controls */}

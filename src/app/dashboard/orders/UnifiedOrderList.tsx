@@ -164,7 +164,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
 
       <Card className="shadow-sm">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50/80 border-b">
                 <tr>
@@ -256,6 +256,88 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col divide-y border-t">
+            {items && items.length > 0 ? (
+              items.map((item) => (
+                <div key={item.id} className="p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <span 
+                      onClick={() => {
+                        setSelectedDetailsItem(item);
+                        setIsDetailsOpen(true);
+                      }}
+                      className="font-bold text-primary text-base cursor-pointer hover:underline"
+                    >
+                      {item.order_number || item.inquiry_number}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded ${getStatusBadge(item.status, item)}`}>
+                      {getStatusText(item.status, item)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500">
+                      {item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      }) : '-'}
+                    </span>
+                    <span className="font-bold text-slate-900">
+                      {item.total_price !== undefined 
+                        ? `฿ ${Number(item.total_price).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                        : '-'}
+                    </span>
+                  </div>
+
+                  <div className="pt-2">
+                    {item.type === 'INQUIRY' && item.status === 'QUOTED' && item.quotation_id && (
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer w-full min-h-[44px]"
+                        onClick={() => setPreviewQuotationItem(item)}
+                        disabled={processingId === item.quotation_id}
+                      >
+                        ยืนยันคำสั่งซื้อ
+                      </Button>
+                    )}
+                    
+                    {item.type === 'ORDER' && (
+                      <Link href={`/dashboard/orders/${item.order_number}${isWaitingPayment(item) ? '#payment' : ''}`} className="w-full block">
+                        <Button variant={isWaitingPayment(item) ? "default" : "outline"} size="sm" className="cursor-pointer w-full min-h-[44px]">
+                          {isWaitingPayment(item) ? (
+                            <>
+                              <CreditCard className="h-4 w-4 mr-2" />
+                              ดำเนินการชำระเงิน
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              ดูรายละเอียด
+                            </>
+                          )}
+                        </Button>
+                      </Link>
+                    )}
+                    
+                    {item.type === 'INQUIRY' && item.status === 'PENDING' && (
+                      <div className="text-center w-full py-2 bg-slate-50 rounded text-slate-400 text-xs italic">
+                        กำลังรอแอดมินประเมินราคา
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-2">
+                <Package className="h-8 w-8 text-slate-300" />
+                <p>ไม่พบข้อมูล</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

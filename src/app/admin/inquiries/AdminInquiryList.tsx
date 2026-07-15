@@ -285,7 +285,7 @@ export default function AdminInquiryList({
       {/* Table Card */}
       <Card className="shadow-sm overflow-hidden">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                 <tr>
@@ -436,6 +436,106 @@ export default function AdminInquiryList({
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col divide-y">
+            <div className="bg-slate-50 border-b p-3 flex items-center gap-2">
+               <input 
+                  type="checkbox" 
+                  className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                  onChange={handleSelectAll}
+                />
+                <span className="text-xs font-semibold text-slate-500">เลือกทั้งหมดในหน้านี้</span>
+            </div>
+            {filtered.length > 0 ? (
+              filtered.map((inq: any) => (
+                <div key={inq.id} className="p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        checked={selectedIds.includes(inq.id)}
+                        onChange={() => handleSelectRow(inq.id)}
+                      />
+                      <span className="font-bold text-slate-900 text-base">{inq.inquiry_number}</span>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${
+                      (inq.status === "ORDERED" || (inq.quotations && inq.quotations.some((q: any) => q.orders && q.orders.length > 0)))
+                        ? "bg-emerald-100 text-emerald-800"
+                        : inq.status === "PENDING"
+                        ? "bg-amber-100 text-amber-800"
+                        : inq.status === "QUOTED"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-rose-100 text-rose-800"
+                    }`}>
+                      {(inq.status === "ORDERED" || (inq.quotations && inq.quotations.some((q: any) => q.orders && q.orders.length > 0)))
+                        ? "ลูกค้าสั่งซื้อแล้ว" : inq.status === "PENDING" ? "รอแอดมินประเมินราคา"
+                        : inq.status === "QUOTED" ? "เสนอราคาแล้ว" : "ยกเลิกคำขอ"}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <p className="font-medium text-slate-800">{inq.customer_name}</p>
+                    <p className="text-xs font-semibold text-primary mt-1">
+                      {inq.customer?.customer_code || "ไม่มีรหัส"} {inq.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
+                    </p>
+                  </div>
+
+                  <div className="text-sm">
+                    {inq.items && inq.items.length > 1 ? (
+                      <div className="flex justify-between items-center bg-slate-50 p-2 rounded">
+                        <span className="font-semibold text-primary">รวม {inq.items.length} รายการ</span>
+                        <Button variant="outline" size="sm" onClick={() => openDetailsModal(inq)}>
+                          ดูรายละเอียด
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <a href={inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url} target="_blank" className="text-primary hover:underline flex items-center gap-1 line-clamp-1 break-all text-xs">
+                          <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span>{inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}</span>
+                        </a>
+                        <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                          {inq.items && inq.items.length === 1 ? (inq.items[0].remark || "-") : (inq.remark || "-")}
+                        </p>
+                        {((inq.items && inq.items.length === 1 && inq.items[0].image_url) || inq.image_url) && (
+                          <img src={inq.items && inq.items.length === 1 ? inq.items[0].image_url : inq.image_url} className="h-16 w-16 object-cover rounded border border-slate-200" />
+                        )}
+                        <p className="text-xs font-semibold">จำนวน: {inq.items && inq.items.length === 1 ? inq.items[0].quantity : inq.quantity} ชิ้น</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {inq.status === "PENDING" ? (
+                      <>
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 min-h-[44px]" onClick={() => openQuoteModal(inq)}>
+                          ทำใบเสนอราคา
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-rose-600 border-rose-200 min-h-[44px]" onClick={() => handleRejectInquiry(inq.id)}>
+                          ยกเลิก
+                        </Button>
+                      </>
+                    ) : inq.quotations && inq.quotations.length > 0 ? (
+                      <Button size="sm" variant="orange" className="col-span-2 min-h-[44px]" onClick={() => setSelectedQuote({ ...inq.quotations[0], inquiry: inq })}>
+                        ดูใบเสนอราคา
+                      </Button>
+                    ) : (
+                      <span className="col-span-2 text-center text-xs text-slate-400 py-2">
+                        ดำเนินการแล้ว
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-12 text-center text-slate-400">
+                ไม่พบข้อมูลรายการคำขอประเมินราคา
+              </div>
+            )}
           </div>
 
           {/* Pagination Controls */}
