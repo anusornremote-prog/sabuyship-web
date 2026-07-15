@@ -47,17 +47,23 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
 
     // Auto sum
     let sum = 0
+    let hasInput = false
     newItems.forEach(item => {
-      if (item.inputCost && !isNaN(Number(item.inputCost))) {
-        sum += Number(item.inputCost)
+      if (item.inputCost !== undefined && item.inputCost !== "") {
+        hasInput = true
+        if (!isNaN(Number(item.inputCost))) {
+          sum += Number(item.inputCost)
+        }
       }
     })
-    setCost(sum > 0 ? sum.toString() : "")
+    if (hasInput) {
+      setCost(sum >= 0 ? sum.toString() : "")
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!cost || isNaN(Number(cost)) || Number(cost) < 0) {
+    if (cost === "" || isNaN(Number(cost)) || Number(cost) < 0) {
       setError("กรุณากรอกยอดรวมที่ถูกต้อง")
       return
     }

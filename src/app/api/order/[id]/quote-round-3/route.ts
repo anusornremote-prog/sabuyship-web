@@ -76,10 +76,10 @@ export async function POST(
       if (inquiryError) throw inquiryError
     }
 
-    // 3. Update Order payment_round_3_status to PENDING and status to THAILAND_WAREHOUSE
+    // 3. Update Order payment_round_3_status to PENDING (or PAID if cost is 0) and status to THAILAND_WAREHOUSE
     const orderUpdates: any = { status: 'THAILAND_WAREHOUSE' }
     if (order.payment_round_3_status !== 'PAID') {
-      orderUpdates.payment_round_3_status = 'PENDING'
+      orderUpdates.payment_round_3_status = newShippingCost === 0 ? 'PAID' : 'PENDING'
     }
 
     await supabase
@@ -87,12 +87,20 @@ export async function POST(
       .update(orderUpdates)
       .eq("id", orderId)
 
-    // Add tracking log
+    // Add tracking log for Quotation
     await supabase.from("tracking_logs").insert({
       order_id: orderId,
       status: "QUOTED_ROUND_3",
       notes: `อัปเดตค่าจัดส่งในไทย (รอบ 3) เป็นจำนวน ${newShippingCost.toLocaleString('th-TH')} บาท`
     })
+
+    if (newShippingCost === 0 && order.payment_round_3_status !== 'PAID') {
+      await supabase.from("tracking_logs").insert({
+        order_id: orderId,
+        status: "PAID_ROUND_3",
+        notes: "ชำระเงินรอบที่ 3 อัตโนมัติ (ไม่มีค่าใช้จ่ายเพิ่มเติม)"
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
