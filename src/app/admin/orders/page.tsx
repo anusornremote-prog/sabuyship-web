@@ -116,8 +116,12 @@ export default function AdminOrders() {
   // Let's add a debounced search later, or just fetch on Enter/Search button. For now, fetch when search is applied.
 
   const handleExport = async () => {
+    if (selectedOrderIds.length === 0) {
+      alert("กรุณาติ๊กเลือกออเดอร์ที่ต้องการส่งออก (Export) อย่างน้อย 1 รายการ")
+      return
+    }
+
     try {
-      // ดึงข้อมูลตาม Filter และ Search ปัจจุบัน แต่ดึงทั้งหมดโดยไม่จำกัดหน้า
       let query = supabase
         .from("orders")
         .select(`
@@ -138,19 +142,8 @@ export default function AdminOrders() {
             )
           )
         `)
+        .in("id", selectedOrderIds)
         
-      if (selectedOrderIds.length > 0) {
-        query = query.in("id", selectedOrderIds)
-      } else {
-        if (statusFilter !== "ALL") {
-          query = query.eq("status", statusFilter)
-        }
-
-        if (searchQuery) {
-          query = query.ilike("order_number", `%${searchQuery}%`)
-        }
-      }
-
       const { data, error } = await query.order("created_at", { ascending: false })
       if (error) throw error
 
