@@ -67,10 +67,10 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
         if (item.file) {
           // Compress image before uploading
           const options = {
-            maxSizeMB: 0.2, // ~200KB limit
-            maxWidthOrHeight: 1200,
+            maxSizeMB: 0.1, // ~100KB limit
+            maxWidthOrHeight: 800,
             useWebWorker: true,
-            initialQuality: 0.7
+            initialQuality: 0.5
           }
           let fileToUpload = item.file
           try {

@@ -25,9 +25,10 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false }: { 
     setIsSubmitting(true)
     try {
       const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
+        maxSizeMB: 0.1, // ~100KB
+        maxWidthOrHeight: 800,
         useWebWorker: true,
+        initialQuality: 0.5,
       }
       const compressedFile = await imageCompression(file, options)
 
