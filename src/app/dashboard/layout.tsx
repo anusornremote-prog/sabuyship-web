@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { PhoneSetupModal } from "@/components/PhoneSetupModal"
-import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin } from "lucide-react"
+import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin, Home } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
@@ -121,9 +121,11 @@ export default function DashboardLayout({
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
             </Link>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
-             <LogOut className="h-5 w-5 text-destructive" />
-          </Button>
+          <Link href="/">
+            <Button variant="ghost" size="icon">
+              <Home className="h-5 w-5 text-slate-600" />
+            </Button>
+          </Link>
         </header>
 
         {/* Mobile Nav */}
@@ -148,6 +150,10 @@ export default function DashboardLayout({
           <Link href="/inquiry" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors text-slate-600`}>
             ขอใบเสนอราคา
           </Link>
+          <button onClick={handleLogout} className="whitespace-nowrap flex items-center gap-2 px-4 py-3 text-sm transition-colors text-red-600 font-medium">
+            <LogOut className="h-4 w-4" />
+            ออกจากระบบ
+          </button>
         </nav>
 
         <main className="flex-1 p-4 md:p-8 overflow-auto">

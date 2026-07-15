@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ShieldAlert, Users, FileQuestion, FileText, Package, Truck, LayoutDashboard, LogOut, Settings } from "lucide-react"
+import { ShieldAlert, Users, FileQuestion, FileText, Package, Truck, LayoutDashboard, LogOut, Settings, Home } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -103,9 +103,11 @@ export default function AdminLayout({
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
             </Link>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout} className="text-slate-400">
-             <LogOut className="h-5 w-5" />
-          </Button>
+          <Link href="/">
+            <Button variant="ghost" size="icon" className="text-slate-400">
+               <Home className="h-5 w-5" />
+            </Button>
+          </Link>
         </header>
 
         {/* Mobile Nav */}
@@ -124,6 +126,10 @@ export default function AdminLayout({
               ) : null}
             </Link>
           ))}
+          <button onClick={handleLogout} className="whitespace-nowrap flex items-center gap-2 px-4 py-3 text-sm transition-colors text-red-400 hover:bg-slate-700 font-medium">
+            <LogOut className="h-4 w-4" />
+            ออกจากระบบ
+          </button>
         </nav>
 
         <main className="flex-1 p-4 md:p-8 overflow-auto">
