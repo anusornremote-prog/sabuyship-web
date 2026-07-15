@@ -114,10 +114,18 @@ export function Navbar() {
             <div className="relative user-dropdown">
               <Button 
                 variant="ghost" 
-                className="font-bold text-primary flex items-center gap-1"
+                className="font-bold text-primary flex items-center gap-1.5"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                {dashboardLabel} <ChevronDown className="h-4 w-4" />
+                {user?.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-4 w-4" />
+                  </div>
+                )}
+                <span>{dashboardLabel}</span>
+                <ChevronDown className="h-4 w-4 ml-1" />
               </Button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-slate-100 py-1 z-50">
