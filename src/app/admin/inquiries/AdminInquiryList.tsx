@@ -783,8 +783,9 @@ export default function AdminInquiryList({
                 ปิดหน้าต่าง
               </Button>
             </div>
-        </CardContent>
-      </Card>
+          </DialogContent>
+        </Dialog>
+      )}
       
       {/* Detail Modal */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
