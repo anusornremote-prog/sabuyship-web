@@ -38,6 +38,8 @@ export default function AdminOrders() {
   const ITEMS_PER_PAGE = 20
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
 
   const fetchOrders = async () => {
     try {
@@ -137,12 +139,16 @@ export default function AdminOrders() {
           )
         `)
         
-      if (statusFilter !== "ALL") {
-        query = query.eq("status", statusFilter)
-      }
+      if (selectedOrderIds.length > 0) {
+        query = query.in("id", selectedOrderIds)
+      } else {
+        if (statusFilter !== "ALL") {
+          query = query.eq("status", statusFilter)
+        }
 
-      if (searchQuery) {
-        query = query.ilike("order_number", `%${searchQuery}%`)
+        if (searchQuery) {
+          query = query.ilike("order_number", `%${searchQuery}%`)
+        }
       }
 
       const { data, error } = await query.order("created_at", { ascending: false })
@@ -359,6 +365,25 @@ export default function AdminOrders() {
   // We no longer filter client-side because we have server-side pagination
   const filteredOrders = orders
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const newIds = [...selectedOrderIds]
+      filteredOrders.forEach(order => {
+        if (!newIds.includes(order.id)) newIds.push(order.id)
+      })
+      setSelectedOrderIds(newIds)
+    } else {
+      const pageIds = filteredOrders.map(o => o.id)
+      setSelectedOrderIds(selectedOrderIds.filter(id => !pageIds.includes(id)))
+    }
+  }
+
+  const handleSelectRow = (id: string) => {
+    setSelectedOrderIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -412,6 +437,14 @@ export default function AdminOrders() {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                 <tr>
+                  <th className="px-6 py-4 font-medium w-12">
+                    <input 
+                      type="checkbox" 
+                      onChange={handleSelectAll} 
+                      checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedOrderIds.includes(o.id))} 
+                      className="rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                  </th>
                   <th className="px-6 py-4 font-medium">Order ID</th>
                   <th className="px-6 py-4 font-medium">ลูกค้า</th>
                   <th className="px-6 py-4 font-medium">ยอดชำระ</th>
@@ -422,7 +455,7 @@ export default function AdminOrders() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                       <div className="flex justify-center items-center gap-2">
                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
                         <span>กำลังโหลดข้อมูลคำสั่งซื้อ...</span>
@@ -432,6 +465,14 @@ export default function AdminOrders() {
                 ) : filteredOrders.length > 0 ? (
                   filteredOrders.map((order) => (
                     <tr key={order.id} className="border-b hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedOrderIds.includes(order.id)} 
+                          onChange={() => handleSelectRow(order.id)} 
+                          className="rounded border-slate-300 text-primary focus:ring-primary"
+                        />
+                      </td>
                       <td className="px-6 py-4 font-semibold text-primary">{order.order_number}</td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-slate-900">{order.customer?.full_name || '-'}</p>
@@ -527,7 +568,7 @@ export default function AdminOrders() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                       ไม่พบข้อมูลคำสั่งซื้อ
                     </td>
                   </tr>
