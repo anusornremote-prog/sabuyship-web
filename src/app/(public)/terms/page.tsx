@@ -1,0 +1,118 @@
+import React from 'react'
+import { Metadata } from 'next'
+import { AlertTriangle, ShieldCheck, Scale, Clock, CreditCard, Box } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'เงื่อนไขการให้บริการ - Sabuy Ship Express',
+  description: 'เงื่อนไขและข้อตกลงในการใช้บริการสั่งซื้อและนำเข้าสินค้าจากจีน',
+}
+
+export default function TermsOfServicePage() {
+  return (
+    <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl font-bold text-slate-900 mb-4">เงื่อนไขและข้อตกลงการให้บริการ</h1>
+        <p className="text-slate-500">ปรับปรุงข้อมูลล่าสุด: มกราคม 2026</p>
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border space-y-8">
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+              <Scale className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">1. ขอบเขตการให้บริการ</h2>
+          </div>
+          <div className="pl-14 text-slate-600 space-y-2">
+            <p>1.1 บริษัทให้บริการสั่งซื้อ แลกเปลี่ยนเงิน และนำเข้าสินค้าจากประเทศจีนมายังประเทศไทยเท่านั้น</p>
+            <p>1.2 บริษัทเป็นเพียงตัวกลางในการประสานงานสั่งซื้อและการขนส่ง ไม่ใช่ผู้ผลิตหรือผู้จำหน่ายสินค้าโดยตรง จึงไม่สามารถรับประกันคุณภาพของสินค้า สี ไซส์ หรือการทำงานของสินค้าที่สั่งซื้อจากร้านค้าจีนได้</p>
+            <p>1.3 ลูกค้าควรตรวจสอบความน่าเชื่อถือของร้านค้าจีนก่อนทำการสั่งซื้อทุกครั้ง</p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">2. สินค้าต้องห้าม</h2>
+          </div>
+          <div className="pl-14 text-slate-600 space-y-2">
+            <p>2.1 บริษัทขอสงวนสิทธิ์งดรับนำเข้าสินค้าดังต่อไปนี้:</p>
+            <ul className="list-disc pl-5 space-y-1 mt-2">
+              <li>ยาเสพติด สารเสพติด และสิ่งผิดกฎหมายทุกชนิด</li>
+              <li>อาวุธปืน วัตถุระเบิด และสิ่งเทียมอาวุธปืน</li>
+              <li>สื่อลามกอนาจาร สินค้าละเมิดลิขสิทธิ์ (บางรายการอาจนำเข้าได้ภายใต้เงื่อนไขพิเศษ กรุณาสอบถามเจ้าหน้าที่)</li>
+              <li>สินค้าไวไฟ สารเคมีอันตราย และวัตถุมีพิษ</li>
+              <li>สิ่งมีชีวิต ซากสัตว์ และพืช</li>
+            </ul>
+            <p className="mt-2 text-red-600 text-sm">* หากบริษัทตรวจพบสินค้าต้องห้าม บริษัทจะทำการยึดหรือทำลายสินค้าทันทีโดยไม่มีการชดเชยใดๆ และลูกค้าต้องรับผิดชอบความเสียหายทางกฎหมายที่เกิดขึ้น</p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+              <Box className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">3. การคำนวณค่าขนส่ง</h2>
+          </div>
+          <div className="pl-14 text-slate-600 space-y-2">
+            <p>3.1 ค่าขนส่งจะถูกคำนวณจาก **น้ำหนักจริง (กิโลกรัม)** หรือ **น้ำหนักปริมาตร (CBM)** โดยบริษัทจะเลือกคิดค่าขนส่งจากฝั่งที่คำนวณแล้วมีมูลค่าสูงกว่า</p>
+            <p>3.2 สูตรการคิดปริมาตร (CBM): กว้าง (ซม.) x ยาว (ซม.) x สูง (ซม.) / 1,000,000</p>
+            <p>3.3 หากสินค้ามีน้ำหนักเกิน 100 กิโลกรัม แต่ปริมาตรน้อย บริษัทจะคิดราคาแบบกิโลกรัม</p>
+            <p>3.4 สินค้าที่แตกหักเสียหายง่าย ลูกค้าควรแจ้งตีลังไม้เพื่อความปลอดภัย (มีค่าใช้จ่ายเพิ่มเติม)</p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">4. การรับประกันและชดเชยค่าเสียหาย</h2>
+          </div>
+          <div className="pl-14 text-slate-600 space-y-2">
+            <p>4.1 กรณีสินค้าสูญหายที่เกิดจากความผิดพลาดของทางบริษัท บริษัทจะชดเชยให้ตามมูลค่าจริงของสินค้า แต่ **ไม่เกิน 3 เท่าของค่าขนส่ง** (สำหรับลูกค้าที่ไม่ได้ซื้อประกัน)</p>
+            <p>4.2 กรณีลูกค้าซื้อประกันสินค้าสูญหาย (จ่ายเพิ่ม 3-5% ของมูลค่าสินค้า) บริษัทจะชดเชยให้เต็ม 100% ของมูลค่าสินค้าที่แจ้งไว้</p>
+            <p>4.3 บริษัท **ไม่รับประกัน** ความเสียหายจากการแตกหัก บิดเบี้ยว หรือเสื่อมสภาพจากการขนส่ง สำหรับสินค้าที่บอบบาง (เช่น แก้ว เซรามิค พลาสติกบาง หน้าจอ) ยกเว้นลูกค้าสั่งตีลังไม้ ซึ่งจะมีการพิจารณาชดเชยเป็นกรณีไป</p>
+            <p>4.4 ลูกค้าต้องแจ้งเคลมสินค้าสูญหายภายใน 7 วัน นับจากวันที่ได้รับสินค้า พร้อมแนบรูปถ่ายกล่อง/กระสอบ และวิดีโอขณะเปิดสินค้า หากไม่มีวิดีโอยืนยัน บริษัทขอสงวนสิทธิ์งดรับเคลมทุกกรณี</p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+              <Clock className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">5. ระยะเวลาการขนส่ง และสินค้าตกค้าง</h2>
+          </div>
+          <div className="pl-14 text-slate-600 space-y-2">
+            <p>5.1 ระยะเวลาการขนส่งทางรถ (EK) ปกติใช้เวลา 5-7 วัน และทางเรือ (SEA) ใช้เวลา 15-20 วัน (นับจากวันที่สินค้าออกจากโกดังจีน)</p>
+            <p>5.2 ระยะเวลาขนส่งอาจล่าช้ากว่ากำหนดในกรณีเกิดเหตุสุดวิสัย เช่น ภัยพิบัติทางธรรมชาติ นโยบายด่านตรวจเข้มงวด ช่วงเทศกาล หรือเหตุการณ์ที่อยู่นอกเหนือการควบคุมของบริษัท</p>
+            <p>5.3 เมื่อสินค้าถึงโกดังไทย ลูกค้าจะต้องชำระค่าขนส่งและรับสินค้าภายใน 15 วัน หากเกินกำหนด บริษัทจะคิดค่าฝากสินค้าวันละ 50-200 บาท (ขึ้นอยู่กับขนาด) และหากเกิน 60 วัน บริษัทขอสงวนสิทธิ์นำสินค้าไปขายทอดตลาดเพื่อชดเชยค่าขนส่งและค่าโกดัง</p>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-teal-50 text-teal-600 rounded-lg">
+              <CreditCard className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">6. การชำระเงินและการคืนเงิน</h2>
+          </div>
+          <div className="pl-14 text-slate-600 space-y-2">
+            <p>6.1 ยอดสั่งซื้อรอบที่ 1 (ค่าสินค้า) และ รอบที่ 2 (ค่าขนส่งจีน-ไทย) ลูกค้าต้องชำระเงินเต็มจำนวนก่อน ระบบจึงจะดำเนินการขั้นตอนต่อไป</p>
+            <p>6.2 หากร้านค้าจีนไม่มีสินค้า ส่งสินค้าไม่ครบ หรือยกเลิกออเดอร์ บริษัทจะทำการประสานงานขอเงินคืนจากร้านค้าจีน และจะคืนเงินเข้าสู่ระบบ (Wallet) หรือบัญชีธนาคารของลูกค้าตามยอดที่ร้านค้าจีนโอนคืนมา</p>
+          </div>
+        </section>
+
+        <div className="pt-6 mt-6 border-t border-slate-200">
+          <p className="text-sm text-slate-500 text-center">
+            การที่ลูกค้าตกลงใช้บริการของ Sabuy Ship Express ถือว่าลูกค้าได้อ่าน เข้าใจ และยอมรับเงื่อนไขการให้บริการข้างต้นนี้ทุกประการ
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
