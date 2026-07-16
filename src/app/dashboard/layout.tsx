@@ -69,7 +69,7 @@ export default function DashboardLayout({
       <aside className="w-64 border-r bg-white flex-shrink-0 flex flex-col hidden md:flex">
         <div className="h-16 flex items-center px-6 border-b overflow-visible">
           <div className="relative w-full h-full shrink-0">
-            <Link href="/" className="absolute -top-[36px] -left-2 z-50">
+            <Link href="/" className="absolute -top-[12px] -left-2 z-50">
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
             </Link>
           </div>
@@ -117,7 +117,7 @@ export default function DashboardLayout({
         {/* Mobile Header */}
         <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:hidden overflow-visible relative">
           <div className="relative w-40 h-full shrink-0">
-            <Link href="/" className="absolute -top-[36px] -left-2.5 z-50">
+            <Link href="/" className="absolute -top-[12px] -left-2.5 z-50">
               <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
             </Link>
           </div>
