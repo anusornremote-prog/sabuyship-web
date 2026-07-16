@@ -74,7 +74,7 @@ export default function DashboardLayout({
             </Link>
           </div>
         </div>
-        <nav className="flex-1 p-4 space-y-2 relative z-[60]">
+        <nav className="flex-1 px-4 pt-8 pb-4 space-y-2 relative z-[60]">
           <Link href="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname === '/dashboard' ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <LayoutDashboard className="h-5 w-5" />
             ภาพรวม
