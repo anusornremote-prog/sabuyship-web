@@ -43,7 +43,8 @@ export async function POST(request: Request) {
       items: body.items,
       product_url: body.items[0]?.url || "-", 
       quantity: body.items[0]?.quantity || 1, 
-      status: "PENDING"
+      status: "PENDING",
+      service_type: body.service_type || "BUY_AND_IMPORT"
     }
 
     const { error } = await supabase

@@ -17,7 +17,8 @@ export default function InquiryForm() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean }>([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false }])
+  const [serviceType, setServiceType] = useState<'BUY_AND_IMPORT' | 'IMPORT_ONLY'>('BUY_AND_IMPORT')
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean; china_tracking_number?: string }>([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function InquiryForm() {
   const labelViewOrders = locale === 'en' ? 'View Orders' : locale === 'zh' ? '查看订单' : 'ดูคำสั่งซื้อ'
 
   const handleAddItem = () => {
-    setItems([...items, { url: '', quantity: 1, remark: '', file: null, wooden_crate: false }])
+    setItems([...items, { url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
   }
 
   const handleRemoveItem = (index: number) => {
@@ -86,10 +87,17 @@ export default function InquiryForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
-    // Validate items
-    if (items.some(item => !item.url.trim())) {
-      setError(locale === 'en' ? 'Please fill in all product URLs.' : locale === 'zh' ? '请填写所有商品链接。' : 'กรุณากรอกลิงก์สินค้าให้ครบทุกรายการ')
-      return
+    // Validate items based on serviceType
+    if (serviceType === 'BUY_AND_IMPORT') {
+      if (items.some(item => !item.url.trim())) {
+        setError(locale === 'en' ? 'Please fill in all product URLs.' : locale === 'zh' ? '请填写所有商品链接。' : 'กรุณากรอกลิงก์สินค้าให้ครบทุกรายการ')
+        return
+      }
+    } else {
+      if (items.some(item => !item.china_tracking_number?.trim())) {
+        setError(locale === 'en' ? 'Please fill in China tracking numbers.' : locale === 'zh' ? '请填写中国快递单号。' : 'กรุณากรอกเลขพัสดุจีนให้ครบทุกรายการ')
+        return
+      }
     }
 
     // Capture form data synchronously before any await
@@ -149,6 +157,7 @@ export default function InquiryForm() {
           quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
           remark: item.remark,
           wooden_crate: item.wooden_crate,
+          china_tracking_number: item.china_tracking_number || null,
           image_url
         }
       }))
@@ -158,6 +167,7 @@ export default function InquiryForm() {
         phone: formData.get("phone"),
         line_id: formData.get("lineId"),
         shipping_type: formData.get("shippingType"),
+        service_type: serviceType,
         items: uploadedItems
       }
 
@@ -217,6 +227,30 @@ export default function InquiryForm() {
           <CardContent>
             {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md mb-6">{error}</div>}
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="font-semibold border-b pb-2">{locale === 'en' ? 'Service Type' : locale === 'zh' ? '服务类型' : 'ประเภทบริการ'}</h3>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <label className={`flex-1 border rounded-xl p-4 cursor-pointer transition-all ${serviceType === 'BUY_AND_IMPORT' ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-200 hover:border-primary/50'}`}>
+                    <div className="flex items-center gap-3">
+                      <input type="radio" name="serviceType" value="BUY_AND_IMPORT" checked={serviceType === 'BUY_AND_IMPORT'} onChange={() => setServiceType('BUY_AND_IMPORT')} className="w-4 h-4 text-primary" />
+                      <div>
+                        <div className="font-semibold text-slate-800">{locale === 'en' ? 'Order & Import' : locale === 'zh' ? '代购 + 进口' : 'ฝากสั่งซื้อ + นำเข้า'}</div>
+                        <div className="text-xs text-slate-500 mt-1">{locale === 'en' ? 'Provide URL, we buy for you' : locale === 'zh' ? '提供链接，我们为您代购' : 'ใส่ลิงก์สินค้า เราจัดการสั่งให้ตั้งแต่ต้น'}</div>
+                      </div>
+                    </div>
+                  </label>
+                  <label className={`flex-1 border rounded-xl p-4 cursor-pointer transition-all ${serviceType === 'IMPORT_ONLY' ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-200 hover:border-primary/50'}`}>
+                    <div className="flex items-center gap-3">
+                      <input type="radio" name="serviceType" value="IMPORT_ONLY" checked={serviceType === 'IMPORT_ONLY'} onChange={() => setServiceType('IMPORT_ONLY')} className="w-4 h-4 text-primary" />
+                      <div>
+                        <div className="font-semibold text-slate-800">{locale === 'en' ? 'Import Only' : locale === 'zh' ? '仅进口 (客户自行下单)' : 'ลูกค้านำเข้าเอง (นำเข้าอย่างเดียว)'}</div>
+                        <div className="text-xs text-slate-500 mt-1">{locale === 'en' ? 'You buy, provide tracking number' : locale === 'zh' ? '您自行下单，提供快递单号' : 'ลูกค้าสั่งเอง ใส่แค่เลขพัสดุจีน'}</div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <h3 className="font-semibold border-b pb-2">{labelContactInfo}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -278,16 +312,32 @@ export default function InquiryForm() {
                         </button>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">{labelProductUrl}</label>
-                      <Input 
-                        required 
-                        type="text" 
-                        placeholder="https://item.taobao.com/... หรือใส่ข้อความได้" 
-                        value={item.url}
-                        onChange={(e) => handleItemChange(index, 'url', e.target.value)}
-                      />
-                    </div>
+                    {serviceType === 'BUY_AND_IMPORT' ? (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{labelProductUrl}</label>
+                        <Input 
+                          required 
+                          type="text" 
+                          placeholder="https://item.taobao.com/... หรือใส่ข้อความได้" 
+                          value={item.url}
+                          onChange={(e) => handleItemChange(index, 'url', e.target.value)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-blue-700">{locale === 'en' ? 'China Tracking Number *' : locale === 'zh' ? '中国快递单号 *' : 'เลขพัสดุจีน (Tracking Number) *'}</label>
+                        <Input 
+                          required 
+                          type="text" 
+                          placeholder={locale === 'en' ? 'e.g. YT123456789' : 'เช่น YT123456789'}
+                          value={item.china_tracking_number}
+                          onChange={(e) => handleItemChange(index, 'china_tracking_number', e.target.value)}
+                        />
+                        <p className="text-xs text-slate-500">
+                          {locale === 'en' ? 'Required so warehouse can identify your package.' : locale === 'zh' ? '必须填写以便仓库识别包裹。' : 'จำเป็นต้องใส่เพื่อให้โกดังจีนทราบว่าเป็นพัสดุของท่าน'}
+                        </p>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">{labelQuantity}</label>
                       <Input 

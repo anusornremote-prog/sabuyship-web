@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard, Globe, ExternalLink } from "lucide-react"
+import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard, Globe, ExternalLink, Package } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { AddressSelectionModal } from "../inquiries/AddressSelectionModal"
 
@@ -135,7 +135,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         case 'NEW': return 'รอดำเนินการ'
         case 'WAITING_PAYMENT': return 'รอชำระเงิน'
         case 'PAID': return 'ชำระรอบ 1 แล้ว (รอแอดมินสั่งของ)'
-        case 'ORDERED': return 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
+        case 'ORDERED': return item.payment_round_1_status === 'NOT_APPLICABLE' ? 'กำลังจัดส่งไปโกดังจีน' : 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
         case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน (รอคำนวณค่าขนส่ง)'
         case 'SHIPPING': return 'ชำระรอบ 2 แล้ว (กำลังส่งมาไทย)'
         case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย (รอคำนวณค่าส่งในไทย)'

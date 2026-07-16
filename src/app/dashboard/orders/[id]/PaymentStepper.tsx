@@ -58,10 +58,10 @@ export function PaymentStepper({
     {
       round: 1,
       title: "รอบ 1: ค่าสินค้า + จีน-จีน",
-      description: paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound1Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : "รอการชำระเงิน",
-      amount: productCost + shippingCostCnCn,
-      isCompleted: paymentRound1Status === 'PAID',
-      isActive: paymentRound1Status !== 'PAID',
+      description: paymentRound1Status === 'NOT_APPLICABLE' ? "ลูกค้านำเข้าเอง (ไม่มีค่าสินค้า)" : paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound1Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : "รอการชำระเงิน",
+      amount: paymentRound1Status === 'NOT_APPLICABLE' ? 0 : productCost + shippingCostCnCn,
+      isCompleted: paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE',
+      isActive: paymentRound1Status !== 'PAID' && paymentRound1Status !== 'NOT_APPLICABLE',
       status: paymentRound1Status,
       icon: Package
     },
@@ -73,7 +73,7 @@ export function PaymentStepper({
         : (paymentRound1Status === 'PAID' ? "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย" : "รอสินค้าจัดส่งมาไทย"),
       amount: shippingCostCnTh,
       isCompleted: paymentRound2Status === 'PAID',
-      isActive: paymentRound1Status === 'PAID' && paymentRound2Status !== 'PAID',
+      isActive: (paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE') && paymentRound2Status !== 'PAID',
       status: paymentRound2Status,
       icon: Truck
     },
@@ -118,7 +118,7 @@ export function PaymentStepper({
                   </h4>
                   
                   {/* Display amount if it exists and step is active/completed OR if it's round 1 where we always know the amount */}
-                  {(step.amount > 0 || step.round === 1) && (step.isActive || step.isCompleted) && (
+                  {(step.amount > 0 || (step.round === 1 && step.status !== 'NOT_APPLICABLE')) && (step.isActive || step.isCompleted) && (
                     <p className={`text-lg font-bold mt-1 mb-0.5 ${step.isCompleted ? 'text-emerald-600' : step.isActive ? 'text-blue-600' : 'text-slate-500'}`}>
                       {step.amount > 0 ? formatCurrency(step.amount) : "฿ 0.00"}
                     </p>

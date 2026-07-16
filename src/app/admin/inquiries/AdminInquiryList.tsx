@@ -154,6 +154,32 @@ export default function AdminInquiryList({
     }
   }
 
+  const handleApproveImportOnly = async (inquiry: any) => {
+    if (!confirm("ยืนยันการรับเข้าโกดังจีนสำหรับรายการ 'นำเข้าอย่างเดียว' ?\n(ระบบจะสร้างออเดอร์ในสถานะ 'รอสินค้าเข้าโกดังจีน' และข้ามการเก็บเงินรอบ 1 ทันที)")) return
+    
+    try {
+      setIsSubmitting(true)
+      const res = await fetch("/api/inquiry/admin/approve-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inquiry_id: inquiry.id })
+      })
+
+      const result = await res.json()
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to approve import only inquiry")
+      }
+      
+      alert("สร้างออเดอร์สำเร็จ! สินค้าอยู่ในสถานะรอเข้าโกดังจีน")
+      router.refresh()
+    } catch (err: any) {
+      console.error(err)
+      alert(err.message || "เกิดข้อผิดพลาดในการอนุมัติ")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleCleanupImages = async () => {
     if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างรูปภาพเก่าที่เกิน 90 วันทิ้ง? (ข้อมูลข้อความยังอยู่ครบ แต่รูปจะถูกลบเพื่อคืนพื้นที่)")) return
     
@@ -317,7 +343,14 @@ export default function AdminInquiryList({
                           onChange={() => handleSelectRow(inq.id)}
                         />
                       </td>
-                      <td className="px-6 py-4 font-bold text-slate-900">{inq.inquiry_number}</td>
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-slate-900">{inq.inquiry_number}</p>
+                        {inq.service_type === 'IMPORT_ONLY' && (
+                          <span className="inline-block mt-1 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-200">
+                            นำเข้าอย่างเดียว (ลูกค้านำเข้าเอง)
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-slate-800">{inq.customer_name}</p>
                         <p className="text-sm font-semibold text-primary mt-1">
@@ -334,18 +367,23 @@ export default function AdminInquiryList({
                           </div>
                         ) : (
                           <>
-                            <a
-                              href={inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate"
-                            >
-                              <Globe className="h-4 w-4 shrink-0 text-slate-400" />
-                              <span>{inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}</span>
-                              <ExternalLink className="h-3 w-3 shrink-0" />
-                            </a>
-                            <p className="text-xs text-slate-500 mt-1 font-semibold">จำนวน: {inq.items && inq.items.length === 1 ? inq.items[0].quantity : inq.quantity} ชิ้น</p>
-                          </>
+                              <a
+                                href={inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`hover:underline flex items-center gap-1 max-w-[200px] truncate ${inq.service_type === 'IMPORT_ONLY' && !inq.product_url ? 'text-slate-400 pointer-events-none' : 'text-primary'}`}
+                              >
+                                <Globe className="h-4 w-4 shrink-0 text-slate-400" />
+                                <span>{inq.service_type === 'IMPORT_ONLY' && !inq.product_url ? '-' : (inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url)}</span>
+                                {!(inq.service_type === 'IMPORT_ONLY' && !inq.product_url) && <ExternalLink className="h-3 w-3 shrink-0" />}
+                              </a>
+                              {inq.service_type === 'IMPORT_ONLY' && inq.items && inq.items[0]?.china_tracking_number && (
+                                <p className="text-xs text-blue-600 mt-1 font-semibold flex items-center gap-1">
+                                  <FileText className="h-3 w-3" /> Tracking: {inq.items[0].china_tracking_number}
+                                </p>
+                              )}
+                              <p className="text-xs text-slate-500 mt-1 font-semibold">จำนวน: {inq.items && inq.items.length === 1 ? inq.items[0].quantity : inq.quantity} ชิ้น</p>
+                            </>
                         )}
                       </td>
                       <td className="px-6 py-4 text-xs text-slate-600 max-w-[200px] truncate">
