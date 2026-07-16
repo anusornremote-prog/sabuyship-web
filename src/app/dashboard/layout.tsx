@@ -74,7 +74,7 @@ export default function DashboardLayout({
             </Link>
           </div>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 relative z-[60]">
           <Link href="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname === '/dashboard' ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <LayoutDashboard className="h-5 w-5" />
             ภาพรวม
@@ -99,7 +99,7 @@ export default function DashboardLayout({
             ขอใบเสนอราคา
           </Link>
         </nav>
-        <div className="p-4 border-t space-y-2">
+        <div className="p-4 border-t space-y-2 relative z-[60]">
           <Link href="/dashboard/profile">
              <Button variant="outline" className={`w-full justify-start transition-colors ${pathname.startsWith('/dashboard/profile') ? 'border-primary text-primary bg-blue-50' : 'text-slate-600 hover:bg-slate-100 cursor-pointer'}`}>
                <span className="flex-1 text-left">ข้อมูลส่วนตัว</span>
@@ -129,7 +129,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Mobile Nav */}
-        <nav className="flex md:hidden bg-white border-b overflow-x-auto">
+        <nav className="flex md:hidden bg-white border-b overflow-x-auto relative z-[60]">
            <Link href="/dashboard" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname === '/dashboard' ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             ภาพรวม
           </Link>
