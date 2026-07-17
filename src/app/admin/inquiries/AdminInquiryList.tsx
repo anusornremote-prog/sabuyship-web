@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import * as XLSX from "xlsx"
 import { Input } from "@/components/ui/input"
 import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle } from "lucide-react"
 import {
@@ -246,6 +247,39 @@ export default function AdminInquiryList({
     }
   }
 
+  const handleExportExcel = () => {
+    try {
+      const exportData = filtered.map((inq: any) => {
+        const totalItems = inq.items?.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 0), 0) || 0;
+        return {
+          "รหัสคำขอ": inq.inquiry_number,
+          "วันที่สร้าง": new Date(inq.created_at).toLocaleString("th-TH"),
+          "ชื่อลูกค้า": inq.customer_name,
+          "เบอร์โทร": inq.phone || "-",
+          "รหัสลูกค้า": inq.customer?.customer_code || "-",
+          "ประเภทนำเข้า": inq.service_type === 'IMPORT_ONLY' ? 'นำเข้าอย่างเดียว' : 'สั่งซื้อ+นำเข้า',
+          "ขนส่ง (จีน-ไทย)": inq.shipping_type === 'BOAT' ? 'ทางเรือ (SEA)' : 'ทางรถ (EK)',
+          "จำนวนลิงก์/สินค้า": inq.items?.length || 0,
+          "จำนวนชิ้นรวม": totalItems,
+          "สถานะ": inq.status,
+          "สถานะรอบแรก": inq.payment_round_1_status || "-",
+          "หมายเหตุ": inq.admin_notes || "-"
+        }
+      })
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Inquiries")
+      
+      const fileName = `sabuyship-inquiries-${new Date().toISOString().split('T')[0]}.xlsx`
+      XLSX.writeFile(workbook, fileName)
+      
+    } catch (err) {
+      console.error("Export error:", err)
+      alert("ไม่สามารถสร้างไฟล์ Excel ได้")
+    }
+  }
+
   // Filter logic
   const filtered = inquiries.filter((inq: any) => {
     const matchesSearch =
@@ -291,6 +325,14 @@ export default function AdminInquiryList({
             disabled={isCleaning}
           >
             {isCleaning ? 'กำลังล้าง...' : 'ล้างรูปภาพเก่า (เกิน 90 วัน)'}
+          </Button>
+
+          <Button
+            variant="outline"
+            className="bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700 font-medium w-full sm:w-auto"
+            onClick={handleExportExcel}
+          >
+            Export Excel
           </Button>
 
           {selectedIds.length > 0 && (

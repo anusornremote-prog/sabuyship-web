@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, FileQuestion, FileText, Package } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import { DashboardCharts } from "./components/DashboardCharts"
 
 export default async function AdminOverview() {
   const supabase = await createClient()
@@ -83,6 +84,64 @@ export default async function AdminOverview() {
     }
   }
 
+  // Fetch data for charts (last 30 days)
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
+
+  // 1. Fetch Inquiries created in the last 30 days
+  const { data: chartInquiries } = await supabase
+    .from("inquiries")
+    .select("created_at")
+    .gte("created_at", thirtyDaysAgoStr)
+
+  // 2. Fetch Orders created in the last 30 days (for volume)
+  const { data: chartOrders } = await supabase
+    .from("orders")
+    .select("created_at, quotation:quotation_id(total_price)")
+    .gte("created_at", thirtyDaysAgoStr)
+
+  // Aggregate Data by Date
+  const aggregatedData: Record<string, any> = {}
+  
+  // Initialize last 30 days
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dateStr = d.toISOString().split('T')[0] // YYYY-MM-DD
+    aggregatedData[dateStr] = {
+      date: `${d.getDate()}/${d.getMonth() + 1}`,
+      fullDate: dateStr,
+      inquiries: 0,
+      orders: 0,
+      revenue: 0
+    }
+  }
+
+  // Populate Inquiries
+  if (chartInquiries) {
+    chartInquiries.forEach((inq) => {
+      // Need to handle timezone if the time is close to midnight, but simple string splitting is fine for overview
+      const dateStr = inq.created_at.split('T')[0]
+      if (aggregatedData[dateStr]) {
+        aggregatedData[dateStr].inquiries += 1
+      }
+    })
+  }
+
+  // Populate Orders and Revenue
+  if (chartOrders) {
+    chartOrders.forEach((order) => {
+      const dateStr = order.created_at.split('T')[0]
+      if (aggregatedData[dateStr]) {
+        aggregatedData[dateStr].orders += 1
+        aggregatedData[dateStr].revenue += Number(order.quotation?.total_price || 0)
+      }
+    })
+  }
+
+  const chartData = Object.values(aggregatedData)
+
   return (
     <div className="space-y-6">
       <div>
@@ -135,6 +194,8 @@ export default async function AdminOverview() {
           </CardContent>
         </Card>
       </div>
+
+      <DashboardCharts data={chartData} />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-sm">
