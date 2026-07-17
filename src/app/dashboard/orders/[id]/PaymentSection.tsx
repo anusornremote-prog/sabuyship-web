@@ -8,6 +8,7 @@ import { X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import imageCompression from 'browser-image-compression'
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export function PaymentSection({ orderId, paymentRound, isRejected = false }: { orderId: string, paymentRound: 1 | 2 | 3, isRejected?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -20,7 +21,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false }: { 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!amount || !paymentDate || !file) return alert('กรุณากรอกข้อมูลให้ครบถ้วน')
+    if (!amount || !paymentDate || !file) return toast.error('กรุณากรอกข้อมูลให้ครบถ้วน')
 
     setIsSubmitting(true)
     try {
@@ -67,11 +68,11 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false }: { 
 
       if (orderError) throw orderError
 
-      alert('แจ้งชำระเงินสำเร็จ กรุณารอเจ้าหน้าที่ตรวจสอบ')
+      toast.success('แจ้งชำระเงินสำเร็จ กรุณารอเจ้าหน้าที่ตรวจสอบ')
       setIsOpen(false)
       window.location.reload()
     } catch (err: any) {
-      alert('เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองอีกครั้ง'))
+      toast.error('เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองอีกครั้ง'))
     } finally {
       setIsSubmitting(false)
     }

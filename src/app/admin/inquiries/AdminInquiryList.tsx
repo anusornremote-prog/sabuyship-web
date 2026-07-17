@@ -925,8 +925,8 @@ export default function AdminInquiryList({
         </Dialog>
       )}
       
-      {/* Detail Modal */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+      {/* Delete Modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-rose-600 flex items-center gap-2">

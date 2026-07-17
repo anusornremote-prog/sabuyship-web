@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
 import { PaymentStepper } from "./PaymentStepper"
 import { ConfirmReceiptButton } from "./ConfirmReceiptButton"
+import { CopyTrackingButton } from "./CopyTrackingButton"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
@@ -404,9 +405,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   <div>
                     <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">หมายเลขพัสดุ (Tracking)</h4>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md border border-blue-100">
-                        {order.tracking_number}
-                      </span>
+                      <CopyTrackingButton trackingNumber={order.tracking_number} label="เลขพัสดุไทย" />
                     </div>
                   </div>
                 </div>

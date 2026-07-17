@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Globe } from "lucide-react"
+import { toast } from "sonner"
 
 interface QuoteModalProps {
   isOpen: boolean
@@ -125,7 +126,7 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
         throw new Error(data.error || "เกิดข้อผิดพลาดในการบันทึก")
       }
 
-      alert("บันทึกราคาสำเร็จ!")
+      toast.success("บันทึกราคาสำเร็จ!")
       onSuccess()
       onClose()
       setCost("")

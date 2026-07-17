@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
 import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle, X } from "lucide-react"
+import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 
 export function PaymentApprovalModal({ 
@@ -81,10 +82,10 @@ export function PaymentApprovalModal({
           notes: logNotes
         })
 
-      alert('ยืนยันการชำระเงินสำเร็จ')
+      toast.success('ยืนยันการชำระเงินสำเร็จ')
       onSuccess()
     } catch (err: any) {
-      alert('เกิดข้อผิดพลาด: ' + err.message)
+      toast.error('เกิดข้อผิดพลาด: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -124,10 +125,10 @@ export function PaymentApprovalModal({
           })
       }
 
-      alert('ปฏิเสธการชำระเงินแล้ว')
+      toast.success('ปฏิเสธการชำระเงินแล้ว')
       onSuccess()
     } catch (err: any) {
-      alert('เกิดข้อผิดพลาด: ' + err.message)
+      toast.error('เกิดข้อผิดพลาด: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -169,13 +170,18 @@ export function PaymentApprovalModal({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={handleReject} disabled={loading} className="text-red-600 border-red-200 hover:text-red-700 hover:bg-red-50 cursor-pointer">
-              <XCircle className="w-4 h-4 mr-1" /> ปฏิเสธ (ข้อมูลไม่ถูกต้อง)
+            <Button variant="outline" onClick={onClose} disabled={loading}>
+              ปิด
             </Button>
-            <Button onClick={handleApprove} disabled={loading} className="bg-green-600 hover:bg-green-700 text-white cursor-pointer">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
-              ยืนยันการชำระเงิน
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="destructive" onClick={handleReject} disabled={loading}>
+                <XCircle className="w-4 h-4 mr-1" /> ปฏิเสธ (ข้อมูลไม่ถูกต้อง)
+              </Button>
+              <Button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
+                ยืนยันการชำระเงิน
+              </Button>
+            </div>
           </DialogFooter>
         </div>
       </DialogContent>

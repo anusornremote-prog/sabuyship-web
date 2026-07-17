@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Prompt } from "next/font/google";
 import { cookies } from "next/headers";
 import { LanguageProvider } from "@/components/providers/language-provider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const promptFont = Prompt({
@@ -34,6 +35,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider>{children}</LanguageProvider>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );
