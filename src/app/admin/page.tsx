@@ -6,100 +6,36 @@ import { DashboardCharts } from "./components/DashboardCharts"
 export default async function AdminOverview() {
   const supabase = await createClient()
 
-  // Fetch Pending Inquiries
-  const { count: pendingInquiriesCount } = await supabase
-    .from("inquiries")
-    .select("*", { count: 'exact', head: true })
-    .eq("status", "PENDING")
+  // Prepare date for charts
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
 
-  // Fetch Waiting Payment Orders and calculate total value
-  const { data: waitingPaymentOrders } = await supabase
-    .from("orders")
-    .select("id, quotation:quotation_id(total_price)")
-    .eq("status", "WAITING_PAYMENT")
+  // Fetch all data concurrently to reduce loading time
+  const [
+    { count: pendingInquiriesCount },
+    { data: waitingPaymentOrders },
+    { count: shippingOrdersCount },
+    { count: customersCount },
+    { data: recentInquiries },
+    { data: recentTracking },
+    { data: chartInquiries },
+    { data: chartOrders }
+  ] = await Promise.all([
+    supabase.from("inquiries").select("*", { count: 'exact', head: true }).eq("status", "PENDING"),
+    supabase.from("orders").select("id, quotation:quotation_id(total_price)").eq("status", "WAITING_PAYMENT"),
+    supabase.from("orders").select("*", { count: 'exact', head: true }).in("status", ["CHINA_WAREHOUSE", "SHIPPING", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY"]),
+    supabase.from("profiles").select("*", { count: 'exact', head: true }).eq("role", "CUSTOMER"),
+    supabase.from("inquiries").select(`id, product_url, status, created_at, customer:customer_id(full_name)`).order("created_at", { ascending: false }).limit(5),
+    supabase.from("tracking_logs").select(`id, status, notes, created_at, order:order_id(order_number)`).order("created_at", { ascending: false }).limit(5),
+    supabase.from("inquiries").select("created_at").gte("created_at", thirtyDaysAgoStr),
+    supabase.from("orders").select("created_at, quotation:quotation_id(total_price)").gte("created_at", thirtyDaysAgoStr)
+  ])
 
   const waitingPaymentCount = waitingPaymentOrders?.length || 0
   const waitingPaymentTotal = waitingPaymentOrders?.reduce((sum: number, order: any) => {
     return sum + Number(order.quotation?.total_price || 0)
   }, 0) || 0
-
-  // Fetch Active Shipping Orders
-  const { count: shippingOrdersCount } = await supabase
-    .from("orders")
-    .select("*", { count: 'exact', head: true })
-    .in("status", ["CHINA_WAREHOUSE", "SHIPPING", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY"])
-
-  // Fetch Total Customers
-  const { count: customersCount } = await supabase
-    .from("profiles")
-    .select("*", { count: 'exact', head: true })
-    .eq("role", "CUSTOMER")
-
-  // Fetch Recent Inquiries for list
-  const { data: recentInquiries } = await supabase
-    .from("inquiries")
-    .select(`
-      id,
-      product_url,
-      status,
-      created_at,
-      customer:customer_id(full_name)
-    `)
-    .order("created_at", { ascending: false })
-    .limit(5)
-
-  // Fetch Recent Tracking Updates for list
-  const { data: recentTracking } = await supabase
-    .from("tracking_logs")
-    .select(`
-      id,
-      status,
-      notes,
-      created_at,
-      order:order_id(order_number)
-    `)
-    .order("created_at", { ascending: false })
-    .limit(5)
-
-  const formatCurrency = (amount: number) => {
-    return `฿ ${amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'bg-orange-100 text-orange-800'
-      case 'QUOTED': return 'bg-green-100 text-green-800'
-      case 'REJECTED': return 'bg-rose-100 text-rose-800'
-      default: return 'bg-slate-100 text-slate-800'
-    }
-  }
-
-  const getOrderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
-      case 'SHIPPING': return 'bg-sky-100 text-sky-800'
-      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
-      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
-      default: return 'bg-slate-100 text-slate-800'
-    }
-  }
-
-  // Fetch data for charts (last 30 days)
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
-
-  // 1. Fetch Inquiries created in the last 30 days
-  const { data: chartInquiries } = await supabase
-    .from("inquiries")
-    .select("created_at")
-    .gte("created_at", thirtyDaysAgoStr)
-
-  // 2. Fetch Orders created in the last 30 days (for volume)
-  const { data: chartOrders } = await supabase
-    .from("orders")
-    .select("created_at, quotation:quotation_id(total_price)")
-    .gte("created_at", thirtyDaysAgoStr)
 
   // Aggregate Data by Date
   const aggregatedData: Record<string, any> = {}
