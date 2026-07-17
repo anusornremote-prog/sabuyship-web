@@ -68,9 +68,15 @@ export function PaymentStepper({
     {
       round: 2,
       title: "รอบ 2: ค่าขนส่ง จีน-ไทย",
-      description: status === 'SHIPPING' || status === 'THAILAND_WAREHOUSE' || status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED'
-        ? (paymentRound2Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound2Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound2Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย"))
-        : (paymentRound1Status === 'PAID' ? "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย" : "รอสินค้าจัดส่งมาไทย"),
+      description: paymentRound2Status === 'PAID' 
+        ? "ชำระเงินแล้ว" 
+        : paymentRound2Status === 'UPLOADED' 
+          ? "รอแอดมินตรวจสอบ" 
+          : paymentRound2Status === 'REJECTED' 
+            ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" 
+            : (status === 'CHINA_WAREHOUSE' 
+                ? (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "รอแอดมินประเมินค่าขนส่ง") 
+                : (status === 'ORDERED' || status === 'PENDING' ? "รอสินค้าถึงโกดังจีน" : "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย")),
       amount: shippingCostCnTh,
       isCompleted: paymentRound2Status === 'PAID',
       isActive: (paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE') && paymentRound2Status !== 'PAID',
@@ -80,9 +86,15 @@ export function PaymentStepper({
     {
       round: 3,
       title: "รอบ 3: ค่าจัดส่ง ไทย-ไทย",
-      description: status === 'THAILAND_WAREHOUSE' || status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED'
-        ? (paymentRound3Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound3Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound3Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : (shippingCostThTh > 0 ? "รอการชำระเงิน" : "ยืนยันยอดการโอนรอสินค้าถึงโกดังไทย"))
-        : (paymentRound2Status === 'PAID' ? "ยืนยันยอดการโอนรอสินค้าถึงโกดังไทย" : "รอสินค้าถึงโกดังไทย"),
+      description: paymentRound3Status === 'PAID' 
+        ? "ชำระเงินแล้ว" 
+        : paymentRound3Status === 'UPLOADED' 
+          ? "รอแอดมินตรวจสอบ" 
+          : paymentRound3Status === 'REJECTED' 
+            ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" 
+            : (status === 'THAILAND_WAREHOUSE' 
+                ? (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอแอดมินประเมินค่าจัดส่ง") 
+                : (status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED' ? "ชำระเงินแล้ว" : "รอสินค้าถึงโกดังไทย")),
       amount: shippingCostThTh,
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
       isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID',
