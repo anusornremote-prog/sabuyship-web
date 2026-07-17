@@ -1,18 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, FileQuestion, FileText, Package, Loader2 } from "lucide-react"
+import { Users, FileQuestion, FileText, Package } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import dynamic from "next/dynamic"
-
-const DashboardCharts = dynamic(() => import("./components/DashboardCharts").then(mod => mod.DashboardCharts), { 
-  ssr: false,
-  loading: () => (
-    <Card className="shadow-sm mt-6">
-      <CardContent className="h-[300px] flex items-center justify-center text-slate-400">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" /> กำลังโหลดกราฟ...
-      </CardContent>
-    </Card>
-  )
-})
+import { DashboardChartsWrapper } from "./components/DashboardChartsWrapper"
 
 export default async function AdminOverview() {
   const supabase = await createClient()
@@ -142,7 +131,7 @@ export default async function AdminOverview() {
         </Card>
       </div>
 
-      <DashboardCharts data={chartData} />
+      <DashboardChartsWrapper data={chartData} />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-sm">
