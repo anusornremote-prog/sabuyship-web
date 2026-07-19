@@ -252,7 +252,7 @@ export default function AdminOrders() {
   }
 
   const handleManualPayment = async (order: any) => {
-    if (!confirm(`ยืนยันการรับชำระเงินสำหรับออเดอร์ ${order.order_number} (ผ่านช่องทางอื่น ไม่หัก Wallet)?`)) return
+    if (!confirm(`ยืนยันการรับชำระเงินสำหรับออเดอร์ ${order.order_number}?`)) return
 
     try {
       setLoading(true)
@@ -268,22 +268,22 @@ export default function AdminOrders() {
 
       let updates: any = {};
       let logStatus = 'PAID';
-      let logNotes = 'ยืนยันรับชำระเงินแล้ว (ผ่านช่องทางอื่น/โอนตรง)';
+      let logNotes = 'ยืนยันรับชำระเงินแล้ว';
 
       if (roundToUpdate) {
         updates[roundToUpdate] = 'PAID';
         if (roundToUpdate === 'payment_round_1_status') {
           updates.status = 'ORDERED';
           logStatus = 'PAID_ROUND_1';
-          logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
+          logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว';
         } else if (roundToUpdate === 'payment_round_2_status') {
           updates.status = 'SHIPPING';
           logStatus = 'PAID_ROUND_2';
-          logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
+          logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว';
         } else if (roundToUpdate === 'payment_round_3_status') {
           updates.status = 'OUT_FOR_DELIVERY';
           logStatus = 'PAID_ROUND_3';
-          logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
+          logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว';
         }
       } else {
         setLoading(false);
@@ -581,7 +581,7 @@ export default function AdminOrders() {
                           onClick={() => handleManualPayment(order)}
                           className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer w-full max-w-[120px] mb-2"
                         >
-                          รับเงิน (โอนตรง)
+                          ยืนยันรับเงิน
                         </Button>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="icon" className="cursor-pointer" asChild>
@@ -680,7 +680,7 @@ export default function AdminOrders() {
                       แก้แมนนวล
                     </Button>
                     <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-200 min-h-[44px]" onClick={() => handleManualPayment(order)}>
-                      รับเงิน (โอนตรง)
+                      ยืนยันรับเงิน
                     </Button>
                     <div className="col-span-2 flex justify-between gap-2">
                       <Button variant="outline" className="flex-1 min-h-[44px]" asChild>
