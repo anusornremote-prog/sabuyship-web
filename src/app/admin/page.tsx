@@ -67,6 +67,29 @@ export default async function AdminOverview() {
     return sum + Number(order.quotation?.total_price || 0)
   }, 0) || 0
 
+  const formatCurrency = (amount: number) => {
+    return `฿ ${amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'bg-orange-100 text-orange-800'
+      case 'QUOTED': return 'bg-green-100 text-green-800'
+      case 'REJECTED': return 'bg-rose-100 text-rose-800'
+      default: return 'bg-slate-100 text-slate-800'
+    }
+  }
+
+  const getOrderStatusBadge = (status: string) => {
+    switch (status) {
+      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
+      case 'SHIPPING': return 'bg-sky-100 text-sky-800'
+      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
+      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
+      default: return 'bg-slate-100 text-slate-800'
+    }
+  }
+
   // Aggregate Data by Date
   const aggregatedData: Record<string, any> = {}
   
