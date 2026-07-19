@@ -16,6 +16,16 @@ import {
   DialogDescription,
 } from "@/components/ui/custom-dialog"
 
+const extractUrl = (text?: string) => {
+  if (!text) return "#"
+  const urlRegex = /(https?:\/\/[^\s]+)/
+  const match = text.match(urlRegex)
+  if (match && match[0]) {
+    return match[0]
+  }
+  return text.startsWith("http") ? text : `https://${text}`
+}
+
 interface InquiryListProps {
   initialInquiries: any[]
   totalCount?: number
@@ -410,7 +420,7 @@ export default function AdminInquiryList({
                         ) : (
                           <>
                               <a
-                                href={inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}
+                                href={extractUrl(inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={`hover:underline flex items-center gap-1 max-w-[200px] truncate ${inq.service_type === 'IMPORT_ONLY' && !inq.product_url ? 'text-slate-400 pointer-events-none' : 'text-primary'}`}
@@ -574,7 +584,7 @@ export default function AdminInquiryList({
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <a href={inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url} target="_blank" className="text-primary hover:underline flex items-center gap-1 line-clamp-1 break-all text-xs">
+                        <a href={extractUrl(inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url)} target="_blank" className="text-primary hover:underline flex items-center gap-1 line-clamp-1 break-all text-xs">
                           <Globe className="h-4 w-4 shrink-0 text-slate-400" />
                           <span>{inq.items && inq.items.length === 1 ? inq.items[0].url : inq.product_url}</span>
                         </a>
@@ -672,7 +682,7 @@ export default function AdminInquiryList({
                     {selectedInquiry.items.map((item: any, idx: number) => (
                       <div key={idx} className="flex flex-col gap-2 p-2 bg-white rounded border border-slate-200 shadow-sm">
                         <div className="flex justify-between items-center text-xs">
-                           <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">
+                           <a href={extractUrl(item.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">
                              {idx + 1}. {item.url}
                            </a>
                            {item.wooden_crate && (
@@ -715,7 +725,7 @@ export default function AdminInquiryList({
                 ) : (
                   <>
                     <a
-                      href={selectedInquiry.product_url}
+                      href={extractUrl(selectedInquiry.product_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary text-xs hover:underline flex items-center gap-1 truncate"
@@ -852,7 +862,7 @@ export default function AdminInquiryList({
                         )}
                       </td>
                       <td className="px-4 py-4 max-w-[200px]">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 break-all truncate">
+                        <a href={extractUrl(item.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 break-all truncate">
                           <Globe className="h-4 w-4 shrink-0 text-slate-400" />
                           <span className="truncate">{item.url}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
