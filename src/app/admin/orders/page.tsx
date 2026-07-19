@@ -286,8 +286,9 @@ export default function AdminOrders() {
           logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
         }
       } else {
-        // Fallback
-        updates.status = 'PAID';
+        setLoading(false);
+        alert("ออเดอร์นี้ชำระเงินในรอบปัจจุบันไปแล้ว หากต้องการเปลี่ยนสถานะให้ใช้ 'แก้แมนนวล' แทนครับ");
+        return;
       }
       
       const { error: orderError } = await supabase
