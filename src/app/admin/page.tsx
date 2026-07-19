@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server"
 import { DashboardChartsWrapper } from "./components/DashboardChartsWrapper"
 
 export default async function AdminOverview() {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
   // Prepare date for charts
   const thirtyDaysAgo = new Date()
@@ -225,4 +226,17 @@ export default async function AdminOverview() {
       </div>
     </div>
   )
+  } catch (err: any) {
+    return (
+      <div className="p-8 text-red-500 bg-red-50 rounded-lg">
+        <h1 className="text-2xl font-bold mb-4">🚨 เกิดข้อผิดพลาดในหน้า Admin (Production Error)</h1>
+        <p>กรุณาส่งภาพหน้าจอนี้ให้ทีมพัฒนา:</p>
+        <pre className="mt-4 bg-white p-4 rounded text-sm overflow-auto shadow-inner border border-red-200">
+          {err?.message || String(err)}
+          {"\n"}
+          {err?.stack}
+        </pre>
+      </div>
+    )
+  }
 }
