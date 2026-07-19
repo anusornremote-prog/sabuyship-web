@@ -590,7 +590,7 @@ export default function AdminOrders() {
                             </Link>
                           </Button>
                           <Button variant="ghost" size="icon" className="cursor-pointer" asChild>
-                            <Link href={`/dashboard/orders/${order.order_number}`} target="_blank" title="ดูรายละเอียด">
+                            <Link href={`/admin/orders/${order.order_number}`} target="_blank" title="ดูรายละเอียด">
                               <Eye className="h-4 w-4 text-slate-500 hover:text-slate-900" />
                             </Link>
                           </Button>
@@ -689,7 +689,7 @@ export default function AdminOrders() {
                         </Link>
                       </Button>
                       <Button variant="outline" className="flex-1 min-h-[44px]" asChild>
-                        <Link href={`/dashboard/orders/${order.order_number}`} target="_blank">
+                        <Link href={`/admin/orders/${order.order_number}`} target="_blank">
                           <Eye className="h-4 w-4 mr-2" /> รายละเอียด
                         </Link>
                       </Button>
