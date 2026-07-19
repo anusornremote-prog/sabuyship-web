@@ -99,7 +99,7 @@ export default function AdminTrackingPage() {
   }
 
   const handleManualShipmentPayment = async (shipment: any) => {
-    if (!confirm(`ยืนยันการรับชำระเงินค่าจัดส่งสำหรับพัสดุ ${shipment.tracking_number || '-'} (โอนตรง/ไม่หัก Wallet)?`)) return
+    if (!confirm(`ยืนยันการรับชำระเงินค่าจัดส่งสำหรับพัสดุ ${shipment.tracking_number || '-'}?`)) return
 
     try {
       setLoadingShipments(true)
@@ -309,7 +309,7 @@ export default function AdminTrackingPage() {
                                     onClick={() => handleManualShipmentPayment(shipment)}
                                     className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer w-full max-w-[120px]"
                                   >
-                                    รับเงิน (โอนตรง)
+                                    ยืนยันรับเงิน
                                   </Button>
                                 )}
                               </div>
