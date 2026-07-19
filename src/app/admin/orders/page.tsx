@@ -256,10 +256,43 @@ export default function AdminOrders() {
 
     try {
       setLoading(true)
+
+      let roundToUpdate = null;
+      if (order.status === 'WAITING_PAYMENT' || order.status === 'NEW' || (order.payment_round_1_status !== 'PAID' && order.payment_round_1_status !== 'NOT_APPLICABLE')) {
+        roundToUpdate = 'payment_round_1_status';
+      } else if ((order.status === 'CHINA_WAREHOUSE' || order.status === 'ORDERED') && order.payment_round_2_status !== 'PAID') {
+        roundToUpdate = 'payment_round_2_status';
+      } else if ((order.status === 'THAILAND_WAREHOUSE' || order.status === 'SHIPPING') && order.payment_round_3_status !== 'PAID') {
+        roundToUpdate = 'payment_round_3_status';
+      }
+
+      let updates: any = {};
+      let logStatus = 'PAID';
+      let logNotes = 'ยืนยันรับชำระเงินแล้ว (ผ่านช่องทางอื่น/โอนตรง)';
+
+      if (roundToUpdate) {
+        updates[roundToUpdate] = 'PAID';
+        if (roundToUpdate === 'payment_round_1_status') {
+          updates.status = 'ORDERED';
+          logStatus = 'PAID_ROUND_1';
+          logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
+        } else if (roundToUpdate === 'payment_round_2_status') {
+          updates.status = 'SHIPPING';
+          logStatus = 'PAID_ROUND_2';
+          logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
+        } else if (roundToUpdate === 'payment_round_3_status') {
+          updates.status = 'OUT_FOR_DELIVERY';
+          logStatus = 'PAID_ROUND_3';
+          logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (รับเงินสด/โอนตรง)';
+        }
+      } else {
+        // Fallback
+        updates.status = 'PAID';
+      }
       
       const { error: orderError } = await supabase
         .from("orders")
-        .update({ status: 'PAID' })
+        .update(updates)
         .eq("id", order.id)
 
       if (orderError) throw orderError
@@ -268,8 +301,8 @@ export default function AdminOrders() {
         .from("tracking_logs")
         .insert({
           order_id: order.id,
-          status: 'PAID',
-          notes: 'ยืนยันรับชำระเงินแล้ว (ผ่านช่องทางอื่น/โอนตรง)'
+          status: logStatus,
+          notes: logNotes
         })
 
       if (logError) throw logError
