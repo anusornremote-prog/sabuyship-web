@@ -194,6 +194,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           shippingCostCnCn={quotation?.shipping_cost_cn_cn || 0}
           shippingCostCnTh={quotation?.shipping_cost_cn_th || 0}
           shippingCostThTh={quotation?.shipping_cost_th_th || 0}
+          initialShippingMethod={order.shipping_company || ''}
         />
       </div>
 
@@ -411,8 +412,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                 </div>
               ) : (
                 <div className="text-center py-4 text-slate-400">
-                  <p className="text-sm">ยังไม่มีหมายเลขพัสดุ</p>
-                  <p className="text-xs mt-1">แอดมินจะอัปเดตเมื่อสินค้าถึงไทย</p>
+                  <p className="text-sm">รอเลขพัสดุ</p>
+                  <p className="text-xs mt-1">แอดมินจะอัปเดตเมื่อจัดส่งแล้ว</p>
                 </div>
               )}
             </CardContent>

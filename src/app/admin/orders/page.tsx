@@ -21,6 +21,7 @@ export default function AdminOrders() {
   // Status update modal states
   const [editingOrder, setEditingOrder] = useState<any | null>(null)
   const [newStatus, setNewStatus] = useState("")
+  const [trackingNumber, setTrackingNumber] = useState("")
   const [trackingNotes, setTrackingNotes] = useState("")
   const [updating, setUpdating] = useState(false)
   const [successMsg, setSuccessMsg] = useState("")
@@ -197,6 +198,7 @@ export default function AdminOrders() {
   const handleOpenStatusModal = (order: any) => {
     setEditingOrder(order)
     setNewStatus(order.status)
+    setTrackingNumber(order.tracking_number || "")
     setTrackingNotes("")
     setSuccessMsg("")
     setErrorMsg("")
@@ -211,10 +213,13 @@ export default function AdminOrders() {
       setErrorMsg("")
       setSuccessMsg("")
 
-      // 1. Update order status
+      // 1. Update order status and tracking number
       const { error: orderError } = await supabase
         .from("orders")
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          tracking_number: trackingNumber || null 
+        })
         .eq("id", editingOrder.id)
 
       if (orderError) throw orderError
@@ -765,6 +770,17 @@ export default function AdminOrders() {
                     <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
                     <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
                   </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700">หมายเลขพัสดุ (Tracking Number)</label>
+                  <Input 
+                    type="text"
+                    placeholder="กรอกเลขพัสดุสำหรับจัดส่งในไทย (ถ้ามี)"
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
 
                 <div className="space-y-2">
