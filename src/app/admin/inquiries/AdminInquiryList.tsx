@@ -688,6 +688,7 @@ export default function AdminInquiryList({
                             <Input
                               required
                               type="number"
+                              step="0.01"
                               min="0"
                               placeholder="ราคาชิ้นนี้"
                               className="h-8 text-xs"
@@ -699,6 +700,7 @@ export default function AdminInquiryList({
                             <label className="text-[10px] font-semibold text-slate-500 uppercase">ค่าจัดส่งจีน-จีน (ถ้ามี):</label>
                             <Input
                               type="number"
+                              step="0.01"
                               min="0"
                               placeholder="ค่าจัดส่งชิ้นนี้"
                               className="h-8 text-xs"
@@ -733,7 +735,8 @@ export default function AdminInquiryList({
                     <Input
                       required
                       type="number"
-                      min="1"
+                      step="0.01"
+                      min="0"
                       placeholder="เช่น 1500"
                       value={productCost}
                       onChange={(e) => setProductCost(e.target.value)}
@@ -750,14 +753,16 @@ export default function AdminInquiryList({
                     <span className="absolute left-3 top-2.5 text-slate-500">฿</span>
                     {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
                       <Input 
-                        type="number" 
+                        type="number"
+                        step="0.01"
                         disabled
                         className="pl-8 bg-slate-100 font-bold"
                         value={Object.values(itemShippingCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)}
                       />
                     ) : (
                       <Input 
-                        type="number" 
+                        type="number"
+                        step="0.01"
                         min="0"
                         className="pl-8 bg-white"
                         value={shippingCostCnCn}
@@ -773,6 +778,7 @@ export default function AdminInquiryList({
                   <label className="text-xs font-semibold text-slate-700">ค่าธรรมเนียมอื่น ๆ (บาท)</label>
                   <Input
                     type="number"
+                    step="0.01"
                     min="0"
                     placeholder="เช่น 50"
                     value={otherFee}
