@@ -395,25 +395,25 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {order.tracking_number ? (
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">บริษัทขนส่ง</h4>
-                    <p className="font-medium text-slate-800">{order.shipping_company || '-'}</p>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">วิธีจัดส่ง/บริษัทขนส่ง</h4>
+                  <p className="font-medium text-slate-800">{order.shipping_company || '-'}</p>
+                </div>
+                {order.tracking_number ? (
                   <div>
                     <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">หมายเลขพัสดุ (Tracking)</h4>
                     <div className="flex items-center gap-2">
                       <CopyTrackingButton trackingNumber={order.tracking_number} label="เลขพัสดุไทย" />
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center py-4 text-slate-400">
-                  <p className="text-sm">รอเลขพัสดุ</p>
-                  <p className="text-xs mt-1">แอดมินจะอัปเดตเมื่อจัดส่งแล้ว</p>
-                </div>
-              )}
+                ) : (
+                  <div className="py-2 text-slate-400">
+                    <p className="text-sm">รอเลขพัสดุ</p>
+                    <p className="text-xs mt-1">แอดมินจะอัปเดตเมื่อจัดส่งแล้ว</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 

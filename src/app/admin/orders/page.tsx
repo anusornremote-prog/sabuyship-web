@@ -195,6 +195,47 @@ export default function AdminOrders() {
     setQuoteModalOpen(true)
   }
 
+  const handleArrivedInThailand = async (order: any) => {
+    if (order.shipping_company === "รับสินค้าด้วยตัวเองที่โกดัง") {
+      if (!confirm(`ออเดอร์ ${order.order_number} เลือกร้านมารับเอง ยืนยันเปลี่ยนสถานะเป็นถึงโกดังไทย? (จะไม่มีการเรียกเก็บเงินรอบ 3)`)) return;
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/order/${order.id}/quote-round-3`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shipping_cost_th_th: 0 })
+        });
+        if (!res.ok) throw new Error("Failed to update status");
+        alert("อัปเดตสถานะสำเร็จ");
+        fetchOrders();
+      } catch (err: any) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    } else if (order.shipping_company === "จัดส่งแบบเหมาจ่าย(เฉพาะกรุงเทพและปริมณฑล)") {
+      if (!confirm(`ออเดอร์ ${order.order_number} เลือกจัดส่งแบบเหมาจ่าย ยืนยันเปลี่ยนสถานะเป็นถึงโกดังไทยและคิดค่าจัดส่ง 200 บาท?`)) return;
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/order/${order.id}/quote-round-3`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shipping_cost_th_th: 200 })
+        });
+        if (!res.ok) throw new Error("Failed to update status");
+        alert("อัปเดตค่าจัดส่งเหมาจ่ายสำเร็จ");
+        fetchOrders();
+      } catch (err: any) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Default / Domestic carrier / Not selected
+      handleOpenQuoteModal(order, 3);
+    }
+  }
+
   const handleOpenStatusModal = (order: any) => {
     setEditingOrder(order)
     setNewStatus(order.status)
@@ -512,6 +553,11 @@ export default function AdminOrders() {
                           {order.customer?.customer_code || order.customer?.phone || '-'}
                           {order.quotation?.inquiry?.shipping_type === 'BOAT' ? ' (SEA)' : order.quotation?.inquiry?.shipping_type === 'CAR' ? ' (EK)' : ''}
                         </p>
+                        {order.shipping_company && (
+                          <div className="text-[11px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 mb-1 inline-block">
+                            จัดส่ง: {order.shipping_company}
+                          </div>
+                        )}
                         {order.address && (
                           <div className="text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100 max-w-[200px] line-clamp-2" title={`${order.address.address_line} ต.${order.address.subdistrict} อ.${order.address.district} จ.${order.address.province} ${order.address.postal_code}`}>
                             <MapPin className="inline w-3 h-3 mr-1 text-slate-400" />
@@ -558,7 +604,7 @@ export default function AdminOrders() {
                         {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status)) && (
                           <Button 
                             size="sm" 
-                            onClick={() => handleOpenQuoteModal(order, 3)}
+                            onClick={() => handleArrivedInThailand(order)}
                             className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
                           >
                             ถึงโกดังไทย (แจ้งบิล)
@@ -649,6 +695,11 @@ export default function AdminOrders() {
                       {order.customer?.customer_code || order.customer?.phone || '-'}
                       {order.quotation?.inquiry?.shipping_type === 'BOAT' ? ' (SEA)' : order.quotation?.inquiry?.shipping_type === 'CAR' ? ' (EK)' : ''}
                     </p>
+                    {order.shipping_company && (
+                      <div className="text-[11px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 inline-block">
+                        จัดส่ง: {order.shipping_company}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-between items-center text-sm">
@@ -672,7 +723,7 @@ export default function AdminOrders() {
                       </Button>
                     )}
                     {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status)) && (
-                      <Button size="sm" onClick={() => handleOpenQuoteModal(order, 3)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
+                      <Button size="sm" onClick={() => handleArrivedInThailand(order)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
                         ถึงโกดังไทย
                       </Button>
                     )}

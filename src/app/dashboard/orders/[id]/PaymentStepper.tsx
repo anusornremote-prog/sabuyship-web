@@ -142,27 +142,44 @@ export function PaymentStepper({
                   
                   <p className={`text-sm mt-0.5 ${step.status === 'REJECTED' ? 'text-red-500 font-medium' : 'text-slate-500'}`}>{step.description}</p>
                   
+                  {step.round === 3 && savedMethod === "รับสินค้าด้วยตัวเองที่โกดัง" && (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED') && (
+                    <div className="mt-4 p-4 bg-slate-50 rounded border border-slate-200 text-left">
+                      <h5 className="font-bold text-slate-800 mb-2">มารับสินค้าด้วยตัวเอง</h5>
+                      <p className="text-sm text-slate-600 mb-3">
+                        ที่อยู่คลังสินค้า: คลังสินค้า SabuyShip
+                      </p>
+                      <a 
+                        href="https://maps.google.com/?q=SabuyShip" 
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded shadow-sm"
+                      >
+                        ดูแผนที่ (Google Maps)
+                      </a>
+                    </div>
+                  )}
+                  
                   {/* Render Payment Button/Section if Active */}
                   {step.isActive && (
                     <div className="mt-3 text-center md:text-left">
-                      {step.round === 3 && paymentRound3Status !== 'PAID' && paymentRound3Status !== 'UPLOADED' && (
+                      {step.round === 2 && paymentRound2Status !== 'PAID' && paymentRound2Status !== 'UPLOADED' && (
                         <div className="mb-3 text-sm">
-                          <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่ง (เพื่อให้แอดมินประเมินราคา):</p>
+                          <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่งในไทย (เพื่อให้แอดมินประเมินราคา):</p>
                           <div className="flex flex-col sm:flex-row gap-2">
                             <select 
                               className="w-full text-sm p-2 rounded border border-slate-300 bg-white"
                               onChange={(e) => setShippingMethod(e.target.value)}
                               value={shippingMethod}
-                              disabled={isUpdatingMethod || paymentRound3Status === 'PAID'}
+                              disabled={isUpdatingMethod || paymentRound2Status === 'PAID'}
                             >
                               <option value="">-- กรุณาเลือกวิธีจัดส่ง --</option>
-                              <option value="รับของเองที่โกดัง">รับของเองที่โกดัง (ไม่มีค่าจัดส่งเพิ่มเติม)</option>
-                              <option value="จัดส่งแบบเหมาจ่าย">จัดส่งแบบเหมาจ่าย</option>
-                              <option value="จัดส่งโดยขนส่งในประเทศ">จัดส่งโดยขนส่งในประเทศ</option>
+                              <option value="รับสินค้าด้วยตัวเองที่โกดัง">รับสินค้าด้วยตัวเองที่โกดัง</option>
+                              <option value="จัดส่งแบบเหมาจ่าย(เฉพาะกรุงเทพและปริมณฑล)">จัดส่งแบบเหมาจ่าย(เฉพาะกรุงเทพและปริมณฑล)</option>
+                              <option value="จัดส่งโดยขนส่งภายในประเทศ">จัดส่งโดยขนส่งภายในประเทศ</option>
                             </select>
                             <button
                               onClick={handleUpdateShippingMethod}
-                              disabled={isUpdatingMethod || !shippingMethod || shippingMethod === savedMethod || paymentRound3Status === 'PAID'}
+                              disabled={isUpdatingMethod || !shippingMethod || shippingMethod === savedMethod || paymentRound2Status === 'PAID'}
                               className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
                             >
                               {isUpdatingMethod ? 'กำลังบันทึก...' : savedMethod ? 'อัปเดตวิธีจัดส่ง' : 'ยืนยันวิธีจัดส่ง'}
@@ -174,8 +191,8 @@ export function PaymentStepper({
                         </div>
                       )}
                       
-                      {/* Only allow upload if amount > 0 and if it's Round 3, a shipping method is selected */}
-                      {step.amount > 0 && (step.round !== 3 || savedMethod) && (
+                      {/* Only allow upload if amount > 0 and if it's Round 2, a shipping method is selected */}
+                      {step.amount > 0 && (step.round !== 2 || savedMethod) && (
                         <PaymentSection 
                           orderId={orderId} 
                           paymentRound={step.round as 1 | 2 | 3} 
