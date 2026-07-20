@@ -68,6 +68,24 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false }: { 
 
       if (orderError) throw orderError
 
+      // Trigger admin notification
+      try {
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'PAYMENT_UPLOADED',
+            data: {
+              orderId,
+              amount: parseFloat(amount),
+              round: paymentRound
+            }
+          })
+        });
+      } catch (notifyErr) {
+        console.error("Failed to notify admin:", notifyErr);
+      }
+
       toast.success('แจ้งชำระเงินสำเร็จ กรุณารอเจ้าหน้าที่ตรวจสอบ')
       setIsOpen(false)
       window.location.reload()

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendAdminNotification } from "@/lib/notify"
 
 // POST /api/order - Create an order (Node-RED integration or external API)
 export async function POST(request: Request) {
@@ -112,11 +113,21 @@ export async function POST(request: Request) {
     await supabase.from("quotations").update({ status: "ACCEPTED" }).eq("id", body.quotation_id)
     
     // Also update inquiry status so it's formally closed
-    if (!apiKey && inquiryId) {
-      await supabase.from("inquiries").update({ status: "ORDERED" }).eq("id", inquiryId)
+    if (inquiryId && !apiKey) {
+      const { error: inqUpdateError } = await supabase
+        .from('inquiries')
+        .update({ status: 'ACCEPTED' })
+        .eq('id', inquiryId)
+        
+      if (inqUpdateError) {
+        console.error("Failed to update inquiry status:", inqUpdateError)
+      }
     }
 
-    return NextResponse.json({ success: true, data: orderData }, { status: 201 })
+    // Send admin notification
+    await sendAdminNotification(`✅ ลูกค้ายอมรับใบเสนอราคาแล้ว!\nออเดอร์ถูกสร้าง: ${orderNumber}\nตรวจสอบในระบบด่วน: https://www.sabuyship.com/admin/orders`);
+
+    return NextResponse.json({ success: true, order: orderData }, { status: 201 })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

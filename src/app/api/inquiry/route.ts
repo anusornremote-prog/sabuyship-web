@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendAdminNotification } from "@/lib/notify"
 
 // POST /api/inquiry - Create a new inquiry (Node-RED integration)
 export async function POST(request: Request) {
@@ -43,6 +44,9 @@ export async function POST(request: Request) {
       .insert([recordToInsert])
 
     if (error) throw error
+
+    // Send admin notification
+    await sendAdminNotification(`📢 มีรายการขอใบเสนอราคาใหม่!\nรหัส: ${baseInquiryNumber}\nลูกค้า: ${body.customer_name}\nขนส่ง: ${body.shipping_type === 'BOAT' ? 'ทางเรือ' : 'ทางรถ'}\nเข้าไปตรวจสอบได้ที่: https://www.sabuyship.com/admin/inquiries`);
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (error: any) {
