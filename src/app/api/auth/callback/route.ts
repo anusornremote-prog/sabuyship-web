@@ -31,7 +31,7 @@ export async function GET(request: Request) {
           
           await supabase.from('profiles').insert({
             id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Google User',
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Member',
             role: 'CUSTOMER',
             customer_code: customerCode,
             is_active: true
