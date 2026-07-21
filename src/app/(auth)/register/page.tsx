@@ -120,7 +120,7 @@ export default function Register() {
     setLoading(true)
     setError(null)
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'line',
+      provider: 'custom:line' as any,
       options: {
         redirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`
       }
