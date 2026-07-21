@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendCustomerNotification } from "@/lib/notify"
 
 export async function POST(
   request: Request,
@@ -28,7 +29,7 @@ export async function POST(
     // Get order to find quotation_id
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, quotation_id, payment_round_2_status")
+      .select("id, user_id, quotation_id, payment_round_2_status")
       .eq("id", orderId)
       .single()
 
@@ -100,6 +101,13 @@ export async function POST(
         status: "PAID_ROUND_2",
         notes: "ชำระเงินรอบที่ 2 อัตโนมัติ (ไม่มีค่าใช้จ่ายเพิ่มเติม)"
       })
+    }
+
+    if (order.user_id && newShippingCost > 0) {
+      await sendCustomerNotification(
+        order.user_id,
+        `📦 สินค้าของคุณมาถึงโกดังไทยแล้ว!\nโปรดชำระค่าจัดส่ง (รอบ 2) จำนวน ${newShippingCost.toLocaleString('th-TH')} บาท\n\nเข้าสู่ระบบเพื่อแนบสลิปชำระเงินได้ที่เว็บไซต์เลยค่ะ`
+      )
     }
 
     return NextResponse.json({ success: true })

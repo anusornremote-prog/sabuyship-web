@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle, X } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { sendCustomerNotification } from "@/lib/notify"
 
 export function PaymentApprovalModal({ 
   payment, 
@@ -81,6 +82,20 @@ export function PaymentApprovalModal({
           status: logStatus,
           notes: logNotes
         })
+
+      // Send LINE notification
+      let message = "ยอดชำระเงินของคุณได้รับการตรวจสอบและอนุมัติเรียบร้อยแล้วค่ะ";
+      if (roundToUpdate === 'payment_round_1_status') {
+        message = `✅ ยอดชำระเงินรอบที่ 1 ได้รับการอนุมัติแล้ว\nระบบกำลังดำเนินการสั่งซื้อสินค้าให้คุณค่ะ`;
+      } else if (roundToUpdate === 'payment_round_2_status') {
+        message = `✅ ยอดชำระเงินรอบที่ 2 ได้รับการอนุมัติแล้ว\nสินค้าจะถูกจัดส่งมายังโกดังไทยในขั้นตอนต่อไปค่ะ`;
+      } else if (roundToUpdate === 'payment_round_3_status') {
+        message = `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`;
+      }
+      
+      if (order.user_id) {
+        await sendCustomerNotification(order.user_id, message);
+      }
 
       toast.success('ยืนยันการชำระเงินสำเร็จ')
       onSuccess()
