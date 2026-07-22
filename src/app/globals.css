@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* Force disable dark mode across the entire project */
+@custom-variant dark (&:is(.never-used-dark-mode *));
 
 @theme inline {
   --color-background: var(--background);
