@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { PhoneSetupModal } from "@/components/PhoneSetupModal"
-import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin, Home } from "lucide-react"
+import { Ship, LayoutDashboard, Package, LogOut, FileQuestion, FileText, MapPin, Home, User } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
@@ -98,13 +98,12 @@ export default function DashboardLayout({
             <FileQuestion className="h-5 w-5" />
             ขอใบเสนอราคา
           </Link>
+          <Link href="/dashboard/profile" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname.startsWith('/dashboard/profile') ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
+            <User className="h-5 w-5" />
+            ข้อมูลส่วนตัว
+          </Link>
         </nav>
         <div className="p-4 border-t space-y-2 relative z-[60]">
-          <Link href="/dashboard/profile">
-             <Button variant="outline" className={`w-full justify-start transition-colors ${pathname.startsWith('/dashboard/profile') ? 'border-primary text-primary bg-blue-50' : 'text-slate-600 hover:bg-slate-100 cursor-pointer'}`}>
-               <span className="flex-1 text-left">ข้อมูลส่วนตัว</span>
-             </Button>
-          </Link>
           <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer" onClick={handleLogout}>
             <LogOut className="mr-2 h-5 w-5" />
             ออกจากระบบ
