@@ -73,9 +73,8 @@ export default function CompleteProfile() {
       return
     }
 
-    // Force a router refresh to re-evaluate middleware, then go to dashboard
-    router.refresh()
-    router.push("/dashboard")
+    // Force a hard navigation to avoid Next.js router cache issues with middleware
+    window.location.href = "/dashboard"
   }
 
   return (
