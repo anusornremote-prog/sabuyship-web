@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
@@ -9,16 +9,40 @@ import { Button } from "@/components/ui/button"
 
 export default function CompleteProfile() {
   const [phone, setPhone] = useState("")
+  const [fullName, setFullName] = useState("")
   const [lineId, setLineId] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
+  // Fetch existing profile data to pre-fill the name if it's not a LINE UID
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+        if (data && data.full_name) {
+          // If the name is a LINE User ID (starts with U and has 33 chars), don't prefill it
+          if (!(data.full_name.startsWith('U') && data.full_name.length === 33)) {
+            setFullName(data.full_name)
+          }
+        }
+      }
+    }
+    fetchProfile()
+  }, [])
+
   const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    if (!fullName) {
+      setError("กรุณากรอกชื่อ-นามสกุล")
+      setLoading(false)
+      return
+    }
 
     if (!phone) {
       setError("กรุณากรอกเบอร์โทรศัพท์")
@@ -37,6 +61,7 @@ export default function CompleteProfile() {
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
+        full_name: fullName,
         phone: phone,
         line_id: lineId
       })
@@ -65,6 +90,17 @@ export default function CompleteProfile() {
         <form onSubmit={handleCompleteProfile} className="space-y-4">
           {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
           
+          <div className="space-y-2">
+            <label className="text-sm font-medium">ชื่อ-นามสกุล *</label>
+            <Input 
+              type="text" 
+              required 
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="กรุณากรอกชื่อและนามสกุล" 
+            />
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium">เบอร์โทรศัพท์ *</label>
             <Input 
