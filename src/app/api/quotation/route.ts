@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendCustomerNotification } from "@/lib/notify"
 
 // POST /api/quotation - Create a quotation (Node-RED integration)
 export async function POST(request: Request) {
@@ -40,6 +41,21 @@ export async function POST(request: Request) {
       updatePayload.items = body.updated_items
     }
     await supabase.from("inquiries").update(updatePayload).eq("id", body.inquiry_id)
+
+    // Notify customer about Round 1 quote
+    const { data: inquiry } = await supabase
+      .from("inquiries")
+      .select("customer_id, inquiry_number")
+      .eq("id", body.inquiry_id)
+      .single()
+
+    if (inquiry && inquiry.customer_id) {
+      const formattedTotal = new Intl.NumberFormat('th-TH').format(total)
+      await sendCustomerNotification(
+        inquiry.customer_id,
+        `🧾 แจ้งยอดชำระรอบ 1 (ค่าสินค้า) สำหรับคำสั่งซื้อ ${inquiry.inquiry_number}\nยอดชำระ: ${formattedTotal} บาท\nกรุณาเข้าสู่ระบบเพื่อชำระเงินค่ะ`
+      )
+    }
 
     return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error: any) {

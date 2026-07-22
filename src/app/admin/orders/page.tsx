@@ -10,6 +10,7 @@ import Link from "next/link"
 import * as XLSX from "xlsx"
 import { PaymentApprovalModal } from "./PaymentApprovalModal"
 import { QuoteModal } from "./QuoteModal"
+import { sendCustomerNotification } from "@/lib/notify"
 
 export default function AdminOrders() {
   const supabase = createClient()
@@ -206,6 +207,11 @@ export default function AdminOrders() {
           body: JSON.stringify({ shipping_cost_th_th: 0 })
         });
         if (!res.ok) throw new Error("Failed to update status");
+        
+        if (order.customer_id) {
+          await sendCustomerNotification(order.customer_id, `📦 อัปเดตสถานะออเดอร์ ${order.order_number}: พัสดุถึงโกดังไทยเรียบร้อยแล้วค่ะ`);
+        }
+        
         alert("อัปเดตสถานะสำเร็จ");
         fetchOrders();
       } catch (err: any) {
@@ -275,6 +281,15 @@ export default function AdminOrders() {
         })
 
       if (logError) throw logError
+
+      // Send customer notification
+      if (editingOrder.customer_id) {
+        let message = `📦 อัปเดตสถานะออเดอร์ ${editingOrder.order_number}: พัสดุอยู่ในสถานะ "${getStatusText(newStatus, editingOrder)}" ค่ะ`;
+        if (trackingNumber && trackingNumber !== editingOrder.tracking_number) {
+          message = `🎉 พัสดุของคุณถูกจัดส่งแล้ว!\nเลขออเดอร์: ${editingOrder.order_number}\nเลขพัสดุ (Tracking): ${trackingNumber}\nสามารถนำเลขพัสดุไปเช็คสถานะได้เลยค่ะ`;
+        }
+        await sendCustomerNotification(editingOrder.customer_id, message);
+      }
 
       setSuccessMsg("อัปเดตสถานะสำเร็จเรียบร้อยแล้ว!")
       

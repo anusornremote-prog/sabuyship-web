@@ -18,16 +18,20 @@ export async function POST(request: Request) {
     if (event === 'PAYMENT_UPLOADED') {
       const { orderId, amount, round } = data
       
-      // Get order number for the notification
+      // Get order number and customer details for the notification
       const { data: order } = await supabase
         .from('orders')
-        .select('order_number')
+        .select(`
+          order_number,
+          customer:customer_id (full_name)
+        `)
         .eq('id', orderId)
         .single()
         
       const orderNumber = order?.order_number || orderId
+      const customerName = order?.customer?.full_name || 'ไม่ทราบชื่อ'
 
-      await sendAdminNotification(`💰 ลูกค้าแนบสลิปชำระเงินแล้ว!\nออเดอร์: ${orderNumber}\nรอบที่: ${round}\nยอดเงิน: ${amount} บาท\nเข้าไปตรวจสลิปด่วน: https://www.sabuyship.com/admin/orders`);
+      await sendAdminNotification(`💰 ลูกค้าคุณ ${customerName} แนบสลิปชำระเงินแล้ว!\nออเดอร์: ${orderNumber}\nรอบที่: ${round}\nยอดเงิน: ${amount} บาท\nเข้าไปตรวจสลิปด่วน: https://www.sabuyship.com/admin/orders`);
     }
 
     return NextResponse.json({ success: true }, { status: 200 })

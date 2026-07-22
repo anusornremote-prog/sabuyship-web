@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendCustomerNotification } from "@/lib/notify"
 
 export async function POST(
   request: Request,
@@ -28,7 +29,7 @@ export async function POST(
     // Get order to find quotation_id
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, quotation_id, payment_round_3_status")
+      .select("id, order_number, customer_id, quotation_id, payment_round_3_status")
       .eq("id", orderId)
       .single()
 
@@ -98,8 +99,16 @@ export async function POST(
       await supabase.from("tracking_logs").insert({
         order_id: orderId,
         status: "PAID_ROUND_3",
-        notes: "ชำระเงินรอบที่ 3 อัตโนมัติ (ไม่มีค่าใช้จ่ายเพิ่มเติม)"
+        notes: "ยอดเป็น 0 ถือว่าชำระแล้วโดยอัตโนมัติ"
       })
+    }
+
+    if (order.customer_id && newShippingCost > 0) {
+      const formattedCost = new Intl.NumberFormat('th-TH').format(newShippingCost)
+      await sendCustomerNotification(
+        order.customer_id,
+        `🚚 แจ้งยอดชำระรอบ 3 (ค่าจัดส่งในไทย) สำหรับคำสั่งซื้อ ${order.order_number}\nยอดชำระ: ${formattedCost} บาท\nกรุณาเข้าสู่ระบบเพื่อชำระเงินและรับสินค้าค่ะ`
+      )
     }
 
     return NextResponse.json({ success: true })

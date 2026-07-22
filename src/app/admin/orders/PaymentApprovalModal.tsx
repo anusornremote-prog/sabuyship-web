@@ -138,6 +138,15 @@ export function PaymentApprovalModal({
             status: 'PAYMENT_REJECTED',
             notes: rejectNotes
           })
+
+        if (order.user_id) {
+          const roundName = roundToUpdate === 'payment_round_1_status' ? '1 (ค่าสินค้า)' :
+                            roundToUpdate === 'payment_round_2_status' ? '2 (ค่าจัดส่งจีน-ไทย)' : '3 (ค่าจัดส่งในไทย)';
+          await sendCustomerNotification(
+            order.user_id,
+            `❌ สลิปชำระเงินรอบที่ ${roundName} สำหรับออเดอร์ ${order.order_number} ไม่ผ่านการอนุมัติ\nกรุณาตรวจสอบความถูกต้องและอัปโหลดหลักฐานใหม่อีกครั้งค่ะ`
+          );
+        }
       }
 
       toast.success('ปฏิเสธการชำระเงินแล้ว')
