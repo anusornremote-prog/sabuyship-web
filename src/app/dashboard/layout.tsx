@@ -75,6 +75,10 @@ export default function DashboardLayout({
           </div>
         </div>
         <nav className="flex-1 p-4 space-y-2 relative z-[60]">
+          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-slate-600 hover:bg-slate-100">
+            <Home className="h-5 w-5" />
+            หน้าแรกเว็บ
+          </Link>
           <Link href="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${pathname === '/dashboard' ? 'bg-blue-50 text-primary font-medium' : 'text-slate-600 hover:bg-slate-100'}`}>
             <LayoutDashboard className="h-5 w-5" />
             ภาพรวม
@@ -129,6 +133,9 @@ export default function DashboardLayout({
 
         {/* Mobile Nav */}
         <nav className="flex md:hidden bg-white border-b overflow-x-auto relative z-[60]">
+           <Link href="/" className="whitespace-nowrap flex items-center gap-1.5 px-4 py-3 text-sm transition-colors text-slate-600">
+             <Home className="h-4 w-4" /> หน้าแรกเว็บ
+           </Link>
            <Link href="/dashboard" className={`whitespace-nowrap px-4 py-3 text-sm transition-colors ${pathname === '/dashboard' ? 'border-b-2 border-primary text-primary font-medium' : 'text-slate-600'}`}>
             ภาพรวม
           </Link>
