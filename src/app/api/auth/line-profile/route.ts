@@ -31,6 +31,7 @@ export async function GET(req: Request) {
       sub: lineData.userId,
       name: lineData.displayName,
       picture: lineData.pictureUrl,
+      email: `${lineData.userId}@line.sabuyship.com`,
     };
 
     return NextResponse.json(mappedData);
