@@ -92,7 +92,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-10 text-base lg:text-lg font-semibold shrink-0 ml-4 md:ml-8 lg:ml-16">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-10 text-base lg:text-lg font-semibold shrink-0 ml-2 md:ml-4 lg:ml-6">
             <Link href="/how-it-works" className="transition-colors hover:text-primary">
               {t.navHowItWorks}
             </Link>
