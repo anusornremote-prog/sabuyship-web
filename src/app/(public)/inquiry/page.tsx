@@ -18,7 +18,7 @@ export default function InquiryForm() {
   const [error, setError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
   const [serviceType, setServiceType] = useState<'BUY_AND_IMPORT' | 'IMPORT_ONLY'>('BUY_AND_IMPORT')
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean; china_tracking_number?: string }>([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean; china_tracking_number?: string }[]>([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {

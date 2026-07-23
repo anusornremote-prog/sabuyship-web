@@ -79,6 +79,16 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     return <div className="p-8 text-red-500 font-mono">SUPABASE ERROR: {JSON.stringify(error)}</div>
   }
 
+  // Fetch latest rejected payment to show rejection reason
+  const { data: rejectedPayment } = order ? await supabase
+    .from('payments')
+    .select('rejection_reason, created_at')
+    .eq('order_id', order.id)
+    .eq('status', 'REJECTED')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle() : { data: null }
+
   if (!order) {
     notFound()
   }
@@ -195,8 +205,10 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           shippingCostCnTh={quotation?.shipping_cost_cn_th || 0}
           shippingCostThTh={quotation?.shipping_cost_th_th || 0}
           initialShippingMethod={order.shipping_company || ''}
+          rejectionReason={rejectedPayment?.rejection_reason || null}
         />
       </div>
+
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">

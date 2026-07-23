@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, Truck, Home } from "lucide-react"
+import { Package, Truck, Home, AlertTriangle } from "lucide-react"
 import { PaymentSection } from "./PaymentSection"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -16,6 +16,7 @@ interface PaymentStepperProps {
   shippingCostCnTh: number
   shippingCostThTh: number
   initialShippingMethod: string
+  rejectionReason?: string | null
 }
 
 export function PaymentStepper({ 
@@ -28,7 +29,8 @@ export function PaymentStepper({
   shippingCostCnCn,
   shippingCostCnTh,
   shippingCostThTh,
-  initialShippingMethod
+  initialShippingMethod,
+  rejectionReason
 }: PaymentStepperProps) {
   
   const supabase = createClient()
@@ -142,6 +144,19 @@ export function PaymentStepper({
                   
                   <p className={`text-sm mt-0.5 ${step.status === 'REJECTED' ? 'text-red-500 font-medium' : 'text-slate-500'}`}>{step.description}</p>
                   
+                  {/* Rejection Reason Box - show only for REJECTED steps */}
+                  {step.status === 'REJECTED' && rejectionReason && (
+                    <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-left">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-red-700 mb-0.5">เหตุผลที่สลิปถูกปฏิเสธ:</p>
+                          <p className="text-xs text-red-600">{rejectionReason}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {step.round === 3 && savedMethod === "รับสินค้าด้วยตัวเองที่โกดัง" && (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED') && (
                     <div className="mt-4 p-4 bg-slate-50 rounded border border-slate-200 text-left">
                       <h5 className="font-bold text-slate-800 mb-2">มารับสินค้าด้วยตัวเอง</h5>

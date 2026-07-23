@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle, XCircle, X } from "lucide-react"
+import { Loader2, CheckCircle, XCircle, X, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { sendCustomerNotification } from "@/lib/notify"
@@ -22,22 +22,29 @@ export function PaymentApprovalModal({
   onSuccess: () => void 
 }) {
   const [loading, setLoading] = useState(false)
+  const [showRejectForm, setShowRejectForm] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
   const supabase = createClient()
 
   if (!payment || !order) return null;
 
+  const handleClose = () => {
+    if (!loading) {
+      setShowRejectForm(false)
+      setRejectionReason('')
+      onClose()
+    }
+  }
+
   const handleApprove = async () => {
     try {
       setLoading(true)
-      // 1. Update payment
       const { error: paymentError } = await supabase
         .from('payments')
         .update({ status: 'APPROVED' })
         .eq('id', payment.id)
-      
       if (paymentError) throw paymentError
 
-      // 2. Determine which round to update to PAID
       const roundToUpdate = order.payment_round_1_status === 'UPLOADED' ? 'payment_round_1_status' :
                             order.payment_round_2_status === 'UPLOADED' ? 'payment_round_2_status' :
                             order.payment_round_3_status === 'UPLOADED' ? 'payment_round_3_status' : null;
@@ -45,23 +52,17 @@ export function PaymentApprovalModal({
       let updates: any = {};
       if (roundToUpdate) {
         updates[roundToUpdate] = 'PAID';
-        
-        // Also update order overall status based on the round
-        if (roundToUpdate === 'payment_round_1_status') updates.status = 'ORDERED'; // สั่งซื้อแล้ว รอเข้าโกดังจีน
-        else if (roundToUpdate === 'payment_round_2_status') updates.status = 'SHIPPING'; // กำลังจัดส่งมาไทย
-        else if (roundToUpdate === 'payment_round_3_status') updates.status = 'OUT_FOR_DELIVERY'; // กำลังนำจ่าย
+        if (roundToUpdate === 'payment_round_1_status') updates.status = 'ORDERED';
+        else if (roundToUpdate === 'payment_round_2_status') updates.status = 'SHIPPING';
+        else if (roundToUpdate === 'payment_round_3_status') updates.status = 'OUT_FOR_DELIVERY';
       } else {
         updates.status = 'PAID';
       }
 
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update(updates)
-        .eq('id', order.id)
-
+      const { error: orderError } = await supabase.from('orders').update(updates).eq('id', order.id)
       if (orderError) throw orderError
 
-      // 3. If Round 3 is approved, handle child orders if this is a parent order
+      // Handle child orders for Round 3 consolidation
       if (roundToUpdate === 'payment_round_3_status') {
         const { data: childOrders } = await supabase
           .from('orders')
@@ -70,73 +71,37 @@ export function PaymentApprovalModal({
 
         if (childOrders && childOrders.length > 0) {
           const childIds = childOrders.map(o => o.id)
-          
-          await supabase
-            .from('orders')
-            .update({
-              status: 'OUT_FOR_DELIVERY',
-              payment_round_3_status: 'PAID'
-            })
-            .in('id', childIds)
-
-          const logs = childIds.map(cid => ({
+          await supabase.from('orders').update({ status: 'OUT_FOR_DELIVERY', payment_round_3_status: 'PAID' }).in('id', childIds)
+          await supabase.from('tracking_logs').insert(childIds.map(cid => ({
             order_id: cid,
             status: 'PAID_ROUND_3',
             notes: `ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (รวมบิลกับออเดอร์หลัก ${order.order_number})`
-          }))
-          
-          await supabase.from('tracking_logs').insert(logs)
-
+          })))
           for (const co of childOrders) {
-            const cid = co.customer_id
-            if (cid) {
-              await sendCustomerNotification(
-                cid,
-                `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว (รวมบิลกับ ${order.order_number})\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`
-              )
+            if (co.customer_id) {
+              await sendCustomerNotification(co.customer_id, `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว (รวมบิลกับ ${order.order_number})\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`)
             }
           }
         }
       }
 
-      // 4. Add tracking log
       let logStatus = 'PAID'
       let logNotes = 'ยืนยันการชำระเงินเรียบร้อยแล้ว'
-      if (roundToUpdate === 'payment_round_1_status') {
-        logStatus = 'PAID_ROUND_1'
-        logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว (ค่าสินค้า)'
-      } else if (roundToUpdate === 'payment_round_2_status') {
-        logStatus = 'PAID_ROUND_2'
-        logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว (ค่าขนส่งจีน-ไทย)'
-      } else if (roundToUpdate === 'payment_round_3_status') {
-        logStatus = 'PAID_ROUND_3'
-        logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (ค่าจัดส่งในไทย)'
-      }
+      if (roundToUpdate === 'payment_round_1_status') { logStatus = 'PAID_ROUND_1'; logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว (ค่าสินค้า)' }
+      else if (roundToUpdate === 'payment_round_2_status') { logStatus = 'PAID_ROUND_2'; logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว (ค่าขนส่งจีน-ไทย)' }
+      else if (roundToUpdate === 'payment_round_3_status') { logStatus = 'PAID_ROUND_3'; logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (ค่าจัดส่งในไทย)' }
+      await supabase.from('tracking_logs').insert({ order_id: order.id, status: logStatus, notes: logNotes })
 
-      await supabase
-        .from('tracking_logs')
-        .insert({
-          order_id: order.id,
-          status: logStatus,
-          notes: logNotes
-        })
-
-      // Send LINE notification
       let message = "ยอดชำระเงินของคุณได้รับการตรวจสอบและอนุมัติเรียบร้อยแล้วค่ะ";
-      if (roundToUpdate === 'payment_round_1_status') {
-        message = `✅ ยอดชำระเงินรอบที่ 1 ได้รับการอนุมัติแล้ว\nระบบกำลังดำเนินการสั่งซื้อสินค้าให้คุณค่ะ`;
-      } else if (roundToUpdate === 'payment_round_2_status') {
-        message = `✅ ยอดชำระเงินรอบที่ 2 ได้รับการอนุมัติแล้ว\nสินค้าจะถูกจัดส่งมายังโกดังไทยในขั้นตอนต่อไปค่ะ`;
-      } else if (roundToUpdate === 'payment_round_3_status') {
-        message = `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`;
-      }
+      if (roundToUpdate === 'payment_round_1_status') message = `✅ ยอดชำระเงินรอบที่ 1 ได้รับการอนุมัติแล้ว\nระบบกำลังดำเนินการสั่งซื้อสินค้าให้คุณค่ะ`;
+      else if (roundToUpdate === 'payment_round_2_status') message = `✅ ยอดชำระเงินรอบที่ 2 ได้รับการอนุมัติแล้ว\nสินค้าจะถูกจัดส่งมายังโกดังไทยในขั้นตอนต่อไปค่ะ`;
+      else if (roundToUpdate === 'payment_round_3_status') message = `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`;
       
       const targetUserId = order.customer_id || order.user_id;
-      if (targetUserId) {
-        await sendCustomerNotification(targetUserId, message);
-      }
+      if (targetUserId) await sendCustomerNotification(targetUserId, message);
 
       toast.success('ยืนยันการชำระเงินสำเร็จ')
+      handleClose()
       onSuccess()
     } catch (err: any) {
       toast.error('เกิดข้อผิดพลาด: ' + err.message)
@@ -145,14 +110,17 @@ export function PaymentApprovalModal({
     }
   }
 
-  const handleReject = async () => {
+  const handleRejectConfirm = async () => {
+    if (!rejectionReason.trim()) {
+      toast.error('กรุณาระบุเหตุผลที่ปฏิเสธสลิป')
+      return
+    }
     try {
       setLoading(true)
       const { error } = await supabase
         .from('payments')
-        .update({ status: 'REJECTED' })
+        .update({ status: 'REJECTED', rejection_reason: rejectionReason.trim() })
         .eq('id', payment.id)
-      
       if (error) throw error
 
       const roundToUpdate = order.payment_round_1_status === 'UPLOADED' ? 'payment_round_1_status' :
@@ -160,35 +128,28 @@ export function PaymentApprovalModal({
                             order.payment_round_3_status === 'UPLOADED' ? 'payment_round_3_status' : null;
 
       if (roundToUpdate) {
-        await supabase
-          .from('orders')
-          .update({ [roundToUpdate]: 'REJECTED' })
-          .eq('id', order.id)
-          
-        let rejectNotes = 'สลิปถูกปฏิเสธ'
-        if (roundToUpdate === 'payment_round_1_status') rejectNotes = 'ปฏิเสธสลิปชำระเงินรอบที่ 1 (กรุณาแนบใหม่)'
-        if (roundToUpdate === 'payment_round_2_status') rejectNotes = 'ปฏิเสธสลิปชำระเงินรอบที่ 2 (กรุณาแนบใหม่)'
-        if (roundToUpdate === 'payment_round_3_status') rejectNotes = 'ปฏิเสธสลิปชำระเงินรอบที่ 3 (กรุณาแนบใหม่)'
+        await supabase.from('orders').update({ [roundToUpdate]: 'REJECTED' }).eq('id', order.id)
+        
+        let rejectNotes = `ปฏิเสธสลิป: ${rejectionReason.trim()}`
+        if (roundToUpdate === 'payment_round_1_status') rejectNotes = `ปฏิเสธสลิปชำระเงินรอบที่ 1: ${rejectionReason.trim()}`
+        else if (roundToUpdate === 'payment_round_2_status') rejectNotes = `ปฏิเสธสลิปชำระเงินรอบที่ 2: ${rejectionReason.trim()}`
+        else if (roundToUpdate === 'payment_round_3_status') rejectNotes = `ปฏิเสธสลิปชำระเงินรอบที่ 3: ${rejectionReason.trim()}`
 
-        await supabase
-          .from('tracking_logs')
-          .insert({
-            order_id: order.id,
-            status: 'PAYMENT_REJECTED',
-            notes: rejectNotes
-          })
+        await supabase.from('tracking_logs').insert({ order_id: order.id, status: 'PAYMENT_REJECTED', notes: rejectNotes })
 
-        if (order.user_id) {
+        const targetId = order.customer_id || order.user_id
+        if (targetId) {
           const roundName = roundToUpdate === 'payment_round_1_status' ? '1 (ค่าสินค้า)' :
                             roundToUpdate === 'payment_round_2_status' ? '2 (ค่าจัดส่งจีน-ไทย)' : '3 (ค่าจัดส่งในไทย)';
           await sendCustomerNotification(
-            order.user_id,
-            `❌ สลิปชำระเงินรอบที่ ${roundName} สำหรับออเดอร์ ${order.order_number} ไม่ผ่านการอนุมัติ\nกรุณาตรวจสอบความถูกต้องและอัปโหลดหลักฐานใหม่อีกครั้งค่ะ`
+            targetId,
+            `❌ สลิปชำระเงินรอบที่ ${roundName} สำหรับออเดอร์ ${order.order_number} ไม่ผ่านการอนุมัติ\n\n📋 เหตุผล: ${rejectionReason.trim()}\n\nกรุณาตรวจสอบและอัปโหลดหลักฐานใหม่อีกครั้งค่ะ`
           );
         }
       }
 
       toast.success('ปฏิเสธการชำระเงินแล้ว')
+      handleClose()
       onSuccess()
     } catch (err: any) {
       toast.error('เกิดข้อผิดพลาด: ' + err.message)
@@ -198,14 +159,14 @@ export function PaymentApprovalModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && !loading && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent>
         <div className="flex justify-between items-start">
           <DialogHeader>
             <DialogTitle>ตรวจสอบการชำระเงิน</DialogTitle>
             <DialogDescription>รหัสคำสั่งซื้อ: {order.order_number}</DialogDescription>
           </DialogHeader>
-          <Button variant="ghost" size="icon" onClick={() => !loading && onClose()} className="h-8 w-8 rounded-full">
+          <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8 rounded-full">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -232,19 +193,50 @@ export function PaymentApprovalModal({
             </div>
           </div>
 
+          {/* Reject Form with reason */}
+          {showRejectForm && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-2 text-red-700">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <p className="text-sm font-semibold">ระบุเหตุผลที่ปฏิเสธสลิป</p>
+              </div>
+              <p className="text-xs text-red-600">เหตุผลนี้จะถูกส่งให้ลูกค้าทราบผ่าน LINE และแสดงบนหน้าออเดอร์ของลูกค้าด้วย</p>
+              <textarea
+                className="w-full text-sm p-3 rounded-lg border border-red-300 bg-white resize-none focus:outline-none focus:ring-2 focus:ring-red-400"
+                rows={3}
+                placeholder="เช่น: ยอดเงินในสลิปไม่ตรงกับยอดที่แจ้ง, สลิปไม่ชัดเจน, ชื่อบัญชีผู้รับไม่ถูกต้อง..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                disabled={loading}
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" size="sm" onClick={() => { setShowRejectForm(false); setRejectionReason('') }} disabled={loading}>
+                  ยกเลิก
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleRejectConfirm} disabled={loading || !rejectionReason.trim()}>
+                  {loading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                  ยืนยันปฏิเสธสลิป
+                </Button>
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={onClose} disabled={loading}>
+            <Button variant="outline" onClick={handleClose} disabled={loading}>
               ปิด
             </Button>
-            <div className="flex gap-2">
-              <Button variant="destructive" onClick={handleReject} disabled={loading}>
-                <XCircle className="w-4 h-4 mr-1" /> ปฏิเสธ (ข้อมูลไม่ถูกต้อง)
-              </Button>
-              <Button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
-                ยืนยันการชำระเงิน
-              </Button>
-            </div>
+            {!showRejectForm && (
+              <div className="flex gap-2">
+                <Button variant="destructive" onClick={() => setShowRejectForm(true)} disabled={loading}>
+                  <XCircle className="w-4 h-4 mr-1" /> ปฏิเสธ
+                </Button>
+                <Button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
+                  ยืนยันการชำระเงิน
+                </Button>
+              </div>
+            )}
           </DialogFooter>
         </div>
       </DialogContent>
