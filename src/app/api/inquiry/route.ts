@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { sendAdminNotification } from "@/lib/notify"
+import crypto from "crypto"
 
 // POST /api/inquiry - Create a new inquiry (Node-RED integration)
 export async function POST(request: Request) {
@@ -16,13 +17,17 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get the logged in user if any, to associate the customer_id
+    // Require authentication
     const { data: { user } } = await supabase.auth.getUser()
-    const customerId = user ? user.id : null
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const customerId = user.id
 
     // Generate base Inquiry ID as ORD-
     const date = new Date()
-    const baseInquiryNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`
+    const randomHex = crypto.randomBytes(4).toString('hex').toUpperCase()
+    const baseInquiryNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${randomHex}`
 
     // Create a single record with all items stored in the 'items' column (JSONB)
     const recordToInsert = {
