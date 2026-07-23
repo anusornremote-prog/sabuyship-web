@@ -124,7 +124,8 @@ export default async function AdminOverview() {
       const dateStr = order.created_at.split('T')[0]
       if (aggregatedData[dateStr]) {
         aggregatedData[dateStr].orders += 1
-        aggregatedData[dateStr].revenue += Number(order.quotation?.total_price || 0)
+        const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
+        aggregatedData[dateStr].revenue += Number(quotation?.total_price || 0)
       }
     })
   }

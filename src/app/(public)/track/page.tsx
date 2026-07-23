@@ -68,7 +68,11 @@ export default function TrackOrder() {
 
       setPackageInfo({
         tracking_number: order.order_number,
-        product_name: order.quotation?.inquiry?.shipping_type === 'BOAT' ? 'ขนส่งทางเรือ (SEA)' : order.quotation?.inquiry?.shipping_type === 'CAR' ? 'ขนส่งทางรถ (EK)' : 'สินค้าจาก SabuyShip',
+        product_name: (() => {
+          const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
+          const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
+          return inquiry?.shipping_type === 'BOAT' ? 'ขนส่งทางเรือ (SEA)' : inquiry?.shipping_type === 'CAR' ? 'ขนส่งทางรถ (EK)' : 'สินค้าจาก SabuyShip'
+        })(),
       })
 
       const statusMap: Record<string, number> = {

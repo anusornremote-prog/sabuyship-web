@@ -305,7 +305,7 @@ function InquiryCard({ inq, customerId, openAddressModal, approvingQuotationId, 
               <div>
                 <span className="text-xs text-green-700 font-semibold">ใบเสนอราคาประเมินเรียบร้อย</span>
                 <p className="text-sm font-semibold text-primary mt-1">
-                  รหัสอ้างอิง: {inq.inquiry_number} | {profile?.customer_code || "ไม่มีรหัส"} {inq.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
+                  รหัสอ้างอิง: {inq.inquiry_number} | {inq.customer_code || "ไม่มีรหัส"} {inq.shipping_type === 'BOAT' ? '(SEA) 🛳️' : '(EK) 🚚'}
                 </p>
                 <p className="text-lg font-bold text-slate-900 mt-1">
                   ยอดชำระทั้งสิ้น: <span className="text-primary font-extrabold">{formatCurrency(quotation.total_price)}</span>

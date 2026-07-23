@@ -43,7 +43,7 @@ export function DashboardCharts({ data }: { data: ChartData[] }) {
                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
                 <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dx={-10} />
                 <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'ยอดขาย']}
+                  formatter={(value) => [formatCurrency(typeof value === 'number' ? value : 0), 'ยอดขาย']}
                   labelStyle={{ color: '#0f172a', fontWeight: 'bold' }}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />

@@ -28,7 +28,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
   const [errorMsg, setErrorMsg] = useState("")
   const [shippingType, setShippingType] = useState("CAR")
 
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean }>([{ url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean }[]>([{ url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])
 
   const handleAddItem = () => {
     setItems([...items, { url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])

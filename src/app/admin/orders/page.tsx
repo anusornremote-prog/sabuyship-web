@@ -156,16 +156,19 @@ export default function AdminOrders() {
       }
 
       const exportData = data.map(order => {
-        const shippingType = order.quotation?.inquiry?.shipping_type === "CAR" ? "(EK)" : order.quotation?.inquiry?.shipping_type === "BOAT" ? "(SEA)" : ""
-        const customerCode = order.customer?.customer_code ? `${order.customer.customer_code} ${shippingType}`.trim() : `ไม่ระบุ ${shippingType}`.trim()
+        const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
+        const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
+        const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer
+        const shippingType = inquiry?.shipping_type === "CAR" ? "(EK)" : inquiry?.shipping_type === "BOAT" ? "(SEA)" : ""
+        const customerCode = customer?.customer_code ? `${customer.customer_code} ${shippingType}`.trim() : `ไม่ระบุ ${shippingType}`.trim()
 
         return {
           "วันที่สั่งซื้อ": new Date(order.created_at).toLocaleString('th-TH'),
           "เลขออเดอร์": order.order_number,
           "รหัสลูกค้า": customerCode,
-          "ชื่อลูกค้า": order.customer?.full_name || "ไม่ระบุ",
+          "ชื่อลูกค้า": customer?.full_name || "ไม่ระบุ",
           "สถานะ": getStatusText(order.status, order),
-          "ยอดรวมสุทธิ (บาท)": order.quotation?.total_price || 0,
+          "ยอดรวมสุทธิ (บาท)": quotation?.total_price || 0,
           "ชำระรอบ 1": order.payment_round_1_status === 'PAID' ? 'จ่ายแล้ว' : order.payment_round_1_status,
           "ชำระรอบ 2": order.payment_round_2_status === 'PAID' ? 'จ่ายแล้ว' : order.payment_round_2_status,
           "ชำระรอบ 3": order.payment_round_3_status === 'PAID' ? 'จ่ายแล้ว' : order.payment_round_3_status,

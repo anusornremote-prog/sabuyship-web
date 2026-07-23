@@ -29,7 +29,8 @@ export async function POST(request: Request) {
         .single()
         
       const orderNumber = order?.order_number || orderId
-      const customerName = order?.customer?.full_name || 'ไม่ทราบชื่อ'
+      const customer = Array.isArray(order?.customer) ? order.customer[0] : order?.customer
+      const customerName = customer?.full_name || 'ไม่ทราบชื่อ'
 
       await sendAdminNotification(`💰 ลูกค้าคุณ ${customerName} แนบสลิปชำระเงินแล้ว!\nออเดอร์: ${orderNumber}\nรอบที่: ${round}\nยอดเงิน: ${amount} บาท\nเข้าไปตรวจสลิปด่วน: https://www.sabuyship.com/admin/orders`);
     }
