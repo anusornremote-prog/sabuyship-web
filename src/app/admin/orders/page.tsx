@@ -732,14 +732,14 @@ export default function AdminOrders() {
                         ตรวจสลิป
                       </Button>
                     )}
-                    {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status)) && (
+                    {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && order.payment_round_2_status !== 'PAID')) && (
                       <Button size="sm" onClick={() => handleOpenQuoteModal(order, 2)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
-                        ถึงโกดังจีน
+                        {order.payment_round_2_status ? "แก้ไขค่าส่งจีน" : "ถึงโกดังจีน"}
                       </Button>
                     )}
-                    {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status)) && (
+                    {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && (
                       <Button size="sm" onClick={() => handleArrivedInThailand(order)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
-                        ถึงโกดังไทย
+                        {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "ถึงโกดังไทย"}
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" className="text-slate-500 border border-slate-200 min-h-[44px]" onClick={() => handleOpenStatusModal(order)}>

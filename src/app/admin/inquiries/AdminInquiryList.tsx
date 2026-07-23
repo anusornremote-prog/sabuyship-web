@@ -57,6 +57,7 @@ export default function AdminInquiryList({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
+  const [selectedQuoteForEdit, setSelectedQuoteForEdit] = useState<string | null>(null)
 
   // Delete states
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -71,14 +72,34 @@ export default function AdminInquiryList({
   const [shippingCostCnCn, setShippingCostCnCn] = useState("")
   const [otherFee, setOtherFee] = useState("")
 
-  const openQuoteModal = (inquiry: any) => {
+  const openQuoteModal = (inquiry: any, existingQuote?: any) => {
     setSelectedInquiry(inquiry)
-    setProductCost("")
-    setItemCosts({})
-    setShippingCostCnCn("")
-    setOtherFee("")
-    setItemCosts({})
-    setItemShippingCosts({})
+    
+    if (existingQuote) {
+      setProductCost(existingQuote.product_cost?.toString() || "")
+      setShippingCostCnCn(existingQuote.shipping_cost_cn_cn?.toString() || "")
+      setOtherFee(existingQuote.other_fee?.toString() || "")
+      
+      const newCostMap: Record<number, string> = {}
+      const newShippingMap: Record<number, string> = {}
+      if (inquiry.items && inquiry.items.length > 0) {
+        inquiry.items.forEach((item: any, idx: number) => {
+          newCostMap[idx] = item.quoted_price !== undefined ? item.quoted_price.toString() : ""
+          newShippingMap[idx] = item.quoted_shipping_cn_cn !== undefined ? item.quoted_shipping_cn_cn.toString() : ""
+        })
+      }
+      setItemCosts(newCostMap)
+      setItemShippingCosts(newShippingMap)
+      setSelectedQuoteForEdit(existingQuote.id)
+    } else {
+      setProductCost("")
+      setItemCosts({})
+      setShippingCostCnCn("")
+      setOtherFee("")
+      setItemShippingCosts({})
+      setSelectedQuoteForEdit(null)
+    }
+    
     setErrorMsg("")
     setIsQuotingOpen(true)
   }
@@ -116,12 +137,16 @@ export default function AdminInquiryList({
         totalProductCost = parseFloat(productCost) || 0;
       }
 
-      const payload = {
+      const payload: any = {
         inquiry_id: selectedInquiry.id,
         product_cost: totalProductCost,
         shipping_cost_cn_cn: (parseFloat(shippingCostCnCn) || 0) + totalItemShippingCost,
         other_fee: parseFloat(otherFee) || 0,
         updated_items: isMultiItem ? updatedItems : null,
+      }
+      
+      if (selectedQuoteForEdit) {
+        payload.quotation_id = selectedQuoteForEdit
       }
 
       if (payload.product_cost <= 0) {
@@ -607,6 +632,15 @@ export default function AdminInquiryList({
                         </Button>
                         <Button size="sm" variant="outline" className="text-rose-600 border-rose-200 min-h-[44px]" onClick={() => handleRejectInquiry(inq.id)}>
                           ยกเลิก
+                        </Button>
+                      </>
+                    ) : inq.quotations && inq.quotations.length > 0 && inq.status === 'QUOTED' ? (
+                      <>
+                        <Button size="sm" variant="outline" className="min-h-[44px] text-blue-600 border-blue-200" onClick={() => openQuoteModal(inq, inq.quotations[0])}>
+                          แก้ไขราคา
+                        </Button>
+                        <Button size="sm" variant="orange" className="min-h-[44px]" onClick={() => setSelectedQuote({ ...inq.quotations[0], inquiry: inq })}>
+                          ดูใบเสนอราคา
                         </Button>
                       </>
                     ) : inq.quotations && inq.quotations.length > 0 ? (

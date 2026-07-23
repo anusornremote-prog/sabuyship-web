@@ -15,25 +15,56 @@ export async function POST(request: Request) {
       )
     }
 
-    const total = 
+    let total = 
       (body.product_cost || 0) + 
       (body.shipping_cost_cn_cn || 0) + 
       (body.other_fee || 0)
 
-    const { data, error } = await supabase
-      .from("quotations")
-      .insert({
-        inquiry_id: body.inquiry_id,
-        product_cost: body.product_cost,
-        shipping_cost_cn_cn: body.shipping_cost_cn_cn || 0,
-        other_fee: body.other_fee || 0,
-        total_price: total,
-        status: "SENT"
-      })
-      .select()
-      .single()
-
-    if (error) throw error
+    let quotationData: any
+    
+    if (body.quotation_id) {
+      // If updating, we must preserve Round 2 and Round 3 shipping costs
+      const { data: existingQuotation } = await supabase
+        .from("quotations")
+        .select("shipping_cost_cn_th, shipping_cost_th_th")
+        .eq("id", body.quotation_id)
+        .single()
+        
+      if (existingQuotation) {
+        total += (existingQuotation.shipping_cost_cn_th || 0) + (existingQuotation.shipping_cost_th_th || 0)
+      }
+      
+      const { data, error } = await supabase
+        .from("quotations")
+        .update({
+          product_cost: body.product_cost,
+          shipping_cost_cn_cn: body.shipping_cost_cn_cn || 0,
+          other_fee: body.other_fee || 0,
+          total_price: total
+        })
+        .eq("id", body.quotation_id)
+        .select()
+        .single()
+        
+      if (error) throw error
+      quotationData = data
+    } else {
+      const { data, error } = await supabase
+        .from("quotations")
+        .insert({
+          inquiry_id: body.inquiry_id,
+          product_cost: body.product_cost,
+          shipping_cost_cn_cn: body.shipping_cost_cn_cn || 0,
+          other_fee: body.other_fee || 0,
+          total_price: total,
+          status: "SENT"
+        })
+        .select()
+        .single()
+        
+      if (error) throw error
+      quotationData = data
+    }
 
     // Update inquiry status and optionally the items breakdown
     const updatePayload: any = { status: "QUOTED" }
@@ -51,13 +82,14 @@ export async function POST(request: Request) {
 
     if (inquiry && inquiry.customer_id) {
       const formattedTotal = new Intl.NumberFormat('th-TH').format(total)
+      const actionText = body.quotation_id ? 'อัปเดตยอดชำระ' : 'แจ้งยอดชำระ'
       await sendCustomerNotification(
         inquiry.customer_id,
-        `🧾 แจ้งยอดชำระรอบ 1 (ค่าสินค้า) สำหรับคำสั่งซื้อ ${inquiry.inquiry_number}\nยอดชำระ: ${formattedTotal} บาท\nกรุณาเข้าสู่ระบบเพื่อชำระเงินค่ะ`
+        `🧾 ${actionText}รอบ 1 (ค่าสินค้า) สำหรับคำสั่งซื้อ ${inquiry.inquiry_number}\nยอดชำระ: ${formattedTotal} บาท\nกรุณาเข้าสู่ระบบเพื่อชำระเงินค่ะ`
       )
     }
 
-    return NextResponse.json({ success: true, data }, { status: 201 })
+    return NextResponse.json({ success: true, data: quotationData }, { status: 201 })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

@@ -38,7 +38,8 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
       }))
       setItems(initializedItems)
       
-      setCost("")
+      const existingCost = round === 2 ? order.quotation?.shipping_cost_cn_th : order.quotation?.shipping_cost_th_th;
+      setCost(existingCost !== undefined && existingCost !== null && existingCost > 0 ? existingCost.toString() : "");
     }
   }, [isOpen, order, round])
 
