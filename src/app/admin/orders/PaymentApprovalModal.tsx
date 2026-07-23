@@ -61,7 +61,45 @@ export function PaymentApprovalModal({
 
       if (orderError) throw orderError
 
-      // 3. Add tracking log
+      // 3. If Round 3 is approved, handle child orders if this is a parent order
+      if (roundToUpdate === 'payment_round_3_status') {
+        const { data: childOrders } = await supabase
+          .from('orders')
+          .select('id, order_number, customer_id')
+          .eq('consolidated_into_id', order.id)
+
+        if (childOrders && childOrders.length > 0) {
+          const childIds = childOrders.map(o => o.id)
+          
+          await supabase
+            .from('orders')
+            .update({
+              status: 'OUT_FOR_DELIVERY',
+              payment_round_3_status: 'PAID'
+            })
+            .in('id', childIds)
+
+          const logs = childIds.map(cid => ({
+            order_id: cid,
+            status: 'PAID_ROUND_3',
+            notes: `ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (รวมบิลกับออเดอร์หลัก ${order.order_number})`
+          }))
+          
+          await supabase.from('tracking_logs').insert(logs)
+
+          for (const co of childOrders) {
+            const cid = co.customer_id
+            if (cid) {
+              await sendCustomerNotification(
+                cid,
+                `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว (รวมบิลกับ ${order.order_number})\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`
+              )
+            }
+          }
+        }
+      }
+
+      // 4. Add tracking log
       let logStatus = 'PAID'
       let logNotes = 'ยืนยันการชำระเงินเรียบร้อยแล้ว'
       if (roundToUpdate === 'payment_round_1_status') {
@@ -93,8 +131,9 @@ export function PaymentApprovalModal({
         message = `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`;
       }
       
-      if (order.user_id) {
-        await sendCustomerNotification(order.user_id, message);
+      const targetUserId = order.customer_id || order.user_id;
+      if (targetUserId) {
+        await sendCustomerNotification(targetUserId, message);
       }
 
       toast.success('ยืนยันการชำระเงินสำเร็จ')

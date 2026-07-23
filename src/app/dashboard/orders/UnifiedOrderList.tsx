@@ -23,6 +23,44 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   const [selectedDetailsItem, setSelectedDetailsItem] = useState<any>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [previewQuotationItem, setPreviewQuotationItem] = useState<any>(null)
+  const [selectedConsolidationIds, setSelectedConsolidationIds] = useState<string[]>([])
+
+  const handleToggleSelectConsolidation = (id: string) => {
+    setSelectedConsolidationIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    )
+  }
+
+  const handleConsolidate = async () => {
+    if (selectedConsolidationIds.length < 2) return
+    if (!confirm(`ยืนยันการรวมบิลจัดส่งในไทยสำหรับออเดอร์ที่เลือกจำนวน ${selectedConsolidationIds.length} รายการ?\n\n*ระบบจะคิดค่าส่งรอบ 3 รวมกันเป็นบิลเดียว*`)) return
+    
+    try {
+      setProcessingId("consolidating")
+      // The first selected ID will be the parent order
+      const parent_id = selectedConsolidationIds[0]
+      const child_ids = selectedConsolidationIds.slice(1)
+      
+      const res = await fetch("/api/order/consolidate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ parent_id, child_ids })
+      })
+      
+      if (!res.ok) {
+        const result = await res.json()
+        throw new Error(result.error || "Failed to consolidate orders")
+      }
+      
+      alert("รวมบิลจัดส่งเรียบร้อยแล้ว แอดมินจะดำเนินการประเมินยอดส่งรวมให้ค่ะ")
+      setSelectedConsolidationIds([])
+      window.location.reload()
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setProcessingId(null)
+    }
+  }
 
   const formatCurrency = (amount: any) => amount ? new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount) : '฿ 0.00'
 
@@ -126,6 +164,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
       
       // Payment Round 3
       if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY') {
+         if (item.consolidated_into_id) return 'รวมจัดส่ง (ชำระรอบ 3 ที่ออเดอร์หลัก)'
          if (item.payment_round_3_status === 'PENDING') return 'รอชำระเงิน รอบ 3 (ค่าจัดส่งในไทย)'
          if (item.payment_round_3_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 3'
       }
@@ -147,6 +186,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   }
 
   const isWaitingPayment = (item: any) => {
+    if (item.consolidated_into_id) return false;
     return item.status === 'WAITING_PAYMENT' || 
            item.payment_round_1_status === 'PENDING' || 
            ((item.status === 'CHINA_WAREHOUSE' || item.status === 'SHIPPING') && item.payment_round_2_status === 'PENDING') ||
@@ -155,6 +195,20 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
 
   return (
     <div className="space-y-4">
+      {items.some(item => item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id) && (
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-sm mb-4">
+          <div>
+            <h4 className="font-bold text-blue-900">รวมบิลค่าจัดส่งในไทย (รอบ 3)</h4>
+            <p className="text-blue-700 mt-1">เลือกออเดอร์ที่พัสดุถึงไทยแล้วตั้งแต่ 2 ออเดอร์ขึ้นไป เพื่อรวมเป็นรอบบิลจัดส่งเดียวกันและประหยัดค่าส่งในไทย</p>
+          </div>
+          {selectedConsolidationIds.length >= 2 && (
+            <Button onClick={handleConsolidate} className="bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0 min-h-[44px]">
+              ดำเนินการรวมบิล ({selectedConsolidationIds.length} รายการ)
+            </Button>
+          )}
+        </div>
+      )}
+
       {errorMsg && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-lg flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 shrink-0" />
@@ -179,7 +233,16 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                 {items && items.length > 0 ? (
                   items.map((item) => (
                     <tr key={item.id} className="border-b hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-primary">
+                      <td className="px-6 py-4 font-medium text-primary flex items-center gap-2">
+                        {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
+                          <input 
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                            checked={selectedConsolidationIds.includes(item.id)}
+                            onChange={() => handleToggleSelectConsolidation(item.id)}
+                            title="เลือกเพื่อรวมบิล"
+                          />
+                        )}
                         <span 
                           onClick={() => {
                             setSelectedDetailsItem(item);
@@ -264,15 +327,26 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
               items.map((item) => (
                 <div key={item.id} className="p-4 flex flex-col gap-3">
                   <div className="flex justify-between items-start">
-                    <span 
-                      onClick={() => {
-                        setSelectedDetailsItem(item);
-                        setIsDetailsOpen(true);
-                      }}
-                      className="font-bold text-primary text-base cursor-pointer hover:underline"
-                    >
-                      {item.order_number || item.inquiry_number}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
+                        <input 
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                          checked={selectedConsolidationIds.includes(item.id)}
+                          onChange={() => handleToggleSelectConsolidation(item.id)}
+                          title="เลือกเพื่อรวมบิล"
+                        />
+                      )}
+                      <span 
+                        onClick={() => {
+                          setSelectedDetailsItem(item);
+                          setIsDetailsOpen(true);
+                        }}
+                        className="font-bold text-primary text-base cursor-pointer hover:underline"
+                      >
+                        {item.order_number || item.inquiry_number}
+                      </span>
+                    </div>
                     <span className={`text-[10px] font-bold px-2 py-1 rounded ${getStatusBadge(item.status, item)}`}>
                       {getStatusText(item.status, item)}
                     </span>

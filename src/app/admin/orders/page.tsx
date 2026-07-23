@@ -57,6 +57,7 @@ export default function AdminOrders() {
           payment_round_1_status,
           payment_round_2_status,
           payment_round_3_status,
+          consolidated_into_id,
           customer_id,
           customer:customer_id (
             id,
@@ -420,6 +421,7 @@ export default function AdminOrders() {
     
     // Payment Round 3
     if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY') {
+       if (order.consolidated_into_id) return 'รวมบิลจัดส่ง (รอชำระเงินที่ออเดอร์หลัก)'
        if (order.payment_round_3_status === 'REJECTED') return 'สลิปถูกปฏิเสธ รอบ 3'
        if (order.payment_round_3_status === 'PENDING') return 'รอชำระเงิน รอบ 3 (ค่าจัดส่งในไทย)'
        if (order.payment_round_3_status === 'UPLOADED') return 'ลูกค้ายื่นสลิป รอบ 3 (รอตรวจสอบ)'
@@ -737,7 +739,7 @@ export default function AdminOrders() {
                         {order.payment_round_2_status ? "แก้ไขค่าส่งจีน" : "ถึงโกดังจีน"}
                       </Button>
                     )}
-                    {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && (
+                    {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && !order.consolidated_into_id && (
                       <Button size="sm" onClick={() => handleArrivedInThailand(order)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
                         {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "ถึงโกดังไทย"}
                       </Button>

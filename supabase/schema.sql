@@ -77,6 +77,7 @@ CREATE TABLE orders (
   tracking_number TEXT,
   shipping_company TEXT,
   shipping_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+  consolidated_into_id UUID REFERENCES orders(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
