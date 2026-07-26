@@ -22,37 +22,17 @@ import {
 
 // Import Rates Mapping matching the user's provided sheet
 const RATES = {
-  preorder: {
-    road: {
-      general: { kg: 45, cbm: 7100 },
-      tis: { kg: 60, cbm: 7800 },
-      fda: { kg: 70, cbm: 8500 },
-      special: { kg: 100, cbm: 12000 },
-      controlled: { kg: 140, cbm: 14000 }
-    },
-    sea: {
-      general: { kg: 40, cbm: 5500 },
-      tis: { kg: 50, cbm: 7300 },
-      fda: { kg: 60, cbm: 8000 },
-      special: { kg: 90, cbm: 9500 },
-      controlled: { kg: 140, cbm: 14000 }
-    }
+  road: {
+    general: { kg: 39, cbm: 6990 },
+    tis: { kg: 59, cbm: 7990 },
+    fda: { kg: 69, cbm: 8990 },
+    special: { kg: 99, cbm: 9990 }
   },
-  importer: {
-    road: {
-      general: { kg: 35, cbm: 6700 },
-      tis: { kg: 50, cbm: 7000 },
-      fda: { kg: 55, cbm: 8000 },
-      special: { kg: 90, cbm: 9000 },
-      controlled: { kg: 100, cbm: 12000 }
-    },
-    sea: {
-      general: { kg: 33, cbm: 5000 },
-      tis: { kg: 45, cbm: 6500 },
-      fda: { kg: 50, cbm: 7500 },
-      special: { kg: 80, cbm: 8000 },
-      controlled: { kg: 100, cbm: 12000 }
-    }
+  sea: {
+    general: { kg: 29, cbm: 3990 },
+    tis: { kg: 39, cbm: 4990 },
+    fda: { kg: 59, cbm: 6490 },
+    special: { kg: 89, cbm: 6990 }
   }
 }
 
@@ -61,17 +41,15 @@ const CATEGORIES = [
   { id: "general", key: "catGeneral", descTh: "เสื้อผ้า ของใช้ทั่วไป", descEn: "Clothing, general items" },
   { id: "tis", key: "catTis", descTh: "เครื่องใช้ไฟฟ้า ของเล่น", descEn: "Electrical appliances, toys" },
   { id: "fda", key: "catFda", descTh: "เครื่องสำอาง อาหาร ยา", descEn: "Cosmetics, food, medicine" },
-  { id: "special", key: "catSpecial", descTh: "สินค้าแบรนด์เนม ลิขสิทธิ์", descEn: "Brand name, licensed goods" },
-  { id: "controlled", key: "catControlled", descTh: "สินค้าควบคุมพิเศษ", descEn: "Special controlled goods" }
+  { id: "special", key: "catSpecial", descTh: "สินค้าแบรนด์เนม ลิขสิทธิ์", descEn: "Brand name, licensed goods" }
 ] as const;
 
 export default function Pricing() {
   const { t, locale } = useTranslation()
 
   // Calculator State
-  const [customerType, setCustomerType] = useState<"preorder" | "importer">("preorder")
   const [shipMethod, setShipMethod] = useState<"road" | "sea">("road")
-  const [category, setCategory] = useState<"general" | "tis" | "fda" | "special" | "controlled">("general")
+  const [category, setCategory] = useState<"general" | "tis" | "fda" | "special">("general")
   const [weight, setWeight] = useState<string>("")
   const [inputType, setInputType] = useState<"dimensions" | "directCbm">("dimensions")
   const [width, setWidth] = useState<string>("")
@@ -96,7 +74,7 @@ export default function Pricing() {
       cbmVal = (parseFloat(directCbm) || 0)
     }
 
-    const rates = RATES[customerType][shipMethod][category]
+    const rates = RATES[shipMethod][category]
     const costByWeight = wVal * rates.kg
     const costByCbm = cbmVal * rates.cbm
     
@@ -119,7 +97,7 @@ export default function Pricing() {
       rateKg: rates.kg,
       rateCbm: rates.cbm
     }
-  }, [customerType, shipMethod, category, weight, inputType, width, length, height, quantity, directCbm, woodenCrate])
+  }, [shipMethod, category, weight, inputType, width, length, height, quantity, directCbm, woodenCrate])
 
   // Helper to format currency
   const formatCurrency = (val: number) => {
@@ -169,30 +147,6 @@ export default function Pricing() {
                 {locale === "th" ? "อัตราค่าขนส่งแยกตามประเภทสินค้าและการขนส่ง" : "Shipping rates categorized by product type and shipping method."}
               </CardDescription>
             </div>
-            
-            {/* Customer Type Toggle */}
-            <div className="flex bg-slate-200/60 dark:bg-slate-800 p-1 rounded-xl mt-4 md:mt-0 shadow-inner">
-              <button
-                onClick={() => setCustomerType("preorder")}
-                className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${
-                  customerType === "preorder"
-                    ? "bg-white text-orange-600 shadow-sm dark:bg-slate-950 dark:text-orange-400"
-                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-              >
-                {t.rateTypePreorder || "ราคา PREORDER"}
-              </button>
-              <button
-                onClick={() => setCustomerType("importer")}
-                className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${
-                  customerType === "importer"
-                    ? "bg-white text-blue-600 shadow-sm dark:bg-slate-950 dark:text-blue-400"
-                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-              >
-                {t.rateTypeImporter || "ราคา IMPORTER"}
-              </button>
-            </div>
           </div>
           
           <CardContent className="p-0 overflow-x-auto">
@@ -218,8 +172,8 @@ export default function Pricing() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {CATEGORIES.map((cat) => {
-                  const roadRates = RATES[customerType].road[cat.id]
-                  const seaRates = RATES[customerType].sea[cat.id]
+                  const roadRates = RATES.road[cat.id]
+                  const seaRates = RATES.sea[cat.id]
                   
                   return (
                     <tr key={cat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
