@@ -156,13 +156,13 @@ export default function Pricing() {
                   <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3">
                     {locale === "th" ? "ประเภทสินค้า" : locale === "zh" ? "商品类型" : "Product Category"}
                   </th>
-                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3">
+                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3 bg-orange-50/50 dark:bg-orange-950/20">
                     <div className="flex items-center gap-2 text-accent">
                       <Truck className="w-4 h-4" />
                       <span>{t.importByRoad || "นำเข้าสินค้าทางรถ (5-7 วัน)"}</span>
                     </div>
                   </th>
-                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3">
+                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3 bg-blue-50/50 dark:bg-blue-950/20">
                     <div className="flex items-center gap-2 text-primary">
                       <Ship className="w-4 h-4" />
                       <span>{t.importBySea || "นำเข้าสินค้าทางเรือ (15-20 วัน)"}</span>
@@ -185,7 +185,7 @@ export default function Pricing() {
                           </span>
                         </div>
                       </td>
-                      <td className="p-4 md:p-6">
+                      <td className="p-4 md:p-6 bg-orange-50/50 dark:bg-orange-950/20">
                         <div className="space-y-1">
                           <p className="text-slate-900 dark:text-white font-semibold">
                             <span className="text-lg font-black text-slate-950 dark:text-slate-100">{roadRates.kg}</span> {locale === "th" ? "บาท" : "THB"} / KG
@@ -195,7 +195,7 @@ export default function Pricing() {
                           </p>
                         </div>
                       </td>
-                      <td className="p-4 md:p-6">
+                      <td className="p-4 md:p-6 bg-blue-50/50 dark:bg-blue-950/20">
                         <div className="space-y-1">
                           <p className="text-slate-900 dark:text-white font-semibold">
                             <span className="text-lg font-black text-slate-950 dark:text-slate-100">{seaRates.kg}</span> {locale === "th" ? "บาท" : "THB"} / KG
