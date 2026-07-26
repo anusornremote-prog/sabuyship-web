@@ -97,16 +97,16 @@ export async function POST(request: Request) {
       if (!data) throw new Error("Failed to insert order or RLS prevented reading the inserted row")
       orderData = data
 
-      // Initial tracking log (catch error silently in case of RLS issues)
-      try {
-        await supabase.from("tracking_logs").insert({
-          order_id: data.id,
-          status: "NEW",
-          notes: "Order created"
-        })
-      } catch (err) {
-        console.error(err)
-      }
+      // Initial tracking log will be inserted below
+    }
+
+    // Insert initial tracking log
+    if (orderData) {
+      await supabase.from("tracking_logs").insert({
+        order_id: orderData.id,
+        status: "NEW",
+        notes: "สร้างคำสั่งซื้อเข้าระบบเรียบร้อยแล้ว"
+      })
     }
 
     // Update quotation status to ACCEPTED

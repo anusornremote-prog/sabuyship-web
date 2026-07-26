@@ -68,6 +68,13 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false }: { 
 
       if (orderError) throw orderError
 
+      // Insert tracking log
+      await supabase.from('tracking_logs').insert({
+        order_id: orderId,
+        status: `UPLOADED_ROUND_${paymentRound}`,
+        notes: `แนบหลักฐานชำระเงิน รอบที่ ${paymentRound}`
+      })
+
       // Trigger admin notification
       try {
         await fetch('/api/notify', {
