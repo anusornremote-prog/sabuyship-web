@@ -517,6 +517,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                     <th className="px-4 py-3 font-semibold w-24">รูปภาพ</th>
                     <th className="px-4 py-3 font-semibold">ลิงก์สินค้า</th>
                     <th className="px-4 py-3 font-semibold">รายละเอียด / ความต้องการ</th>
+                    <th className="px-4 py-3 font-semibold text-right">ราคา & ค่าส่งในจีน</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -562,6 +563,16 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                         </td>
                         <td className="px-4 py-4 max-w-[250px] text-xs text-slate-600 whitespace-pre-wrap">
                           {item.remark || "-"}
+                        </td>
+                        <td className="px-4 py-4 text-right">
+                          {item.quoted_price ? (
+                            <div className="font-bold text-slate-900">฿ {Number(item.quoted_price).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                          ) : (
+                            <span className="text-slate-400 text-xs italic">-</span>
+                          )}
+                          {item.quoted_shipping_cn_cn > 0 && (
+                            <div className="text-[10px] text-slate-500 mt-1">ค่าส่งในจีน: ฿ {Number(item.quoted_shipping_cn_cn).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                          )}
                         </td>
                       </tr>
                     ))
