@@ -450,11 +450,26 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                     <div className="py-2 space-y-2 border-b border-dashed border-slate-200">
                       <p className="text-xs font-bold text-slate-500 mb-1">รายการสินค้า:</p>
                       {previewQuotationItem.items.map((item: any, idx: number) => (
-                        <div key={idx} className="flex justify-between text-xs text-slate-600 pl-2">
-                          <span className="truncate max-w-[200px] flex-1">{idx + 1}. {item.url} (x{item.quantity})</span>
-                          <div className="text-right">
-                            <span className="font-semibold text-slate-800 ml-2">{formatCurrency(item.quoted_price || 0)}</span>
-                            <div className="text-[10px] text-slate-400">ค่าส่ง: {formatCurrency(item.quoted_shipping_cn_cn || 0)}</div>
+                        <div key={idx} className="flex items-start justify-between text-xs text-slate-600 pl-2">
+                          <div className="flex items-start gap-2 max-w-[280px] flex-1">
+                            <span className="shrink-0 font-semibold">{idx + 1}.</span>
+                            {item.image_url ? (
+                              <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+                                <img src={item.image_url} alt={`Item ${idx + 1}`} className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity" />
+                              </a>
+                            ) : (
+                              <div className="w-10 h-10 flex items-center justify-center bg-slate-50 rounded border border-dashed border-slate-200 text-[9px] text-slate-400 shrink-0">
+                                ไม่มีรูป
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary truncate block w-full">{item.url}</a>
+                              <div className="text-[10px] text-slate-500 mt-1">จำนวน {item.quantity} ชิ้น</div>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0 ml-2">
+                            <span className="font-semibold text-slate-800">{formatCurrency(item.quoted_price || 0)}</span>
+                            <div className="text-[10px] text-slate-400 mt-1">ค่าส่ง: {formatCurrency(item.quoted_shipping_cn_cn || 0)}</div>
                           </div>
                         </div>
                       ))}
