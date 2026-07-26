@@ -227,36 +227,6 @@ export default function Pricing() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              {/* Customer Type */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  {t.calcCustomerType || "ประเภทลูกค้า (เรทราคา)"}
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setCustomerType("preorder")}
-                    className={`p-3 rounded-xl border text-sm font-semibold transition-all ${
-                      customerType === "preorder"
-                        ? "border-orange-500 bg-orange-50 text-orange-600 shadow-sm dark:border-orange-500/50 dark:bg-orange-950/30 dark:text-orange-400"
-                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    PREORDER
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomerType("importer")}
-                    className={`p-3 rounded-xl border text-sm font-semibold transition-all ${
-                      customerType === "importer"
-                        ? "border-blue-500 bg-blue-50 text-blue-600 shadow-sm dark:border-blue-500/50 dark:bg-blue-950/30 dark:text-blue-400"
-                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    IMPORTER
-                  </button>
-                </div>
-              </div>
 
               {/* Shipping Method */}
               <div className="space-y-2">
@@ -492,9 +462,7 @@ export default function Pricing() {
                   <Badge className={`px-2.5 py-1 text-xs font-bold border-0 text-white ${shipMethod === "road" ? "bg-accent" : "bg-primary"}`}>
                     {shipMethod === "road" ? (t.importByRoad ? t.importByRoad.split(" ")[0] : "ทางรถ") : (t.importBySea ? t.importBySea.split(" ")[0] : "ทางเรือ")}
                   </Badge>
-                  <Badge className="bg-indigo-500 text-white border-0">
-                    {customerType.toUpperCase()}
-                  </Badge>
+
                   <Badge variant="outline" className="border-white/20 text-white/90">
                     {t[CATEGORIES.find(c => c.id === category)?.key as keyof typeof t] || "สินค้า"}
                   </Badge>
