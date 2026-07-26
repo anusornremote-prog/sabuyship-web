@@ -57,6 +57,7 @@ export default function AdminOrders() {
           payment_round_1_status,
           payment_round_2_status,
           payment_round_3_status,
+          shipping_company,
           consolidated_into_id,
           customer_id,
           customer:customer_id (
@@ -134,6 +135,7 @@ export default function AdminOrders() {
           payment_round_1_status,
           payment_round_2_status,
           payment_round_3_status,
+          shipping_company,
           customer:customer_id (
             full_name,
             customer_code
