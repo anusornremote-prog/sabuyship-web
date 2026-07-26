@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Timeline, TimelineItem } from "@/components/ui/timeline"
-import { ArrowLeft, FileText, Globe, Truck, Printer } from "lucide-react"
+import { ArrowLeft, FileText, Globe, Truck, Printer, Package } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
 import { PaymentStepper } from "./PaymentStepper"
@@ -404,6 +404,42 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="md:col-span-1 space-y-6">
+          {inquiryItems && inquiryItems.some((item: any) => item.tracking_cn_cn) && (
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3 border-b border-slate-100 mb-4">
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5 text-primary" />
+                  ข้อมูลการจัดส่งในจีน
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {inquiryItems.filter((item: any) => item.tracking_cn_cn).map((item: any, idx: number) => (
+                    <div key={idx} className="bg-slate-50 p-3 rounded border border-slate-100">
+                      <div className="flex items-start gap-3">
+                        {item.image_url ? (
+                          <img src={item.image_url} alt={`Item ${idx}`} className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 bg-slate-200 rounded flex items-center justify-center text-[10px] text-slate-500 shrink-0">ไม่มีรูป</div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-500 truncate mb-1">{item.url}</p>
+                          <div>
+                            <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">หมายเลขพัสดุจีน-จีน</h4>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-slate-800 text-sm">{item.tracking_cn_cn}</span>
+                              <CopyTrackingButton trackingNumber={item.tracking_cn_cn} label="" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-slate-100 mb-4">
               <CardTitle className="flex items-center gap-2">

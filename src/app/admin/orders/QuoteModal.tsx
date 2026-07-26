@@ -34,7 +34,8 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
       const initializedItems = inquiryItems.map((item: any) => ({
         ...item,
         inputCost: round === 2 ? (item.shipping_cost_cn_th || "") : (item.shipping_cost_th_th || ""),
-        inputWoodenCrateCost: round === 2 && item.wooden_crate ? (item.wooden_crate_cost || "") : ""
+        inputWoodenCrateCost: round === 2 && item.wooden_crate ? (item.wooden_crate_cost || "") : "",
+        inputTrackingCN: round === 2 ? (item.tracking_cn_cn || "") : ""
       }))
       setItems(initializedItems)
       
@@ -43,7 +44,7 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
     }
   }, [isOpen, order, round])
 
-  const handleItemCostChange = (idx: number, field: 'inputCost' | 'inputWoodenCrateCost', value: string) => {
+  const handleItemCostChange = (idx: number, field: 'inputCost' | 'inputWoodenCrateCost' | 'inputTrackingCN', value: string) => {
     const newItems = [...items]
     newItems[idx][field] = value
     setItems(newItems)
@@ -98,11 +99,18 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
         
         return {
           ...item,
-          shipping_cost_cn_th: round === 2 ? costVal : (item.shipping_cost_cn_th || 0),
-          shipping_cost_th_th: round === 3 ? costVal : (item.shipping_cost_th_th || 0),
-          wooden_crate_cost: round === 2 && item.wooden_crate ? woodenCostVal : (item.wooden_crate_cost || 0),
-          inputCost: undefined, // remove UI only field
-          inputWoodenCrateCost: undefined
+          ...(round === 2 
+            ? { 
+                shipping_cost_cn_th: costVal, 
+                wooden_crate_cost: woodenCostVal, 
+                tracking_cn_cn: item.inputTrackingCN 
+              } 
+            : { 
+                shipping_cost_th_th: costVal 
+              }),
+          inputCost: undefined,
+          inputWoodenCrateCost: undefined,
+          inputTrackingCN: undefined
         }
       })
 
@@ -198,11 +206,23 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
                       </a>
                     )}
                     <div className="flex-1 min-w-0">
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 text-xs truncate">
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 text-xs truncate max-w-[200px] sm:max-w-[250px]">
                         <Globe className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{item.url}</span>
+                        <span className="truncate block">{item.url}</span>
                       </a>
                       <p className="text-xs text-slate-500 mt-1">จำนวน: {item.quantity} ชิ้น</p>
+                      {round === 2 && (
+                        <div className="mt-2">
+                          <Input
+                            type="text"
+                            value={item.inputTrackingCN || ""}
+                            onChange={(e) => handleItemCostChange(idx, 'inputTrackingCN', e.target.value)}
+                            placeholder="เลข Tracking จีน (ถ้ามี)"
+                            className="h-7 text-xs border-blue-200 focus-visible:ring-blue-500 w-full max-w-[200px]"
+                            title="เลข Tracking จีน-จีน"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div className="w-full sm:w-32 shrink-0 space-y-2">
                       <Input
