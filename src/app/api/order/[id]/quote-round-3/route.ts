@@ -27,11 +27,18 @@ export async function POST(
     }
 
     // Get order to find quotation_id
-    const { data: order, error: orderError } = await supabase
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+    let orderQuery = supabase
       .from("orders")
       .select("id, order_number, customer_id, quotation_id, payment_round_3_status")
-      .eq("id", orderId)
-      .single()
+      
+    if (isUUID) {
+      orderQuery = orderQuery.eq("id", orderId)
+    } else {
+      orderQuery = orderQuery.eq("order_number", orderId)
+    }
+    
+    const { data: order, error: orderError } = await orderQuery.single()
 
     if (orderError || !order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })

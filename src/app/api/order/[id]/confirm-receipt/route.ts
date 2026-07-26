@@ -14,11 +14,18 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { data: order, error: orderError } = await supabase
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+    let orderQuery = supabase
       .from("orders")
       .select("id, status, customer_id")
-      .eq("id", orderId)
-      .single()
+      
+    if (isUUID) {
+      orderQuery = orderQuery.eq("id", orderId)
+    } else {
+      orderQuery = orderQuery.eq("order_number", orderId)
+    }
+    
+    const { data: order, error: orderError } = await orderQuery.single()
 
     if (orderError || !order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
@@ -35,12 +42,12 @@ export async function POST(
     const { error: updateError } = await supabase
       .from("orders")
       .update({ status: 'DELIVERED' })
-      .eq("id", orderId)
+      .eq("id", order.id)
 
     if (updateError) throw updateError
 
     await supabase.from("tracking_logs").insert({
-      order_id: orderId,
+      order_id: order.id,
       status: "DELIVERED",
       notes: "ลูกค้ายืนยันการได้รับสินค้าเรียบร้อยแล้ว (การขนส่งเสร็จสิ้น)"
     })
