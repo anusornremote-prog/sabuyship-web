@@ -153,17 +153,17 @@ export default function Pricing() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/75 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3">
+                  <th className="p-4 md:p-6 text-sm font-semibold text-white uppercase tracking-wider w-1/3 bg-blue-950 dark:bg-blue-950 border-r border-blue-900">
                     {locale === "th" ? "ประเภทสินค้า" : locale === "zh" ? "商品类型" : "Product Category"}
                   </th>
-                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3 bg-orange-50/50 dark:bg-orange-950/20">
-                    <div className="flex items-center gap-2 text-accent">
+                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-1/3 bg-orange-100/80 dark:bg-orange-900/40">
+                    <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
                       <Truck className="w-4 h-4" />
                       <span>{t.importByRoad || "นำเข้าสินค้าทางรถ (5-7 วัน)"}</span>
                     </div>
                   </th>
-                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3 bg-blue-50/50 dark:bg-blue-950/20">
-                    <div className="flex items-center gap-2 text-primary">
+                  <th className="p-4 md:p-6 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-1/3 bg-blue-100/80 dark:bg-blue-900/40">
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                       <Ship className="w-4 h-4" />
                       <span>{t.importBySea || "นำเข้าสินค้าทางเรือ (15-20 วัน)"}</span>
                     </div>
@@ -177,15 +177,15 @@ export default function Pricing() {
                   
                   return (
                     <tr key={cat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                      <td className="p-4 md:p-6">
-                        <div className="font-bold text-slate-900 dark:text-white flex flex-col">
-                          <span>{t[cat.key as keyof typeof t] || cat.descTh.split(" ")[0]}</span>
-                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                      <td className="p-4 md:p-6 bg-blue-950 dark:bg-blue-950 border-r border-blue-900/50">
+                        <div className="font-bold text-white flex flex-col">
+                          <span className="text-lg">{t[cat.key as keyof typeof t] || cat.descTh.split(" ")[0]}</span>
+                          <span className="text-xs font-normal text-blue-200 mt-0.5">
                             {locale === "th" ? cat.descTh : cat.descEn}
                           </span>
                         </div>
                       </td>
-                      <td className="p-4 md:p-6 bg-orange-50/50 dark:bg-orange-950/20">
+                      <td className="p-4 md:p-6 bg-orange-100/80 dark:bg-orange-900/40">
                         <div className="space-y-1">
                           <p className="text-slate-900 dark:text-white font-semibold">
                             <span className="text-lg font-black text-slate-950 dark:text-slate-100">{roadRates.kg}</span> {locale === "th" ? "บาท" : "THB"} / KG
@@ -195,7 +195,7 @@ export default function Pricing() {
                           </p>
                         </div>
                       </td>
-                      <td className="p-4 md:p-6 bg-blue-50/50 dark:bg-blue-950/20">
+                      <td className="p-4 md:p-6 bg-blue-100/80 dark:bg-blue-900/40">
                         <div className="space-y-1">
                           <p className="text-slate-900 dark:text-white font-semibold">
                             <span className="text-lg font-black text-slate-950 dark:text-slate-100">{seaRates.kg}</span> {locale === "th" ? "บาท" : "THB"} / KG
