@@ -30,7 +30,7 @@ export async function POST(
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
     let orderQuery = supabase
       .from("orders")
-      .select("id, user_id, quotation_id, payment_round_2_status")
+      .select("id, customer_id, quotation_id, payment_round_2_status")
       
     if (isUUID) {
       orderQuery = orderQuery.eq("id", orderId)
@@ -41,7 +41,7 @@ export async function POST(
     const { data: order, error: orderError } = await orderQuery.single()
 
     if (orderError || !order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 })
+      return NextResponse.json({ error: `Order not found. Query by: ${isUUID ? "id" : "order_number"}, Value: ${orderId}, Error: ${orderError?.message}` }, { status: 404 })
     }
 
     if (!order.quotation_id) {
@@ -110,9 +110,9 @@ export async function POST(
       })
     }
 
-    if (order.user_id && newShippingCost > 0) {
+    if (order.customer_id && newShippingCost > 0) {
       await sendCustomerNotification(
-        order.user_id,
+        order.customer_id,
         `📦 สินค้าของคุณมาถึงโกดังไทยแล้ว!\nโปรดชำระค่าจัดส่ง (รอบ 2) จำนวน ${newShippingCost.toLocaleString('th-TH')} บาท\n\nเข้าสู่ระบบเพื่อแนบสลิปชำระเงินได้ที่เว็บไซต์เลยค่ะ`
       )
     }
