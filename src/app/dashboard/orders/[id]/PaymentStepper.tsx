@@ -206,8 +206,8 @@ export function PaymentStepper({
                         </div>
                       )}
                       
-                      {/* Only allow upload if amount > 0 and if it's Round 2, a shipping method is selected */}
-                      {step.amount > 0 && (step.round !== 2 || savedMethod) && (
+                      {/* Only allow upload if amount > 0, status is not UPLOADED, and if it's Round 2, a shipping method is selected */}
+                      {step.amount > 0 && step.status !== 'UPLOADED' && (step.round !== 2 || savedMethod) && (
                         <PaymentSection 
                           orderId={orderId} 
                           paymentRound={step.round as 1 | 2 | 3} 
