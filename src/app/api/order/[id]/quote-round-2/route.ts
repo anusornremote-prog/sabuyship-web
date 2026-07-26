@@ -93,18 +93,18 @@ export async function POST(
     await supabase
       .from("orders")
       .update(orderUpdates)
-      .eq("id", orderId)
+      .eq("id", order.id)
 
     // Add tracking log for Quotation
     await supabase.from("tracking_logs").insert({
-      order_id: orderId,
+      order_id: order.id,
       status: "QUOTED_ROUND_2",
       notes: `อัปเดตค่าจัดส่ง จีน-ไทย (รอบ 2) เป็นจำนวน ${newShippingCost.toLocaleString('th-TH')} บาท`
     })
 
     if (newShippingCost === 0 && order.payment_round_2_status !== 'PAID') {
       await supabase.from("tracking_logs").insert({
-        order_id: orderId,
+        order_id: order.id,
         status: "PAID_ROUND_2",
         notes: "ชำระเงินรอบที่ 2 อัตโนมัติ (ไม่มีค่าใช้จ่ายเพิ่มเติม)"
       })
