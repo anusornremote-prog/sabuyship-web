@@ -84,10 +84,18 @@ export async function POST(
       if (inquiryError) throw inquiryError
     }
 
-    // 3. Update Order payment_round_2_status to PENDING (or PAID if cost is 0) and status to CHINA_WAREHOUSE
-    const orderUpdates: any = { status: 'CHINA_WAREHOUSE' }
+    // 3. Update Order payment_round_2_status to PENDING (or PAID if cost is 0) and status to CHINA_WAREHOUSE (or SHIPPING if cost is 0)
+    const orderUpdates: any = {}
     if (order.payment_round_2_status !== 'PAID') {
-      orderUpdates.payment_round_2_status = newShippingCost === 0 ? 'PAID' : 'PENDING'
+      if (newShippingCost === 0) {
+        orderUpdates.payment_round_2_status = 'PAID'
+        orderUpdates.status = 'SHIPPING'
+      } else {
+        orderUpdates.payment_round_2_status = 'PENDING'
+        orderUpdates.status = 'CHINA_WAREHOUSE'
+      }
+    } else {
+      orderUpdates.status = 'CHINA_WAREHOUSE'
     }
 
     await supabase

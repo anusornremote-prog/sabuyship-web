@@ -84,10 +84,18 @@ export async function POST(
       if (inquiryError) throw inquiryError
     }
 
-    // 3. Update Order payment_round_3_status to PENDING (or PAID if cost is 0) and status to THAILAND_WAREHOUSE
-    const orderUpdates: any = { status: 'THAILAND_WAREHOUSE' }
+    // 3. Update Order payment_round_3_status to PENDING (or PAID if cost is 0) and status to THAILAND_WAREHOUSE (or OUT_FOR_DELIVERY if cost is 0)
+    const orderUpdates: any = {}
     if (order.payment_round_3_status !== 'PAID') {
-      orderUpdates.payment_round_3_status = newShippingCost === 0 ? 'PAID' : 'PENDING'
+      if (newShippingCost === 0) {
+        orderUpdates.payment_round_3_status = 'PAID'
+        orderUpdates.status = 'OUT_FOR_DELIVERY'
+      } else {
+        orderUpdates.payment_round_3_status = 'PENDING'
+        orderUpdates.status = 'THAILAND_WAREHOUSE'
+      }
+    } else {
+      orderUpdates.status = 'THAILAND_WAREHOUSE'
     }
 
     await supabase
@@ -108,6 +116,22 @@ export async function POST(
         status: "PAID_ROUND_3",
         notes: "ยอดเป็น 0 ถือว่าชำระแล้วโดยอัตโนมัติ"
       })
+
+      // Update child orders if consolidated
+      const { data: childOrders } = await supabase
+        .from('orders')
+        .select('id, customer_id')
+        .eq('consolidated_into_id', order.id)
+
+      if (childOrders && childOrders.length > 0) {
+        const childIds = childOrders.map(o => o.id)
+        await supabase.from('orders').update({ status: 'OUT_FOR_DELIVERY', payment_round_3_status: 'PAID' }).in('id', childIds)
+        await supabase.from('tracking_logs').insert(childIds.map(cid => ({
+          order_id: cid,
+          status: 'PAID_ROUND_3',
+          notes: `ออเดอร์หลักยอดเป็น 0 ถือว่าชำระแล้วอัตโนมัติ`
+        })))
+      }
     }
 
     if (order.customer_id && newShippingCost > 0) {
