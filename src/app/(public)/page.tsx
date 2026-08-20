@@ -73,10 +73,13 @@ export default function Home() {
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.15]">
-                {t.heroTitle} <br className="hidden sm:inline" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
-                  {t.heroTitleHighlight}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-slate-900 leading-[1.35] md:leading-[1.25]">
+                <span className="inline-block whitespace-nowrap">สั่งของจีนง่าย</span>{" "}
+                <span className="inline-block whitespace-nowrap text-slate-900">เหมือนช้อปในไทย</span>
+                <br className="hidden sm:inline" />{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500 inline-block">
+                  <span className="inline-block whitespace-nowrap">ก๊อปปี้ลิงก์ส่งมา...</span>{" "}
+                  <span className="inline-block whitespace-nowrap">ที่เหลือเราดูแลให้ครบ!</span>
                 </span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto md:mx-0 leading-relaxed">
