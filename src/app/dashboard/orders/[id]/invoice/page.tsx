@@ -36,12 +36,16 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       product_cost,
       service_fee,
       shipping_cost_cn_cn,
+      shipping_cost_cn_th,
+      shipping_cost_th_th,
+      wooden_crate_cost,
       other_fee,
       total_price,
       inquiry:inquiry_id (
         product_url,
         quantity,
-        remark
+        remark,
+        shipping_type
       )
     )
   `)
@@ -185,7 +189,41 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.shipping_cost_cn_cn)}</td>
               </tr>
             )}
-            {quotation?.service_fee > 0 && (
+            {Number(quotation?.wooden_crate_cost) > 0 && (
+              <tr>
+                <td className="py-4 px-4">
+                  <div className="font-semibold text-slate-900">ค่าบริการตีลังไม้</div>
+                  <div className="text-xs text-slate-500">Wooden Crate Packing Fee</div>
+                </td>
+                <td className="py-4 px-4 text-center text-slate-600">-</td>
+                <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.wooden_crate_cost)}</td>
+              </tr>
+            )}
+            {Number(quotation?.shipping_cost_cn_th) > 0 && (
+              <tr>
+                <td className="py-4 px-4">
+                  <div className="font-semibold text-slate-900">ค่าขนส่ง จีน-ไทย (รอบ 2)</div>
+                  <div className="text-xs text-slate-500">
+                    China - Thailand Cross-Border Shipping {inquiry?.shipping_type === 'BOAT' ? '(ทางเรือ SEA)' : '(ทางรถ EK)'}
+                  </div>
+                </td>
+                <td className="py-4 px-4 text-center text-slate-600">-</td>
+                <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.shipping_cost_cn_th)}</td>
+              </tr>
+            )}
+            {Number(quotation?.shipping_cost_th_th) > 0 && (
+              <tr>
+                <td className="py-4 px-4">
+                  <div className="font-semibold text-slate-900">ค่าจัดส่งในประเทศ (รอบ 3)</div>
+                  <div className="text-xs text-slate-500">
+                    Domestic Delivery in Thailand {order?.shipping_company ? `(${order.shipping_company})` : ''}
+                  </div>
+                </td>
+                <td className="py-4 px-4 text-center text-slate-600">-</td>
+                <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.shipping_cost_th_th)}</td>
+              </tr>
+            )}
+            {Number(quotation?.service_fee) > 0 && (
               <tr>
                 <td className="py-4 px-4 text-slate-800">
                   <p className="font-medium">ค่าบริการนำเข้า (Service Fee)</p>
@@ -194,7 +232,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <td className="py-4 px-4 text-right font-medium text-slate-900">{formatCurrency(quotation.service_fee)}</td>
               </tr>
             )}
-            {quotation?.other_fee > 0 && (
+            {Number(quotation?.other_fee) > 0 && (
               <tr>
                 <td className="py-4 px-4 text-slate-800">
                   <p className="font-medium">ค่าบริการอื่นๆ (Other Fee)</p>
