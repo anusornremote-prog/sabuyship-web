@@ -138,6 +138,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         case 'OUT_FOR_DELIVERY': return 'bg-orange-100 text-orange-800'
         case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
         case 'PAID': return 'bg-green-100 text-green-800'
+        case 'CANCELED': return 'bg-rose-100 text-rose-800 border-rose-200'
         default: return 'bg-slate-100 text-slate-800'
       }
     }
@@ -180,6 +181,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย (รอคำนวณค่าส่งในไทย)'
         case 'OUT_FOR_DELIVERY': return 'ชำระครบถ้วน (กำลังนำส่งไปบ้านลูกค้า)'
         case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
+        case 'CANCELED': return 'ยกเลิกคำสั่งซื้อ'
         default: return status
       }
     }

@@ -10,6 +10,8 @@ import Link from "next/link"
 import * as XLSX from "xlsx"
 import { PaymentApprovalModal } from "./PaymentApprovalModal"
 import { QuoteModal } from "./QuoteModal"
+import { OutOfStockModal } from "./OutOfStockModal"
+import { PackageX } from "lucide-react"
 import { sendCustomerNotification } from "@/lib/notify"
 
 export default function AdminOrders() {
@@ -36,6 +38,10 @@ export default function AdminOrders() {
   const [quoteModalOpen, setQuoteModalOpen] = useState(false)
   const [quoteOrder, setQuoteOrder] = useState<any>(null)
   const [quoteRound, setQuoteRound] = useState<2 | 3>(2)
+
+  // Out of Stock Modal states
+  const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false)
+  const [outOfStockOrder, setOutOfStockOrder] = useState<any>(null)
 
   const ITEMS_PER_PAGE = 20
   const [currentPage, setCurrentPage] = useState(1)
@@ -200,6 +206,11 @@ export default function AdminOrders() {
     setQuoteOrder(order)
     setQuoteRound(round)
     setQuoteModalOpen(true)
+  }
+
+  const handleOpenOutOfStockModal = (order: any) => {
+    setOutOfStockOrder(order)
+    setOutOfStockModalOpen(true)
   }
 
   const handleArrivedInThailand = async (order: any) => {
@@ -633,6 +644,18 @@ export default function AdminOrders() {
                           </Button>
                         )}
 
+                        {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px] mb-2 text-xs"
+                            onClick={() => handleOpenOutOfStockModal(order)}
+                            title="แจ้งสินค้าหมด / ยกเลิกรายการ"
+                          >
+                            <PackageX className="h-3 w-3 mr-1" />
+                            สินค้าหมด
+                          </Button>
+                        )}
                         <Button 
                           size="sm" 
                           variant="ghost" 
@@ -747,6 +770,16 @@ export default function AdminOrders() {
                     {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && !order.consolidated_into_id && (
                       <Button size="sm" onClick={() => handleArrivedInThailand(order)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
                         {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "ถึงโกดังไทย"}
+                      </Button>
+                    )}
+                    {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleOpenOutOfStockModal(order)} 
+                        className="text-rose-600 border-rose-200 hover:bg-rose-50 min-h-[44px]"
+                      >
+                        <PackageX className="h-4 w-4 mr-1" /> สินค้าหมด
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" className="text-slate-500 border border-slate-200 min-h-[44px]" onClick={() => handleOpenStatusModal(order)}>
@@ -929,6 +962,16 @@ export default function AdminOrders() {
           </Card>
         </div>
       )}
+      {/* Out of Stock Modal */}
+      <OutOfStockModal
+        isOpen={outOfStockModalOpen}
+        onClose={() => setOutOfStockModalOpen(false)}
+        order={outOfStockOrder}
+        onSuccess={() => {
+          setOutOfStockModalOpen(false)
+          fetchOrders()
+        }}
+      />
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { notFound, redirect } from "next/navigation"
 import { PaymentStepper } from "@/app/dashboard/orders/[id]/PaymentStepper"
 import { ConfirmReceiptButton } from "@/app/dashboard/orders/[id]/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/app/dashboard/orders/[id]/CopyTrackingButton"
+import { AdminOrderActions } from "./AdminOrderActions"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
@@ -168,6 +169,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               <span>พิมพ์ใบแจ้งหนี้/ใบเสร็จ</span>
             </Button>
           </Link>
+          <AdminOrderActions order={order} />
         </div>
       </div>
       

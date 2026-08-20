@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Timeline, TimelineItem } from "@/components/ui/timeline"
-import { ArrowLeft, FileText, Globe, Truck, Printer, Package } from "lucide-react"
+import { ArrowLeft, FileText, Globe, Truck, Printer, Package, PackageX, AlertTriangle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
 import { PaymentStepper } from "./PaymentStepper"
@@ -185,6 +185,33 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           <ConfirmReceiptButton orderId={order.id} status={order.status} />
         </div>
       </div>
+
+      {/* Out of Stock Alert Banner */}
+      {inquiryItems && inquiryItems.some((item: any) => item.is_out_of_stock) && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-rose-100 rounded-lg text-rose-600 shrink-0 mt-0.5">
+              <PackageX className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-rose-900 text-sm sm:text-base">
+                แจ้งเตือน: มีสินค้าหมดจากร้านค้าจีน ({inquiryItems.filter((i: any) => i.is_out_of_stock).length} รายการ)
+              </h4>
+              <p className="text-xs text-rose-700 mt-0.5 leading-relaxed">
+                {order.status === 'CANCELED' 
+                  ? 'คำสั่งซื้อนี้ถูกยกเลิกเนื่องจากสินค้าหมดทุกรายการ กรุณาติดต่อแอดมินเพื่อขอรับเงินโอนคืนเข้าบัญชีของคุณค่ะ'
+                  : 'สินค้าบางรายการหมดจากสต็อกของร้านจีน ยอดเงินคืนจะถูกนำไปหักลบอัตโนมัติในค่าขนส่งรอบถัดไป หรือติดต่อแอดมินเพื่อขอรับเงินโอนคืนค่ะ'}
+              </p>
+            </div>
+          </div>
+          <div className="text-right sm:shrink-0 bg-white px-4 py-2 rounded-lg border border-rose-200 shadow-2xs">
+            <span className="text-[10px] font-semibold text-rose-500 block uppercase tracking-wide">ยอดเงินคืน (Refund)</span>
+            <span className="font-black text-rose-600 text-lg sm:text-xl">
+              ฿{inquiryItems.filter((i: any) => i.is_out_of_stock).reduce((acc: number, item: any) => acc + (Number(item.refund_amount) || 0), 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      )}
       
       {/* Mobile Invoice Button */}
       <div className="sm:hidden">
@@ -233,17 +260,38 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                     <div className="space-y-4">
                       <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">รายการสินค้า ({inquiryItems.length} รายการ)</h4>
                       {inquiryItems.map((item: any, idx: number) => (
-                        <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col sm:flex-row gap-4">
+                        <div 
+                          key={idx} 
+                          className={`p-4 rounded-lg border flex flex-col sm:flex-row gap-4 transition-all ${
+                            item.is_out_of_stock 
+                              ? 'bg-rose-50/60 border-rose-200' 
+                              : 'bg-slate-50 border-slate-100'
+                          }`}
+                        >
                           {item.image_url && (
                             <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
                               <img src={item.image_url} alt="Product" className="w-20 h-20 object-cover rounded-md border border-slate-200" />
                             </a>
                           )}
                           <div className="flex-1 space-y-2">
-                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 break-all text-sm">
-                              <Globe className="h-4 w-4 shrink-0" />
-                              <span className="line-clamp-1">{item.url}</span>
-                            </a>
+                            <div className="flex justify-between items-start flex-wrap gap-2">
+                              <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 break-all text-sm">
+                                <Globe className="h-4 w-4 shrink-0" />
+                                <span className="line-clamp-1">{item.url}</span>
+                              </a>
+                              {item.is_out_of_stock && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                  ❌ สินค้าหมด {item.refund_amount ? `(คืนเงิน ฿${Number(item.refund_amount).toLocaleString()})` : ''}
+                                </span>
+                              )}
+                            </div>
+
+                            {item.is_out_of_stock && item.out_of_stock_note && (
+                              <div className="p-2 bg-rose-100/70 border border-rose-200 rounded text-xs text-rose-800">
+                                <span className="font-bold">สาเหตุจากร้านจีน:</span> {item.out_of_stock_note}
+                              </div>
+                            )}
+
                             {item.wooden_crate && (
                               <div className="inline-block mt-1">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wide">
@@ -254,13 +302,26 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                             <div className="flex justify-between items-end flex-wrap gap-4 mt-2">
                               <div>
                                 <p className="text-xs font-semibold text-slate-500 uppercase">จำนวนที่สั่ง</p>
-                                <p className="text-sm font-medium text-slate-900">{item.quantity} ชิ้น</p>
+                                <p className="text-sm font-medium text-slate-900">
+                                  {item.is_out_of_stock && item.out_of_stock_qty ? (
+                                    <span>
+                                      <span className="line-through text-slate-400 mr-1.5">{item.quantity} ชิ้น</span>
+                                      <span className="font-bold text-rose-700">
+                                        (หมด {item.out_of_stock_qty} ชิ้น{item.quantity > item.out_of_stock_qty ? ` เหลือ ${item.quantity - item.out_of_stock_qty} ชิ้น` : ''})
+                                      </span>
+                                    </span>
+                                  ) : (
+                                    `${item.quantity} ชิ้น`
+                                  )}
+                                </p>
                               </div>
                               <div className="flex gap-4 text-right flex-wrap justify-end">
                                 {item.quoted_price !== undefined && (
                                   <div>
                                     <p className="text-xs font-semibold text-slate-500 uppercase">ราคาประเมิน</p>
-                                    <p className="text-sm font-bold text-primary">{formatCurrency(item.quoted_price)}</p>
+                                    <p className={`text-sm font-bold ${item.is_out_of_stock ? 'line-through text-slate-400' : 'text-primary'}`}>
+                                      {formatCurrency(item.quoted_price)}
+                                    </p>
                                   </div>
                                 )}
                                 {item.shipping_cost_cn_th !== undefined && item.shipping_cost_cn_th > 0 && (
@@ -368,7 +429,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   {/* Only show Round 2 cost if Round 1 is PAID or cost > 0 */}
                   {(order.payment_round_1_status === 'PAID' || (quotation.shipping_cost_cn_th || 0) > 0) && (
                     <div className="flex justify-between items-center pb-2 border-b">
-                      <span className="text-slate-600">ค่าจัดส่ง จีน-ไทย</span>
+                      <span className="text-slate-600">ค่าจัดส่ง จีน-ไทย (รอบ 2)</span>
                       <div className="text-right">
                         <span className="font-medium">{(quotation.shipping_cost_cn_th || 0) > 0 ? formatCurrency(quotation.shipping_cost_cn_th) : "กำลังประเมิน"}</span>
                         {order.payment_round_2_status === 'PAID' && <Badge variant="secondary" className="ml-2 bg-emerald-100 text-emerald-700 border-none">จ่ายแล้ว</Badge>}
@@ -378,7 +439,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   {/* Only show Round 3 cost if Round 2 is PAID or cost > 0 */}
                   {(order.payment_round_2_status === 'PAID' || (quotation.shipping_cost_th_th || 0) > 0) && (
                     <div className="flex justify-between items-center pb-2 border-b">
-                      <span className="text-slate-600">ค่าจัดส่ง ไทย-ไทย</span>
+                      <span className="text-slate-600">ค่าจัดส่ง ในประเทศ (รอบ 3)</span>
                       <div className="text-right">
                         <span className="font-medium">
                           {(quotation.shipping_cost_th_th || 0) > 0 ? formatCurrency(quotation.shipping_cost_th_th) : "รับเองที่โกดัง / ไม่มีค่าใช้จ่าย"}
@@ -387,13 +448,29 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                       </div>
                     </div>
                   )}
-                  <div className="flex justify-between border-b pb-2 text-sm">
-                    <span className="text-slate-600">ค่าบริการอื่นๆ (Other Fee)</span>
-                    <span className="font-medium">{formatCurrency(quotation.other_fee)}</span>
-                  </div>
+                  {Number(quotation.wooden_crate_cost) > 0 && (
+                    <div className="flex justify-between border-b pb-2 text-sm">
+                      <span className="text-slate-600">ค่าบริการตีลังไม้</span>
+                      <span className="font-medium">{formatCurrency(quotation.wooden_crate_cost)}</span>
+                    </div>
+                  )}
+                  {Number(quotation.other_fee) > 0 && (
+                    <div className="flex justify-between border-b pb-2 text-sm">
+                      <span className="text-slate-600">ค่าบริการอื่นๆ (Other Fee)</span>
+                      <span className="font-medium">{formatCurrency(quotation.other_fee)}</span>
+                    </div>
+                  )}
+                  {inquiryItems && inquiryItems.some((item: any) => item.is_out_of_stock) && (
+                    <div className="flex justify-between items-center pb-2 border-b text-rose-600 font-semibold text-sm">
+                      <span>ยอดเงินคืนสินค้าหมด (Refund)</span>
+                      <span>
+                        -฿{inquiryItems.filter((i: any) => i.is_out_of_stock).reduce((acc: number, item: any) => acc + (Number(item.refund_amount) || 0), 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between pt-2">
-                    <span className="font-bold text-lg text-slate-950">ยอดรวมทั้งสิ้น (รวมทุกรอบ)</span>
-                    <span className="font-bold text-lg text-primary">{formatCurrency((quotation.total_price || 0) + (quotation.shipping_cost_cn_th || 0) + (quotation.shipping_cost_th_th || 0))}</span>
+                    <span className="font-bold text-lg text-slate-950">ยอดรวมสุทธิ</span>
+                    <span className="font-bold text-lg text-primary">{formatCurrency(quotation.total_price)}</span>
                   </div>
                 </div>
               ) : (
