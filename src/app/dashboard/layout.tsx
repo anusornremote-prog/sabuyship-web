@@ -67,14 +67,12 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-white flex-shrink-0 flex flex-col hidden md:flex">
-        <div className="h-16 flex items-center px-6 border-b overflow-visible">
-          <div className="relative w-[136px] h-full shrink-0">
-            <Link href="/" className="absolute -top-[36px] -left-2 z-50 scale-[0.85] origin-top-left">
-              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
-            </Link>
-          </div>
+        <div className="h-20 flex items-center px-6 border-b bg-white">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-12 w-auto object-contain hover:scale-105 transition-transform" />
+          </Link>
         </div>
-        <nav className="flex-1 p-4 space-y-2 relative z-[60]">
+        <nav className="flex-1 p-4 space-y-1.5">
           <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-slate-600 hover:bg-slate-100">
             <Home className="h-5 w-5" />
             หน้าแรกเว็บ
@@ -118,12 +116,10 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col max-w-full overflow-hidden">
         {/* Mobile Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:hidden overflow-visible relative">
-          <div className="relative w-[136px] h-full shrink-0">
-            <Link href="/" className="absolute -top-[36px] -left-2.5 z-50 scale-[0.85] origin-top-left">
-              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
-            </Link>
-          </div>
+        <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:hidden">
+          <Link href="/" className="flex items-center">
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-10 w-auto object-contain" />
+          </Link>
           <Link href="/">
             <Button variant="ghost" size="icon">
               <Home className="h-5 w-5 text-slate-600" />
