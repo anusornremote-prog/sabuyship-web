@@ -83,32 +83,36 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-24 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="flex items-center">
-          <div className="relative w-36 md:w-60 lg:w-72 h-full shrink-0">
-            <Link href="/" className="absolute -top-[52px] md:-top-[72px] -left-2.5 md:-left-16 lg:-left-20 z-50 scale-[0.85] origin-top-left">
-              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 md:h-48 w-auto object-contain drop-shadow-md hover:scale-105 transition-transform origin-top-left" />
-            </Link>
-          </div>
+      <div className="container flex h-20 md:h-24 items-center justify-between px-4 md:px-6 lg:px-8 max-w-7xl mx-auto gap-4">
+        {/* Left Side: Logo & Navigation */}
+        <div className="flex items-center gap-4 lg:gap-8 min-w-0">
+          <Link href="/" className="shrink-0 flex items-center">
+            <img 
+              src="/Sabuy_Ship_Express.png" 
+              alt="Sabuy Ship Express Logo" 
+              className="h-14 sm:h-16 md:h-20 w-auto object-contain hover:scale-105 transition-transform" 
+            />
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-10 text-base lg:text-lg font-semibold shrink-0 ml-2 md:ml-4 lg:ml-6">
-            <Link href="/how-it-works" className="transition-colors hover:text-primary">
+          <nav className="hidden md:flex items-center gap-3 lg:gap-6 text-sm lg:text-base font-semibold">
+            <Link href="/how-it-works" className="transition-colors hover:text-primary whitespace-nowrap">
               {t.navHowItWorks}
             </Link>
-            <Link href="/pricing" className="transition-colors hover:text-primary">
+            <Link href="/pricing" className="transition-colors hover:text-primary whitespace-nowrap">
               {t.navPricing}
             </Link>
-            <Link href="/track" className="transition-colors hover:text-primary">
+            <Link href="/track" className="transition-colors hover:text-primary whitespace-nowrap">
               {t.navTrack}
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-primary">
+            <Link href="/contact" className="transition-colors hover:text-primary whitespace-nowrap">
               {t.navContact}
             </Link>
           </nav>
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        {/* Right Side: Language Switcher, Login, Submit Button */}
+        <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
           {!user && <LanguageSwitcher />}
           {user ? (
             <div className="relative user-dropdown">
@@ -169,7 +173,7 @@ export function Navbar() {
             </div>
           ) : (
             <Link href="/login">
-              <Button variant="ghost" className="font-semibold">{t.navLogin}</Button>
+              <Button variant="ghost" className="font-semibold text-sm px-3 whitespace-nowrap">{t.navLogin}</Button>
             </Link>
           )}
 
@@ -177,10 +181,10 @@ export function Navbar() {
             <Button 
               size="sm" 
               variant="orange" 
-              className="font-black text-xs sm:text-sm px-4 h-10 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              className="font-black text-xs sm:text-sm px-3.5 lg:px-4 h-10 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
             >
-              <ShoppingCart className="w-4 h-4 mr-1.5" />
-              {t.navSubmitLink || "ส่งลิงก์สินค้า"}
+              <ShoppingCart className="w-4 h-4 mr-1.5 shrink-0" />
+              <span>{t.navSubmitLink || "ส่งลิงก์สินค้า"}</span>
             </Button>
           </Link>
         </div>
