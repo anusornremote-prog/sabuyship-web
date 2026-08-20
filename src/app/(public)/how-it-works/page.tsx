@@ -25,14 +25,182 @@ import {
 import { useTranslation } from "@/components/providers/language-provider"
 
 export default function HowItWorks() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
   }
 
-  const phases = [
+  const phases = locale === 'en' ? [
+    {
+      phaseNumber: "1",
+      phaseTitle: "Round 1: Order & Product Payment",
+      phaseBadge: "Product Cost + China Domestic Shipping",
+      phaseColor: "from-blue-600 to-indigo-600 text-white",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      steps: [
+        {
+          stepNumber: "01",
+          title: "Submit Product Link",
+          description: "Copy product links from Taobao, 1688, Tmall, or Pinduoduo, attach images or specify quantity, color, size, and wooden crating options.",
+          icon: Link2,
+          iconBg: "bg-blue-100 text-blue-600",
+          tag: "Customer Action"
+        },
+        {
+          stepNumber: "02",
+          title: "Quotation & Price Verification",
+          description: "Our team verifies stock, negotiates factory wholesale pricing with suppliers for free, and calculates the THB total based on real exchange rates.",
+          icon: Calculator,
+          iconBg: "bg-indigo-100 text-indigo-600",
+          tag: "Admin Action"
+        },
+        {
+          stepNumber: "03",
+          title: "Confirm & Pay Round 1",
+          description: "Review quotation, confirm order, and transfer payment for item costs (Round 1). Our team immediately places the order in China.",
+          icon: CreditCard,
+          iconBg: "bg-orange-100 text-orange-600",
+          tag: "Round 1 Payment"
+        }
+      ]
+    },
+    {
+      phaseNumber: "2",
+      phaseTitle: "Round 2: Cross-Border China-TH Freight",
+      phaseBadge: "Pay International Freight by Actual Weight/CBM",
+      phaseColor: "from-purple-600 to-indigo-700 text-white",
+      badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+      steps: [
+        {
+          stepNumber: "04",
+          title: "Transit to Thailand",
+          description: "Once items arrive at Guangzhou warehouse, staff inspect package condition, measure weight (KG) and volume (CBM), then load into containers (Road 5-7d / Sea 15-20d).",
+          icon: Truck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "International Freight"
+        },
+        {
+          stepNumber: "05",
+          title: "Arrived at TH Warehouse & Pay Round 2",
+          description: "Upon arrival at Thailand warehouse, the system calculates exact international freight and sends notification to settle Round 2.",
+          icon: PackageCheck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "Round 2 Payment"
+        }
+      ]
+    },
+    {
+      phaseNumber: "3",
+      phaseTitle: "Round 3: Final Delivery in Thailand",
+      phaseBadge: "Domestic Shipping (Free self-pickup / Consolidate to save)",
+      phaseColor: "from-emerald-600 to-teal-700 text-white",
+      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      steps: [
+        {
+          stepNumber: "06",
+          title: "Package Consolidation & Local Shipping",
+          description: "Customers can combine multiple orders into 1 shipment to save domestic courier cost, or pick up directly at Rangsit warehouse for FREE.",
+          icon: Layers,
+          iconBg: "bg-emerald-100 text-emerald-600",
+          tag: "Consolidate / Pick-up"
+        },
+        {
+          stepNumber: "07",
+          title: "Delivery to Doorstep",
+          description: "Parcels are safely handed over to domestic couriers (Flash, Kerry, J&T). Customers receive tracking numbers with 24/7 online tracking.",
+          icon: CheckCircle2,
+          iconBg: "bg-teal-100 text-teal-600",
+          tag: "Successful Delivery"
+        }
+      ]
+    }
+  ] : locale === 'zh' ? [
+    {
+      phaseNumber: "1",
+      phaseTitle: "第一阶段：下单采购与支付货款",
+      phaseBadge: "商品货款 + 中国国内运费",
+      phaseColor: "from-blue-600 to-indigo-600 text-white",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      steps: [
+        {
+          stepNumber: "01",
+          title: "发送商品链接",
+          description: "复制淘宝、1688、天猫或拼多多链接，备注数量、颜色、尺码及打木架需求等。",
+          icon: Link2,
+          iconBg: "bg-blue-100 text-blue-600",
+          tag: "客户提交"
+        },
+        {
+          stepNumber: "02",
+          title: "核算价格与出具报价单",
+          description: "客服人员核实库存，免费帮您与厂家砍价议价，并按当日实时汇率折算泰铢总额。",
+          icon: Calculator,
+          iconBg: "bg-indigo-100 text-indigo-600",
+          tag: "团队评估"
+        },
+        {
+          stepNumber: "03",
+          title: "确认订单并支付第一阶段费用",
+          description: "客户审阅报价单，确认下单并转账支付商品货款 (第1轮)，代购团队立即向厂家采购。",
+          icon: CreditCard,
+          iconBg: "bg-orange-100 text-orange-600",
+          tag: "支付第一轮"
+        }
+      ]
+    },
+    {
+      phaseNumber: "2",
+      phaseTitle: "第二阶段：中泰跨国国际物流",
+      phaseBadge: "按实际重量/立方结算中泰国际运费",
+      phaseColor: "from-purple-600 to-indigo-700 text-white",
+      badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+      steps: [
+        {
+          stepNumber: "04",
+          title: "入仓发往泰国",
+          description: "货物抵达广州仓库后，仓库验货、称重 (KG) 并测量立方 (CBM)，安排装柜发往泰国 (陆运5-7天 / 海运15-20天)。",
+          icon: Truck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "国际跨境物流"
+        },
+        {
+          stepNumber: "05",
+          title: "抵达泰国仓库并结算第2轮运费",
+          description: "货物安全抵达泰国仓库，系统按实际尺寸重量核算中泰国际运费并通知客户支付。",
+          icon: PackageCheck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "支付第二轮"
+        }
+      ]
+    },
+    {
+      phaseNumber: "3",
+      phaseTitle: "第三阶段：泰国境内配送到家",
+      phaseBadge: "泰国国内运费 (支持合并打包省运费 或 免费自提)",
+      phaseColor: "from-emerald-600 to-teal-700 text-white",
+      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      steps: [
+        {
+          stepNumber: "06",
+          title: "合并打包 / 仓库自提",
+          description: "支持将多个包裹合并打包以节省泰国国内运费，客户亦可选择前往曼谷仓库免费自提。",
+          icon: Layers,
+          iconBg: "bg-emerald-100 text-emerald-600",
+          tag: "合单 / 自提"
+        },
+        {
+          stepNumber: "07",
+          title: "安全派送到家",
+          description: "包裹移交本地快递 (Flash, Kerry, J&T) 派送上门，提供单号支持24小时全程在线追踪。",
+          icon: CheckCircle2,
+          iconBg: "bg-teal-100 text-teal-600",
+          tag: "派送完成"
+        }
+      ]
+    }
+  ] : [
     {
       phaseNumber: "1",
       phaseTitle: "รอบที่ 1: สั่งซื้อและชำระค่าสินค้า",
@@ -100,269 +268,325 @@ export default function HowItWorks() {
       steps: [
         {
           stepNumber: "06",
-          title: "แจ้งค่าจัดส่งในประเทศ หรือรวมบิล (Domestic Delivery / Consolidation)",
-          description: "ลูกค้าสามารถเลือกมารับสินค้าเองที่โกดัง (ไม่มีค่าใช้จ่าย) หรือให้จัดส่งผ่านขนส่งเอกชน (Flash, Kerry, J&T, ไปรษณีย์ไทย) พิเศษ! สามารถกด 'รวมบิลหลายออเดอร์' เพื่อแพ็ครวมกล่องประหยัดค่าส่งได้",
+          title: "รวมบิลประหยัดค่าส่ง / มารับเองที่โกดัง (Consolidation)",
+          description: "หากมีสินค้าหลายชิ้น ลูกค้าสามารถเลือก 'กดรวมบิล' เพื่อให้จัดส่งพร้อมกันในรอบเดียว หรือเลือก 'มารับเองที่โกดัง' ฟรี ไม่มีค่าใช้จ่าย",
           icon: Layers,
-          iconBg: "bg-teal-100 text-teal-600",
-          tag: "ชำระเงินรอบ 3"
+          iconBg: "bg-emerald-100 text-emerald-600",
+          tag: "รวมบิล / รับเองฟรี"
         },
         {
           stepNumber: "07",
-          title: "จัดส่งพัสดุถึงมือคุณอย่างปลอดภัย (Delivered)",
-          description: "หลังจากชำระครบถ้วน สินค้าจะถูกจัดส่งตรงถึงหน้าบ้านพร้อมอัปเดตเลขพัสดุ (Tracking) ให้คุณตรวจสอบสถานะได้ตลอด 24 ชม. เมื่อได้รับของแล้วกด 'ยืนยันรับสินค้า' เป็นอันเสร็จสมบูรณ์",
+          title: "จัดส่งพัสดุถึงหน้าบ้าน (Door-to-Door Delivery)",
+          description: "ทีมงานจัดส่งพัสดุผ่านขนส่งเอกชน (Flash, Kerry, J&T) พร้อมอัปเดตหมายเลขพัสดุในไทยให้ลูกค้าติดตามสถานะได้แบบเรียลไทม์ 24 ชม.",
           icon: CheckCircle2,
-          iconBg: "bg-emerald-100 text-emerald-600",
-          tag: "เสร็จสมบูรณ์"
+          iconBg: "bg-teal-100 text-teal-600",
+          tag: "ส่งมอบสำเร็จ"
         }
       ]
     }
   ]
 
-  const faqs = [
+  const featureCards = locale === 'en' ? [
     {
-      q: "การขนส่งทางรถ (EK) กับทางเรือ (SEA) ต่างกันอย่างไร และใช้เวลากี่วัน?",
-      a: "• ขนส่งทางรถ (EK): ใช้เวลาประมาณ 5 - 7 วัน (หลังจากสินค้าออกจากโกดังจีน) เหมาะสำหรับสินค้าที่ต้องการความรวดเร็ว เสื้อผ้า แฟชั่น สินค้าตามกระแส\n• ขนส่งทางเรือ (SEA): ใช้เวลาประมาณ 15 - 20 วัน ค่าบริการประหยัดกว่า เหมาะสำหรับสินค้าชิ้นใหญ่ น้ำหนักเยอะ หรือสินค้าสั่งจำนวนมาก (คิดตามคิว CBM)"
+      icon: PackagePlus,
+      iconBg: "bg-blue-100 text-blue-600",
+      title: "Package Consolidation",
+      description: "Combine multiple packages into 1 shipment to save domestic delivery fees."
     },
     {
-      q: "ค่าขนส่งจีน-ไทย คิดตามน้ำหนัก (KG) หรือตามขนาดคิว (CBM)?",
-      a: "ระบบจะคำนวณเปรียบเทียบทั้ง 2 แบบ (ค่าน้ำหนักจริง vs ค่าน้ำหนักตามปริมาตรคิว) แล้วจะคิดตามเรทที่สูงกว่าเพื่อให้สอดคล้องกับต้นทุนการขนส่งจริง โดยไม่มีการบวกเพิ่มใดๆ นอกเหนือจากเรทมาตรฐานที่แจ้งไว้ในหน้าราคา"
+      icon: Bell,
+      iconBg: "bg-emerald-100 text-emerald-600",
+      title: "Automated LINE Notifications",
+      description: "Receive instant updates at every milestone: ordered, arrived in China, arrived in TH, and out for delivery."
     },
     {
-      q: "ระบบรวมบิล (Consolidation) ในรอบที่ 3 ทำงานอย่างไร?",
-      a: "หากคุณสั่งซื้อสินค้าหลายร้านค้า หรือหลายออเดอร์ในเวลาใกล้เคียงกัน เมื่อสินค้าเดินทางมาถึงโกดังไทย คุณสามารถกดเลือกหลายๆ ออเดอร์แล้วกด 'รวมบิลจัดส่ง' ระบบจะรวมพัสดุทั้งหมดใส่กล่องเดียวกันเพื่อคำนวณค่าส่งในไทยเพียงรอบเดียว ช่วยประหยัดค่าส่งในไทยได้ถึง 30-50%"
+      icon: ShieldCheck,
+      iconBg: "bg-amber-100 text-amber-600",
+      title: "Wooden Crate Packing",
+      description: "Reinforced wooden crating protection starting at only 200 THB to ensure fragile items arrive in perfect condition."
     },
     {
-      q: "หากร้านค้าจีนแจ้งว่าสินค้าหมด หรือส่งไม่ครบ จะได้รับเงินคืนอย่างไร?",
-      a: "แอดมินจะทำการบันทึกสินค้าที่หมดในระบบ พร้อมระบุเหตุผลจากร้านจีน ยอดเงินคืน (Refund) จะถูกบันทึกในระบบโดยอัตโนมัติ โดยลูกค้าสามารถนำยอดนี้ไปหักลบกับค่าขนส่งรอบถัดไป หรือติดต่อแอดมินเพื่อขอรับเงินโอนคืนเข้าบัญชีธนาคารได้ทันที"
+      icon: RefreshCw,
+      iconBg: "bg-rose-100 text-rose-600",
+      title: "100% Out-of-Stock Refund",
+      description: "If the Chinese supplier runs out of stock, receive an immediate 100% refund without any deduction."
+    }
+  ] : locale === 'zh' ? [
+    {
+      icon: PackagePlus,
+      iconBg: "bg-blue-100 text-blue-600",
+      title: "多包裹合并打包",
+      description: "支持将多个不同商家的包裹合并发货，最大限度节省泰国国内派送费用。"
     },
     {
-      q: "มีค่าบริการสั่งซื้อหรือค่าบริการแอบแฝงเพิ่มเติมไหม?",
-      a: "ไม่มีค่าบริการแอบแฝง! เรามีบริการช่วยเจรจาต่อรองราคากับร้านค้าจีนให้ฟรี เรทเงินหยวนอัปเดตตามจริง และคิดค่าขนส่งตามขนาด/น้ำหนักจริงของพัสดุเท่านั้น"
+      icon: Bell,
+      iconBg: "bg-emerald-100 text-emerald-600",
+      title: "LINE 实时状态通知",
+      description: "从采购成功、抵广州仓、抵泰国仓到本地派送，LINE 全程自动推送最新物流动态。"
+    },
+    {
+      icon: ShieldCheck,
+      iconBg: "bg-amber-100 text-amber-600",
+      title: "打木架加固防护",
+      description: "易碎品及贵重物品提供专业打木架/木箱加固服务，每件仅需200泰铢起。"
+    },
+    {
+      icon: RefreshCw,
+      iconBg: "bg-rose-100 text-rose-600",
+      title: "缺货 100% 极速退款",
+      description: "若中国商家缺货或无法发货，全额100%退款，不扣除任何手续费。"
+    }
+  ] : [
+    {
+      icon: PackagePlus,
+      iconBg: "bg-blue-100 text-blue-600",
+      title: "ระบบรวมบิลประหยัดค่าส่ง",
+      description: "สั่งสินค้าหลายร้าน สามารถรอให้ของมาครบแล้วกดรวมส่งพร้อมกันได้ ช่วยประหยัดค่าส่งในไทยได้สูงสุด"
+    },
+    {
+      icon: Bell,
+      iconBg: "bg-emerald-100 text-emerald-600",
+      title: "แจ้งเตือนผ่าน LINE อัตโนมัติ",
+      description: "ระบบส่งข้อความแจ้งเตือนสถานะทันทีเมื่อสินค้ามีความเคลื่อนไหว ไม่ต้องคอยกดเช็คเองตลอดเวลา"
+    },
+    {
+      icon: ShieldCheck,
+      iconBg: "bg-amber-100 text-amber-600",
+      title: "บริการเสริมตีลังไม้กันกระแทก",
+      description: "มีบริการตีลังไม้สำหรับสินค้าแตกหักง่ายหรือเครื่องใช้ไฟฟ้า เริ่มต้นเพียง 200 บาท ช่วยปกป้องสินค้า 100%"
+    },
+    {
+      icon: RefreshCw,
+      iconBg: "bg-rose-100 text-rose-600",
+      title: "สินค้าหมด คืนเงินเต็มจำนวน 100%",
+      description: "กรณีร้านค้าจีนแจ้งสินค้าหมดสต็อก ระบบจะทำการยกเลิกและคืนเงินค่าสินค้าให้ลูกค้าเต็มจำนวนทันที"
+    }
+  ]
+
+  const faqs = locale === 'en' ? [
+    {
+      q: "How does the 3-Round payment system work?",
+      a: "• Round 1: Product cost in RMB converted to THB + China domestic shipping.\n• Round 2: International China-to-Thailand freight (calculated by KG or CBM when goods arrive in TH).\n• Round 3: Thai domestic delivery fee (courier rate based on actual size/weight, or free self-pickup)."
+    },
+    {
+      q: "How long does shipping take from China to Thailand?",
+      a: "• Express Road (EK): 5 - 7 business days after container dispatch from China.\n• Economy Sea (SEA): 15 - 20 business days after container dispatch from China."
+    },
+    {
+      q: "How is international freight calculated between weight (KG) and volume (CBM)?",
+      a: "Freight is charged on whichever is higher between actual weight (KG) and volumetric size (CBM = Width × Length × Height in cm / 1,000,000). You can test our interactive calculator on the Pricing page."
+    },
+    {
+      q: "Can I combine multiple orders to save on delivery fees?",
+      a: "Yes! When your items arrive at our Thailand warehouse, you can select multiple orders and click 'Consolidate Bill' to package and ship them together."
+    },
+    {
+      q: "Are there any items prohibited from importation?",
+      a: "Yes. Prohibited items include lighters, flammable materials, adult toys, e-cigarettes, weapons, and restricted contraband. If unsure, please consult our admin team."
+    },
+    {
+      q: "Do you charge a purchasing service fee?",
+      a: "No! Sabuyship charges 0% purchasing service fee and provides free supplier negotiation."
+    }
+  ] : locale === 'zh' ? [
+    {
+      q: "三阶段收费模式具体是如何运作的？",
+      a: "• 第一轮：商品货款（人民币按实时汇率折算泰铢）+ 中国国内快递费。\n• 第二轮：中泰国际跨境运费（商品抵泰后按实际重量或立方体积结算）。\n• 第三轮：泰国国内派送费（按快递实际费率收取，或曼谷仓库免费自提）。"
+    },
+    {
+      q: "从中国发货到泰国需要多少天？",
+      a: "• 特快陆运 (EK)：装柜发车后 5 - 7 个工作日送达泰国。\n• 经济海运 (SEA)：装柜开船后 15 - 20 个工作日送达泰国。"
+    },
+    {
+      q: "国际运费如何按重量 (KG) 与体积 (CBM) 进行计费？",
+      a: "按照国际物流标准，按实际重量 (KG) 与体积重量 (CBM = 长×宽×高cm / 1,000,000) 两者中较高者计费。您可在“服务费用”页面使用运费估算器进行测算。"
+    },
+    {
+      q: "可以把多个包裹合并发货省运费吗？",
+      a: "可以！当您订购的多件商品抵达泰国仓库后，可在控制台勾选多个订单并点击“合并账单”，打包一同发货以节省派送费用。"
+    },
+    {
+      q: "有哪些违禁品不可承运？",
+      a: "打火机、易燃易爆品、成人用品、电子烟、武器及海关管制禁运品均不可承运。如有疑问下单前请咨询客服。"
+    },
+    {
+      q: "是否有代购服务费？",
+      a: "没有！Sabuyship 不收取任何代购服务费 (0% Service Fee)，并免费提供中国厂家议价服务。"
+    }
+  ] : [
+    {
+      q: "การชำระเงินแบบ 3 รอบ มีรายละเอียดอย่างไรบ้าง?",
+      a: "• รอบที่ 1: ค่าสินค้าตามจริงจากร้านจีน (คิดตามเรทเงินหยวน) + ค่าขนส่งในจีน (ถ้ามี)\n• รอบที่ 2: ค่าขนส่งระหว่างประเทศ จีน-ไทย (คิดตามน้ำหนัก KG หรือขนาดคิว CBM เมื่อของถึงไทย)\n• รอบที่ 3: ค่าจัดส่งในไทยถึงหน้าบ้านลูกค้า (คิดตามจริงของขนส่งเอกชน หรือมารับเองที่โกดังฟรี 0 บาท)"
+    },
+    {
+      q: "ระยะเวลาขนส่งจากจีนมาไทยใช้เวลากี่วัน?",
+      a: "• ทางรถด่วน (EK): ใช้เวลาประมาณ 5 - 7 วัน (นับจากวันที่สินค้าขึ้นตู้และออกจากโกดังจีน)\n• ทางเรือประหยัด (SEA): ใช้เวลาประมาณ 15 - 20 วัน (นับจากวันที่ตู้เรือออกจากท่าเรือจีน)"
+    },
+    {
+      q: "ค่าขนส่งคิดตามน้ำหนัก (KG) หรือ ปริมาตร (CBM) อย่างไร?",
+      a: "ระบบจะคำนวณเปรียบเทียบระหว่าง 'ค่าน้ำหนัก' กับ 'ค่าปริมาตรคิว (CBM = กว้าง x ยาว x สูง cm / 1,000,000)' แล้วเลือกคิดจากยอดที่สูงกว่าตามมาตรฐานสากลของบริษัทคาร์โก้ สามารถทดลองคำนวณได้ที่หน้า 'อัตราค่าบริการ'"
+    },
+    {
+      q: "ถ้าสั่งสินค้าหลายร้าน สามารถรวมส่งพร้อมกันได้ไหม?",
+      a: "ทำได้ครับ! เมื่อสินค้าแต่ละชิ้นมาถึงโกดังไทย ลูกค้าสามารถเลือกกด 'รวมบิล' เพื่อให้แพ็ครวมกล่องและจัดส่งไปพร้อมกันในรอบเดียว ช่วยประหยัดค่าส่งในไทยได้มาก"
+    },
+    {
+      q: "มีสินค้าประเภทไหนบ้างที่ห้ามนำเข้า?",
+      a: "สินค้าต้องห้าม ได้แก่ ไฟแช็ค วัตถุไวไฟ แบตเตอรี่สำรองขนาดใหญ่ บุหรี่ไฟฟ้า ของเล่นผู้ใหญ่ อาวุธ และสิ่งผิดกฎหมายทุกชนิด หากไม่แน่ใจสามารถสอบถามแอดมินก่อนสั่งซื้อได้ครับ"
+    },
+    {
+      q: "มีค่าบริการสั่งซื้อ (Service Fee) หรือไม่?",
+      a: "ไม่มีครับ! Sabuyship ฟรีค่าบริการสั่งซื้อ 0 บาท และมีทีมงานช่วยเจรจาต่อรองราคาส่งกับร้านค้าจีนให้ฟรี ไม่มีค่าแอบแฝง"
     }
   ]
 
   return (
-    <div className="bg-slate-50 min-h-screen">
-      {/* 1. Header Section */}
-      <section className="bg-gradient-to-b from-blue-50/80 via-blue-50/30 to-slate-50 py-16 md:py-20 px-4 md:px-8 border-b border-slate-200/60">
-        <div className="container max-w-5xl mx-auto text-center space-y-5">
+    <div className="py-16 md:py-24 px-4 md:px-8 min-h-screen bg-slate-50 text-slate-800">
+      <div className="container max-w-5xl mx-auto space-y-16">
+        {/* 1. Header Section */}
+        <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-primary rounded-full text-xs font-black uppercase tracking-wider">
-            <Sparkles className="w-4 h-4" />
-            คู่มือการใช้งานระบบ Sabuyship
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            {t.howBadge || "คู่มือการนำเข้าสินค้า จีน-ไทย ฉบับสมบูรณ์"}
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-            ขั้นตอนการนำเข้าสินค้า จีน-ไทย <span className="text-primary">3 สเต็ปง่ายๆ</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+            {t.howMainTitle || "ขั้นตอนการนำเข้าสินค้า"} <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Sabuyship</span>
           </h1>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            ระบบสั่งซื้อและขนส่งที่โปร่งใส แบ่งการชำระเงินตามจริงเป็น 3 รอบ พร้อมระบบแจ้งเตือนผ่าน LINE และติดตามสถานะพัสดุตลอด 24 ชั่วโมง
+          <p className="text-base md:text-lg text-slate-600">
+            {t.howMainSub || "ระบบสั่งซื้อและขนส่งสินค้าจีน-ไทย แบบ 3 รอบโปร่งใส ชัดเจนทุกขั้นตอน เช็คสถานะได้ 24 ชม."}
           </p>
-
-          {/* 3-Phase Overview Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-4 max-w-3xl mx-auto">
-            <div className="p-3.5 bg-white rounded-xl border border-blue-200 shadow-2xs text-left">
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block">รอบที่ 1</span>
-              <p className="text-sm font-black text-slate-900 mt-0.5">ค่าสินค้า + ค่าส่งในจีน</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">ชำระตอนสั่งซื้อ</p>
-            </div>
-            <div className="p-3.5 bg-white rounded-xl border border-purple-200 shadow-2xs text-left">
-              <span className="text-xs font-bold text-purple-600 uppercase tracking-wider block">รอบที่ 2</span>
-              <p className="text-sm font-black text-slate-900 mt-0.5">ค่าขนส่งจีน-ไทย</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">ชำระเมื่อของถึงไทย</p>
-            </div>
-            <div className="p-3.5 bg-white rounded-xl border border-emerald-200 shadow-2xs text-left">
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block">รอบที่ 3</span>
-              <p className="text-sm font-black text-slate-900 mt-0.5">ค่าจัดส่งในไทย</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">รวมบิลได้ / รับเองฟรี</p>
-            </div>
-          </div>
         </div>
-      </section>
 
-      {/* 2. Detailed Connected Timeline */}
-      <section className="py-16 md:py-20 px-4 md:px-8">
-        <div className="container max-w-4xl mx-auto space-y-12">
-          {phases.map((phase, pIdx) => (
-            <div key={pIdx} className="space-y-6">
-              {/* Phase Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-slate-200">
+        {/* 2. 3-Phase Stepper Workflow */}
+        <div className="space-y-12">
+          {phases.map((phase) => (
+            <div key={phase.phaseNumber} className="space-y-6">
+              {/* Phase Header Banner */}
+              <div className={`p-4 md:p-6 rounded-2xl bg-gradient-to-r ${phase.phaseColor} shadow-lg flex flex-col sm:flex-row justify-between sm:items-center gap-3`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-950 text-white flex items-center justify-center font-black text-lg shadow-sm">
+                  <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black text-sm">
                     {phase.phaseNumber}
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-                    {phase.phaseTitle}
-                  </h2>
+                  </span>
+                  <h2 className="text-lg md:text-xl font-black">{phase.phaseTitle}</h2>
                 </div>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${phase.badgeColor}`}>
+                <span className="inline-block px-3.5 py-1 bg-white/90 text-slate-900 rounded-full text-xs font-bold shrink-0 shadow-2xs">
                   {phase.phaseBadge}
                 </span>
               </div>
 
-              {/* Steps inside this Phase */}
-              <div className="space-y-4 pl-2 sm:pl-4 border-l-2 border-slate-200/80 ml-4.5 sm:ml-4.5">
-                {phase.steps.map((step, sIdx) => {
+              {/* Steps Inside Phase */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {phase.steps.map((step) => {
                   const Icon = step.icon
                   return (
-                    <div key={sIdx} className="relative pl-6 sm:pl-8 group">
-                      {/* Timeline Dot */}
-                      <div className="absolute -left-[31px] sm:-left-[39px] top-6 w-6 h-6 rounded-full bg-white border-4 border-blue-500 group-hover:scale-110 transition-transform shadow-2xs"></div>
-
-                      <Card className="border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-200 transition-all rounded-2xl bg-white overflow-hidden">
-                        <CardContent className="p-5 sm:p-6">
-                          <div className="flex items-start gap-4">
-                            <div className={`p-3.5 rounded-xl ${step.iconBg} shrink-0 mt-0.5`}>
-                              <Icon className="w-6 h-6" />
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-                                <span className="text-xs font-black text-primary tracking-wider uppercase">
-                                  ขั้นตอนที่ {step.stepNumber}
-                                </span>
-                                <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md">
-                                  {step.tag}
-                                </span>
-                              </div>
-
-                              <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
-                                {step.title}
-                              </h3>
-                              <p className="text-slate-600 text-sm leading-relaxed">
-                                {step.description}
-                              </p>
-                            </div>
+                    <Card key={step.stepNumber} className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow bg-white rounded-2xl">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${step.iconBg}`}>
+                            <Icon className="w-6 h-6" />
                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                          <span className="text-2xl font-black text-slate-200">
+                            {step.stepNumber}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                            {step.tag}
+                          </span>
+                          <h3 className="text-base font-bold text-slate-900 leading-snug">
+                            {step.title}
+                          </h3>
+                        </div>
+
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {step.description}
+                        </p>
+                      </CardContent>
+                    </Card>
                   )
                 })}
               </div>
             </div>
           ))}
         </div>
-      </section>
 
-      {/* 3. System Highlights Grid */}
-      <section className="py-16 px-4 md:px-8 bg-white border-y border-slate-200">
-        <div className="container max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-black uppercase tracking-wider mb-2">
-              Sabuyship Features
-            </span>
+        {/* 3. Sabuyship Highlights & Value Props */}
+        <section className="space-y-8 pt-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-              ฟีเจอร์เด่นที่ออกแบบมาเพื่อความสบายของคุณ
+              {t.howFeaturesTitle || "จุดเด่นที่ทำให้ Sabuyship แตกต่างและคุ้มค่ากว่า"}
             </h2>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:border-blue-300 transition-all">
-              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
-                <Layers className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-2">ระบบรวมบิลจัดส่ง</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                สั่งสินค้าหลายออเดอร์ สามารถรอรวมส่งในรอบที่ 3 พร้อมกันเพื่อประหยัดค่าส่งในไทย
-              </p>
-            </div>
-
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:border-emerald-300 transition-all">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4">
-                <Bell className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-2">แจ้งเตือนผ่าน LINE</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                ระบบส่งข้อความแจ้งเตือนผ่าน LINE OA ทุกครั้งที่พัสดุเปลี่ยนสถานะ ไม่ต้องคอยเช็คเอง
-              </p>
-            </div>
-
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:border-amber-300 transition-all">
-              <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-4">
-                <PackagePlus className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-2">บริการเสริมตีลังไม้</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                ป้องกันสินค้าแตกหักหรือเสียหายระหว่างขนส่ง เหมาะสำหรับแก้ว เซรามิก และเฟอร์นิเจอร์
-              </p>
-            </div>
-
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:border-rose-300 transition-all">
-              <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center mb-4">
-                <RefreshCw className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-2">ระบบคืนเงินโปร่งใส</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                หากร้านจีนสินค้าหมด ระบบคำนวณยอดเงินคืนให้อัตโนมัติ นำไปหักลบค่าส่งหรือรับเงินคืนได้
-              </p>
-            </div>
+            {featureCards.map((feat, idx) => {
+              const Icon = feat.icon
+              return (
+                <div key={idx} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${feat.iconBg}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">{feat.title}</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">{feat.description}</p>
+                </div>
+              )
+            })}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 4. FAQ Accordion Section */}
-      <section className="py-16 md:py-20 px-4 md:px-8 bg-slate-50">
-        <div className="container max-w-3xl mx-auto space-y-8">
-          <div className="text-center space-y-2">
+        {/* 4. FAQ Accordion Section */}
+        <section className="space-y-8 pt-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center justify-center gap-2">
               <HelpCircle className="w-7 h-7 text-primary" />
-              คำถามที่พบบ่อยเกี่ยวกับการนำเข้า
+              {t.howFaqTitle || "คำถามที่พบบ่อย (FAQ)"}
             </h2>
-            <p className="text-slate-600 text-sm">
-              ข้อสงสัยยอดนิยมเกี่ยวกับการสั่งซื้อและขนส่งสินค้าจากจีน
+            <p className="text-xs sm:text-sm text-slate-500">
+              {t.howFaqSub || "รวบรวมข้อสงสัยยอดฮิตเกี่ยวกับการสั่งซื้อและนำเข้าสินค้าจากจีน"}
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="max-w-3xl mx-auto space-y-3">
             {faqs.map((faq, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs transition-all"
+              <div 
+                key={idx} 
+                className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs transition-all"
               >
                 <button
                   onClick={() => toggleFaq(idx)}
-                  className="w-full p-5 text-left font-bold text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-50 cursor-pointer"
+                  className="w-full p-5 text-left font-bold text-sm sm:text-base text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer"
                 >
-                  <span className="text-sm sm:text-base">{faq.q}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${
-                      openFaq === idx ? "rotate-180 text-primary" : ""
-                    }`}
-                  />
+                  <span>{faq.q}</span>
+                  <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${openFaq === idx ? "rotate-180 text-primary" : ""}`} />
                 </button>
                 {openFaq === idx && (
-                  <div className="px-5 pb-5 pt-1 text-slate-600 text-sm leading-relaxed border-t border-slate-100 whitespace-pre-line bg-slate-50/50">
+                  <div className="p-5 pt-0 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30 whitespace-pre-line animate-in fade-in duration-200">
                     {faq.a}
                   </div>
                 )}
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 5. Bottom Call to Action */}
-      <section className="py-16 md:py-20 px-4 md:px-8 bg-slate-950 text-white text-center">
-        <div className="container max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-            พร้อมเริ่มต้นสั่งซื้อสินค้าจากจีนแล้วหรือยัง?
+        {/* 5. Bottom CTA Banner */}
+        <section className="py-12 px-6 bg-slate-950 text-white rounded-3xl text-center space-y-5 shadow-xl">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+            {t.ctaTitle}
           </h2>
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-            เพียงส่งลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall ให้เรา เราจัดการต่อรองราคาและนำเข้าให้คุณแบบครบวงจร
+          <p className="text-slate-300 text-sm max-w-xl mx-auto">
+            {t.ctaSub}
           </p>
-          <div className="pt-2 flex flex-col sm:flex-row gap-3.5 justify-center">
+          <div>
             <Link href="/inquiry">
-              <Button size="lg" variant="orange" className="w-full sm:w-auto text-base px-8 h-14 font-black rounded-xl shadow-lg cursor-pointer">
-                ส่งลิงก์ประเมินราคาฟรีเลย ➔
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-7 h-14 rounded-xl bg-slate-900 border-slate-700 hover:bg-slate-800 text-white cursor-pointer">
-                ดูอัตราค่าบริการนำเข้า
+              <Button size="lg" variant="orange" className="text-base px-8 h-12 font-black rounded-xl cursor-pointer shadow-lg">
+                {t.ctaBtn}
               </Button>
             </Link>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   )
 }

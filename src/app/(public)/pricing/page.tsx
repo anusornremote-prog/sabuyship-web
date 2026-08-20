@@ -43,24 +43,44 @@ const RATES = {
   }
 }
 
-// Category Helper
-const CATEGORIES = [
-  { id: "general", key: "catGeneral", label: "ทั่วไป / ธรรมดา", descTh: "เสื้อผ้า รองเท้า กระเป๋า ของใช้ทั่วไป", descEn: "Clothing, shoes, general items" },
-  { id: "tis", key: "catTis", label: "มอก. (TIS)", descTh: "เครื่องใช้ไฟฟ้า อุปกรณ์ไอที ของเล่น", descEn: "Electrical appliances, IT, toys" },
-  { id: "fda", key: "catFda", label: "อย. (FDA)", descTh: "เครื่องสำอาง สกินแคร์ อาหารเสริม", descEn: "Cosmetics, skincare, food supplements" },
-  { id: "special", key: "catSpecial", label: "พิเศษ / แบรนด์เนม", descTh: "สินค้าแบรนด์เนม ลิขสิทธิ์เฉพาะ", descEn: "Brand name, licensed goods" }
-] as const;
-
-// Preset Box Sizes
-const PRESET_SIZES = [
-  { label: "กล่องเล็ก (S)", w: 20, l: 20, h: 20, desc: "20×20×20 cm" },
-  { label: "กล่องกลาง (M)", w: 40, l: 40, h: 40, desc: "40×40×40 cm" },
-  { label: "กล่องใหญ่ (L)", w: 60, l: 60, h: 60, desc: "60×60×60 cm" },
-  { label: "กระสอบใหญ่ (XL)", w: 80, l: 60, h: 50, desc: "80×60×50 cm" }
-]
-
 export default function Pricing() {
   const { t, locale } = useTranslation()
+
+  // Categories with full localized descriptions
+  const CATEGORIES = [
+    { 
+      id: "general", 
+      key: "catGeneral", 
+      label: locale === 'en' ? "General Cargo" : locale === 'zh' ? "普通货物" : "ทั่วไป / ธรรมดา", 
+      desc: locale === 'en' ? "Clothing, shoes, bags, general goods" : locale === 'zh' ? "服装鞋包、日用百货等" : "เสื้อผ้า รองเท้า กระเป๋า ของใช้ทั่วไป" 
+    },
+    { 
+      id: "tis", 
+      key: "catTis", 
+      label: locale === 'en' ? "TIS Certified" : locale === 'zh' ? "TIS 工业认证" : "มอก. (TIS)", 
+      desc: locale === 'en' ? "Electrical appliances, electronics, toys" : locale === 'zh' ? "家用电器、数码电子、玩具等" : "เครื่องใช้ไฟฟ้า อุปกรณ์ไอที ของเล่น" 
+    },
+    { 
+      id: "fda", 
+      key: "catFda", 
+      label: locale === 'en' ? "FDA Certified" : locale === 'zh' ? "FDA 食品药品认证" : "อย. (FDA)", 
+      desc: locale === 'en' ? "Cosmetics, skincare, supplements" : locale === 'zh' ? "美妆护肤、食品补充剂等" : "เครื่องสำอาง สกินแคร์ อาหารเสริม" 
+    },
+    { 
+      id: "special", 
+      key: "catSpecial", 
+      label: locale === 'en' ? "Special / Brand Name" : locale === 'zh' ? "特殊 / 品牌名品" : "พิเศษ / แบรนด์เนม", 
+      desc: locale === 'en' ? "Brand-name goods, licensed products" : locale === 'zh' ? "国际名牌、授权专营商品等" : "สินค้าแบรนด์เนม ลิขสิทธิ์เฉพาะ" 
+    }
+  ] as const;
+
+  // Preset Box Sizes Localized
+  const PRESET_SIZES = [
+    { label: locale === 'en' ? "Small Box (S)" : locale === 'zh' ? "小箱 (S)" : "กล่องเล็ก (S)", w: 20, l: 20, h: 20, desc: "20×20×20 cm" },
+    { label: locale === 'en' ? "Medium Box (M)" : locale === 'zh' ? "中箱 (M)" : "กล่องกลาง (M)", w: 40, l: 40, h: 40, desc: "40×40×40 cm" },
+    { label: locale === 'en' ? "Large Box (L)" : locale === 'zh' ? "大箱 (L)" : "กล่องใหญ่ (L)", w: 60, l: 60, h: 60, desc: "60×60×60 cm" },
+    { label: locale === 'en' ? "Heavy Sack (XL)" : locale === 'zh' ? "特大包装 (XL)" : "กระสอบใหญ่ (XL)", w: 80, l: 60, h: 50, desc: "80×60×50 cm" }
+  ]
 
   // Calculator State
   const [shipMethod, setShipMethod] = useState<"road" | "sea">("road")
@@ -124,7 +144,7 @@ export default function Pricing() {
 
   // Helper to format currency
   const formatCurrency = (val: number) => {
-    return val.toLocaleString(locale === "en" ? "en-US" : "th-TH", {
+    return val.toLocaleString(locale === "en" ? "en-US" : locale === "zh" ? "zh-CN" : "th-TH", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     })
@@ -148,13 +168,13 @@ export default function Pricing() {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-primary rounded-full text-xs font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            ราคาโปร่งใส ไม่มีบวกเพิ่ม มั่นใจทุกการสั่งซื้อ
+            {t.pricingSub || "ราคาโปร่งใส ไม่มีบวกเพิ่ม มั่นใจทุกการสั่งซื้อ"}
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            อัตราค่าบริการนำเข้าสินค้า <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">จีน-ไทย</span>
+            {t.pricingTitle || "อัตราค่าบริการนำเข้าสินค้า"} <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Sabuyship</span>
           </h1>
           <p className="text-base md:text-lg text-slate-600 dark:text-slate-400">
-            คิดตามจริงตามขนาดและน้ำหนักของสินค้า ไม่มีค่าธรรมเนียมแอบแฝง เลือกได้ทั้งทางรถด่วนและทางเรือประหยัด
+            {t.pricingSub || "คิดตามจริงตามขนาดและน้ำหนักของสินค้า ไม่มีค่าธรรมเนียมแอบแฝง"}
           </p>
         </div>
 
@@ -164,14 +184,14 @@ export default function Pricing() {
             <div>
               <CardTitle className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
                 <Package className="w-5 h-5 text-primary" />
-                ตารางเปรียบเทียบอัตราค่าขนส่ง (Shipping Rate Table)
+                {t.pricingTableTitle || "ตารางเปรียบเทียบอัตราค่าขนส่ง (Shipping Rate Table)"}
               </CardTitle>
               <CardDescription className="text-xs text-slate-500 mt-0.5">
-                เปรียบเทียบอัตราต่อกิโลกรัม (KG) และต่อคิวบิกเมตร (CBM)
+                {t.pricingTableSub || "เปรียบเทียบอัตราต่อกิโลกรัม (KG) และต่อคิวบิกเมตร (CBM)"}
               </CardDescription>
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold shrink-0">
-              <Check className="w-3.5 h-3.5" /> อัปเดตล่าสุด 2026
+              <Check className="w-3.5 h-3.5" /> {t.pricingUpdatedBadge || "อัปเดตล่าสุด 2026"}
             </span>
           </div>
           
@@ -180,7 +200,7 @@ export default function Pricing() {
               <thead>
                 <tr className="bg-slate-100/75 border-b border-slate-200">
                   <th className="p-4 md:p-5 text-xs font-black text-slate-700 uppercase tracking-wider w-1/3">
-                    ประเภทสินค้า (Category)
+                    {t.catCategoryHead || "ประเภทสินค้า (Category)"}
                   </th>
                   <th className="p-4 md:p-5 text-xs font-black text-orange-950 uppercase tracking-wider w-1/3 bg-orange-50/80 border-l border-r border-orange-200/60">
                     <div className="flex items-center gap-2">
@@ -188,8 +208,8 @@ export default function Pricing() {
                         <Truck className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="font-black text-orange-900 block text-sm">ทางรถด่วน (EK)</span>
-                        <span className="text-[10px] font-bold text-orange-600">ระยะเวลา 5 - 7 วัน</span>
+                        <span className="font-black text-orange-900 block text-sm">{t.shippingRoadLabel || "ทางรถด่วน (EK)"}</span>
+                        <span className="text-[10px] font-bold text-orange-600">{t.shippingRoadTime || "ระยะเวลา 5 - 7 วัน"}</span>
                       </div>
                     </div>
                   </th>
@@ -199,8 +219,8 @@ export default function Pricing() {
                         <Ship className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="font-black text-blue-900 block text-sm">ทางเรือประหยัด (SEA)</span>
-                        <span className="text-[10px] font-bold text-blue-600">ระยะเวลา 15 - 20 วัน</span>
+                        <span className="font-black text-blue-900 block text-sm">{t.shippingSeaLabel || "ทางเรือประหยัด (SEA)"}</span>
+                        <span className="text-[10px] font-bold text-blue-600">{t.shippingSeaTime || "ระยะเวลา 15 - 20 วัน"}</span>
                       </div>
                     </div>
                   </th>
@@ -217,27 +237,27 @@ export default function Pricing() {
                         <div className="flex flex-col">
                           <span className="font-black text-slate-900 text-sm sm:text-base">{cat.label}</span>
                           <span className="text-xs text-slate-500 mt-0.5">
-                            {locale === "th" ? cat.descTh : cat.descEn}
+                            {cat.desc}
                           </span>
                         </div>
                       </td>
                       <td className="p-4 md:p-5 bg-orange-50/30 border-l border-r border-orange-200/50">
                         <div className="space-y-0.5">
                           <p className="text-slate-900 font-black text-base">
-                            <span className="text-lg font-black text-orange-600">{roadRates.kg}</span> ฿ / กก. (KG)
+                            <span className="text-lg font-black text-orange-600">{roadRates.kg}</span> {t.priceBaht || "฿"} / {locale === 'zh' ? "公斤 (KG)" : locale === 'en' ? "KG" : "กก. (KG)"}
                           </p>
                           <p className="text-xs text-slate-500 font-semibold">
-                            <span className="font-bold text-slate-700">{roadRates.cbm.toLocaleString()}</span> ฿ / คิว (CBM)
+                            <span className="font-bold text-slate-700">{roadRates.cbm.toLocaleString()}</span> {t.priceBaht || "฿"} / {locale === 'zh' ? "立方 (CBM)" : locale === 'en' ? "CBM" : "คิว (CBM)"}
                           </p>
                         </div>
                       </td>
                       <td className="p-4 md:p-5 bg-blue-50/30">
                         <div className="space-y-0.5">
                           <p className="text-slate-900 font-black text-base">
-                            <span className="text-lg font-black text-blue-600">{seaRates.kg}</span> ฿ / กก. (KG)
+                            <span className="text-lg font-black text-blue-600">{seaRates.kg}</span> {t.priceBaht || "฿"} / {locale === 'zh' ? "公斤 (KG)" : locale === 'en' ? "KG" : "กก. (KG)"}
                           </p>
                           <p className="text-xs text-slate-500 font-semibold">
-                            <span className="font-bold text-slate-700">{seaRates.cbm.toLocaleString()}</span> ฿ / คิว (CBM)
+                            <span className="font-bold text-slate-700">{seaRates.cbm.toLocaleString()}</span> {t.priceBaht || "฿"} / {locale === 'zh' ? "立方 (CBM)" : locale === 'en' ? "CBM" : "คิว (CBM)"}
                           </p>
                         </div>
                       </td>
@@ -256,10 +276,10 @@ export default function Pricing() {
             <CardHeader className="border-b border-slate-100 pb-4">
               <CardTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-orange-500" />
-                โปรแกรมคำนวณค่าขนส่งจีน-ไทย
+                {t.calcTitle || "โปรแกรมคำนวณค่าขนส่งจีน-ไทย"}
               </CardTitle>
               <CardDescription className="text-xs text-slate-500">
-                คำนวณค่าขนส่งเบื้องต้นตามปริมาตร (CBM) หรือน้ำหนัก (KG) *ระบบเลือกคิดจากยอดที่สูงกว่า
+                {t.calcSubtitle || "คำนวณค่าขนส่งเบื้องต้นตามปริมาตร (CBM) หรือน้ำหนัก (KG) *ระบบเลือกคิดจากยอดที่สูงกว่า"}
               </CardDescription>
             </CardHeader>
 
@@ -267,7 +287,7 @@ export default function Pricing() {
               {/* Shipping Method Switcher */}
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-600 uppercase tracking-wider block">
-                  1. เลือกช่องทางการขนส่ง
+                  {t.calcStep1Title || "1. เลือกช่องทางการขนส่ง"}
                 </label>
                 <div className="grid grid-cols-2 gap-3.5">
                   <button
@@ -281,8 +301,8 @@ export default function Pricing() {
                   >
                     <Truck className="w-5 h-5 text-orange-600 shrink-0" />
                     <div className="text-left">
-                      <span className="block font-black">ทางรถด่วน (EK)</span>
-                      <span className="text-[10px] opacity-75">5 - 7 วัน</span>
+                      <span className="block font-black">{t.shippingRoadLabel || "ทางรถด่วน (EK)"}</span>
+                      <span className="text-[10px] opacity-75">{t.shippingRoadTime || "5 - 7 วัน"}</span>
                     </div>
                   </button>
 
@@ -297,8 +317,8 @@ export default function Pricing() {
                   >
                     <Ship className="w-5 h-5 text-blue-600 shrink-0" />
                     <div className="text-left">
-                      <span className="block font-black">ทางเรือประหยัด (SEA)</span>
-                      <span className="text-[10px] opacity-75">15 - 20 วัน</span>
+                      <span className="block font-black">{t.shippingSeaLabel || "ทางเรือประหยัด (SEA)"}</span>
+                      <span className="text-[10px] opacity-75">{t.shippingSeaTime || "15 - 20 วัน"}</span>
                     </div>
                   </button>
                 </div>
@@ -307,7 +327,7 @@ export default function Pricing() {
               {/* Product Category Cards */}
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-600 uppercase tracking-wider block">
-                  2. เลือกประเภทสินค้า
+                  {t.calcStep2Title || "2. เลือกประเภทสินค้า"}
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
                   {CATEGORIES.map((cat) => (
@@ -323,7 +343,7 @@ export default function Pricing() {
                     >
                       <span className="text-xs font-black block">{cat.label}</span>
                       <span className={`text-[10px] mt-0.5 line-clamp-1 ${category === cat.id ? "text-slate-300" : "text-slate-500"}`}>
-                        {cat.descTh}
+                        {cat.desc}
                       </span>
                     </button>
                   ))}
@@ -336,7 +356,7 @@ export default function Pricing() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-black text-slate-600 uppercase tracking-wider block">
-                    3. น้ำหนักรวม (กิโลกรัม)
+                    {t.calcStep3Title || "3. น้ำหนักรวม (กิโลกรัม)"}
                   </label>
                   <div className="relative">
                     <Input
@@ -356,7 +376,7 @@ export default function Pricing() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-black text-slate-600 uppercase tracking-wider block">
-                    จำนวนกล่อง / ชิ้น
+                    {t.calcStep3Qty || "จำนวนกล่อง / ชิ้น"}
                   </label>
                   <Input
                     type="number"
@@ -373,7 +393,7 @@ export default function Pricing() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-black text-slate-600 uppercase tracking-wider">
-                    4. ขนาดพัสดุ (สำหรับคิดคิว CBM)
+                    {t.calcStep4Title || "4. ขนาดพัสดุ (สำหรับคิดคิว CBM)"}
                   </label>
                   <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                     <button
@@ -385,7 +405,7 @@ export default function Pricing() {
                           : "text-slate-500 hover:text-slate-900"
                       }`}
                     >
-                      ขนาด ก×ย×ส (ซม.)
+                      {locale === 'zh' ? "外箱尺寸 (cm)" : locale === 'en' ? "Dimensions (cm)" : "ขนาด ก×ย×ส (ซม.)"}
                     </button>
                     <button
                       type="button"
@@ -396,7 +416,7 @@ export default function Pricing() {
                           : "text-slate-500 hover:text-slate-900"
                       }`}
                     >
-                      ระบุคิว (CBM) ตรงๆ
+                      {locale === 'zh' ? "直接填入立方 (CBM)" : locale === 'en' ? "Direct CBM" : "ระบุคิว (CBM) ตรงๆ"}
                     </button>
                   </div>
                 </div>
@@ -405,7 +425,7 @@ export default function Pricing() {
                 {inputType === "dimensions" && (
                   <div className="space-y-2">
                     <span className="text-[11px] text-slate-500 font-semibold">
-                      ⚡ ปุ่มลัดขนาดกล่องมาตรฐาน (กดเพื่อกรอกขนาดทันที):
+                      {t.calcPresetHint || "⚡ ปุ่มลัดขนาดกล่องมาตรฐาน (กดเพื่อกรอกขนาดทันที):"}
                     </span>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {PRESET_SIZES.map((preset, idx) => (
@@ -427,10 +447,10 @@ export default function Pricing() {
                 {inputType === "dimensions" ? (
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-bold block uppercase">กว้าง (ซม.)</span>
+                      <span className="text-[10px] text-slate-500 font-bold block uppercase">{locale === 'zh' ? "宽 (cm)" : locale === 'en' ? "Width (cm)" : "กว้าง (ซม.)"}</span>
                       <Input
                         type="number"
-                        placeholder="Width"
+                        placeholder="W"
                         value={width}
                         onChange={(e) => setWidth(e.target.value)}
                         className="h-10 text-center font-bold"
@@ -438,10 +458,10 @@ export default function Pricing() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-bold block uppercase">ยาว (ซม.)</span>
+                      <span className="text-[10px] text-slate-500 font-bold block uppercase">{locale === 'zh' ? "长 (cm)" : locale === 'en' ? "Length (cm)" : "ยาว (ซม.)"}</span>
                       <Input
                         type="number"
-                        placeholder="Length"
+                        placeholder="L"
                         value={length}
                         onChange={(e) => setLength(e.target.value)}
                         className="h-10 text-center font-bold"
@@ -449,10 +469,10 @@ export default function Pricing() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-bold block uppercase">สูง (ซม.)</span>
+                      <span className="text-[10px] text-slate-500 font-bold block uppercase">{locale === 'zh' ? "高 (cm)" : locale === 'en' ? "Height (cm)" : "สูง (ซม.)"}</span>
                       <Input
                         type="number"
-                        placeholder="Height"
+                        placeholder="H"
                         value={height}
                         onChange={(e) => setHeight(e.target.value)}
                         className="h-10 text-center font-bold"
@@ -472,7 +492,7 @@ export default function Pricing() {
                       step="any"
                     />
                     <span className="absolute right-3.5 top-3 text-xs font-bold text-slate-400">
-                      CBM (คิว)
+                      CBM ({locale === 'zh' ? "立方" : "คิว"})
                     </span>
                   </div>
                 )}
@@ -488,7 +508,7 @@ export default function Pricing() {
                   className="w-5 h-5 rounded border-amber-300 text-orange-600 focus:ring-orange-500 cursor-pointer accent-orange-600"
                 />
                 <label htmlFor="woodenCrate" className="text-xs sm:text-sm font-bold text-amber-900 cursor-pointer flex-1">
-                  ต้องการบริการเสริมตีลังไม้ (+200 บาท / ชิ้น เริ่มต้น)
+                  {locale === 'zh' ? "需要打木架/加固防护服务 (+200 泰铢 / 箱 起)" : locale === 'en' ? "Require wooden crate packing (+200 THB / box starting)" : "ต้องการบริการเสริมตีลังไม้ (+200 บาท / ชิ้น เริ่มต้น)"}
                 </label>
               </div>
 
@@ -500,7 +520,7 @@ export default function Pricing() {
                   onClick={handleReset}
                   className="text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
-                  ล้างข้อมูลคำนวณใหม่
+                  {t.calcResetBtn || "ล้างข้อมูลคำนวณใหม่"}
                 </Button>
               </div>
             </CardContent>
@@ -513,14 +533,14 @@ export default function Pricing() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black flex items-center gap-2 text-white">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    ผลการประเมินค่าขนส่ง
+                    {t.calcResultTitle || "ผลการประเมินค่าขนส่ง"}
                   </h3>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-slate-300 uppercase">
-                    รอบที่ 2 (จีน-ไทย)
+                    {t.calcRound2Badge || "รอบที่ 2 (จีน-ไทย)"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  คิดค่าบริการจากยอดที่สูงกว่าระหว่างน้ำหนัก (KG) และปริมาตร (CBM)
+                  {t.calcResultComparisonText || "คิดค่าบริการจากยอดที่สูงกว่าระหว่างน้ำหนัก (KG) และปริมาตร (CBM)"}
                 </p>
               </div>
 
@@ -528,7 +548,7 @@ export default function Pricing() {
                 {/* Method / Cat Badges */}
                 <div className="flex flex-wrap gap-2">
                   <Badge className={`px-3 py-1 text-xs font-bold border-0 text-white ${shipMethod === "road" ? "bg-orange-500" : "bg-blue-600"}`}>
-                    {shipMethod === "road" ? "🚚 ทางรถด่วน (5-7 วัน)" : "🛳️ ทางเรือประหยัด (15-20 วัน)"}
+                    {shipMethod === "road" ? (t.shippingRoadLabel || "🚚 ทางรถด่วน (5-7 วัน)") : (t.shippingSeaLabel || "🛳️ ทางเรือประหยัด (15-20 วัน)")}
                   </Badge>
 
                   <Badge variant="outline" className="border-white/20 text-white/90 text-xs">
@@ -547,20 +567,20 @@ export default function Pricing() {
                     <div className="flex justify-between items-center text-xs font-semibold mb-1">
                       <span className="flex items-center gap-1.5">
                         <Scale className="w-3.5 h-3.5 text-slate-400" />
-                        คิดตามน้ำหนัก (Weight Rate)
+                        {t.calcWeightLabel || "คิดตามน้ำหนัก (Weight Rate)"}
                       </span>
                       {calculations.isWeightCharged && (
                         <span className="text-[10px] text-emerald-300 font-black uppercase bg-emerald-500/30 px-2 py-0.5 rounded">
-                          ✓ เลือกใช้น้ำหนัก (ยอดสูงกว่า)
+                          {t.calcWeightChosen || "✓ เลือกใช้น้ำหนัก (ยอดสูงกว่า)"}
                         </span>
                       )}
                     </div>
                     <div className="flex justify-between items-baseline">
                       <span className="text-xs font-semibold text-slate-300">
-                        {parseFloat(weight) || 0} kg × {calculations.rateKg} ฿
+                        {parseFloat(weight) || 0} kg × {calculations.rateKg} {t.priceBaht || "฿"}
                       </span>
                       <span className={`text-base font-black ${calculations.isWeightCharged ? "text-emerald-400" : "text-slate-300"}`}>
-                        {formatCurrency(calculations.costByWeight)} ฿
+                        {formatCurrency(calculations.costByWeight)} {t.priceBaht || "฿"}
                       </span>
                     </div>
                   </div>
@@ -574,22 +594,22 @@ export default function Pricing() {
                     <div className="flex justify-between items-center text-xs font-semibold mb-1">
                       <span className="flex items-center gap-1.5">
                         <Maximize2 className="w-3.5 h-3.5 text-slate-400" />
-                        คิดตามปริมาตร (CBM Rate)
+                        {t.calcCbmLabel || "คิดตามปริมาตร (CBM Rate)"}
                       </span>
                       {!calculations.isWeightCharged && (
                         <span className="text-[10px] text-emerald-300 font-black uppercase bg-emerald-500/30 px-2 py-0.5 rounded">
-                          ✓ เลือกใช้ปริมาตร (ยอดสูงกว่า)
+                          {t.calcCbmChosen || "✓ เลือกใช้ปริมาตร (ยอดสูงกว่า)"}
                         </span>
                       )}
                     </div>
                     <div className="flex justify-between items-baseline">
                       <div className="text-xs space-y-0.5">
                         <p className="font-semibold text-slate-300">
-                          {calculations.cbm.toFixed(4)} CBM × {formatCurrency(calculations.rateCbm)} ฿
+                          {calculations.cbm.toFixed(4)} CBM × {formatCurrency(calculations.rateCbm)} {t.priceBaht || "฿"}
                         </p>
                       </div>
                       <span className={`text-base font-black ${!calculations.isWeightCharged ? "text-emerald-400" : "text-slate-300"}`}>
-                        {formatCurrency(calculations.costByCbm)} ฿
+                        {formatCurrency(calculations.costByCbm)} {t.priceBaht || "฿"}
                       </span>
                     </div>
                   </div>
@@ -598,9 +618,9 @@ export default function Pricing() {
                 {/* Wooden Crate Add-on Cost details */}
                 {woodenCrate && (
                   <div className="flex justify-between items-center text-sm border-t border-white/10 pt-4 text-amber-300">
-                    <span>ค่าบริการเสริมตีลังไม้ ({quantity} ชิ้น)</span>
+                    <span>{t.calcWoodenAdded || "ค่าบริการเสริมตีลังไม้"} ({quantity} {locale === 'zh' ? "件" : locale === 'en' ? "pcs" : "ชิ้น"})</span>
                     <span className="font-bold">
-                      + {formatCurrency(calculations.woodenCost)} ฿
+                      + {formatCurrency(calculations.woodenCost)} {t.priceBaht || "฿"}
                     </span>
                   </div>
                 )}
@@ -608,7 +628,7 @@ export default function Pricing() {
                 {/* Final cost display */}
                 <div className="border-t border-white/10 pt-5 space-y-2">
                   <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
-                    ประมาณการค่าขนส่ง จีน-ไทย (รอบ 2)
+                    {t.calcTotalEstimated || "ประมาณการค่าขนส่ง จีน-ไทย (รอบ 2)"}
                   </p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
@@ -616,7 +636,7 @@ export default function Pricing() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    *ยอดจริงจะคำนวณอีกครั้งเมื่อพัสดุเข้าชั่ง/วัดขนาดที่โกดังจีน
+                    {locale === 'zh' ? "*实际费用将在包裹抵达中国仓库测量后最终确认" : locale === 'en' ? "*Actual cost is finalized upon warehouse arrival in China" : "*ยอดจริงจะคำนวณอีกครั้งเมื่อพัสดุเข้าชั่ง/วัดขนาดที่โกดังจีน"}
                   </p>
                 </div>
 
@@ -624,7 +644,7 @@ export default function Pricing() {
                 <div className="pt-2">
                   <Link href="/inquiry">
                     <Button size="lg" variant="orange" className="w-full h-12 text-sm font-black cursor-pointer shadow-lg">
-                      ส่งลิงก์ให้เราสั่งซื้อเลย ➔
+                      {t.calcCtaBtn || "ส่งลิงก์ให้เราสั่งซื้อเลย ➔"}
                     </Button>
                   </Link>
                 </div>
@@ -635,9 +655,9 @@ export default function Pricing() {
             <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl flex items-start gap-2.5 text-xs">
               <Info className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
               <div>
-                <p className="font-bold mb-0.5">ข้อแนะนำในการคำนวณ</p>
+                <p className="font-bold mb-0.5">{t.noteTitle || "ข้อแนะนำในการคำนวณ"}</p>
                 <p className="text-[11px] text-amber-700 leading-relaxed">
-                  ค่าบริการนี้เฉพาะค่าขนส่งจีน-ไทย (รอบที่ 2) ไม่รวมค่าสินค้า (รอบ 1) และค่าจัดส่งในไทย (รอบ 3) ซึ่งสามารถกดรวมบิลเพื่อประหยัดค่าส่งได้
+                  {t.calcNoteText || "ค่าบริการนี้เฉพาะค่าขนส่งจีน-ไทย (รอบที่ 2) ไม่รวมค่าสินค้า (รอบ 1) และค่าจัดส่งในไทย (รอบ 3) ซึ่งสามารถกดรวมบิลเพื่อประหยัดค่าส่งได้"}
                 </p>
               </div>
             </div>
@@ -653,12 +673,12 @@ export default function Pricing() {
                 <Gift className="w-5 h-5" />
               </div>
               <CardTitle className="text-base font-black text-slate-900">
-                ฟรี! ค่าบริการสั่งซื้อ 0 บาท
+                {t.cardFreeServiceTitle || "ฟรี! ค่าบริการสั่งซื้อ 0 บาท"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-xs text-slate-600 leading-relaxed">
               <p>
-                เราไม่มีการเก็บค่าบริการกดสั่งซื้อ (0% Service Fee) และมีทีมงานช่วยเจรจาต่อรองราคาส่งกับโรงงานจีนให้ฟรี
+                {t.cardFreeServiceDesc || "เราไม่มีการเก็บค่าบริการกดสั่งซื้อ (0% Service Fee) และมีทีมงานช่วยเจรจาต่อรองราคาส่งกับโรงงานจีนให้ฟรี"}
               </p>
             </CardContent>
           </Card>
@@ -670,13 +690,12 @@ export default function Pricing() {
                 <Building2 className="w-5 h-5" />
               </div>
               <CardTitle className="text-base font-black text-slate-900">
-                ค่าจัดส่งในไทย (รอบ 3)
+                {t.cardDomesticTitle || "ค่าจัดส่งในไทย (รอบ 3)"}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs text-slate-600 leading-relaxed">
+            <CardContent className="space-y-2 text-xs text-slate-600 leading-relaxed whitespace-pre-line">
               <p>
-                • <strong>มารับเองที่โกดัง:</strong> ฟรี ไม่มีค่าใช้จ่าย 0 บาท<br />
-                • <strong>ขนส่งเอกชน (Flash, Kerry, J&T):</strong> คิดตามจริง (กล่องเล็ก 35-45฿ / กล่องกลาง 60-80฿) รวมบิลประหยัดได้
+                {t.cardDomesticDesc || "• มารับเองที่โกดัง: ฟรี ไม่มีค่าใช้จ่าย 0 บาท\n• ขนส่งเอกชน (Flash, Kerry, J&T): คิดตามจริง รวมบิลประหยัดได้"}
               </p>
             </CardContent>
           </Card>
@@ -688,12 +707,12 @@ export default function Pricing() {
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <CardTitle className="text-base font-black text-rose-700">
-                สินค้าต้องห้ามนำเข้า
+                {t.cardProhibitedTitle || "สินค้าต้องห้ามนำเข้า"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-xs text-rose-700/90 leading-relaxed">
               <p>
-                วัตถุไวไฟ, ไฟแช็ค, บุหรี่ไฟฟ้า, อาวุธ, สิ่งผิดกฎหมาย และสินค้าควบคุมพิเศษ ไม่สามารถจัดส่งได้ หากไม่แน่ใจสามารถสอบถามแอดมินก่อนสั่งซื้อได้ค่ะ
+                {t.cardProhibitedDesc || "วัตถุไวไฟ, ไฟแช็ค, บุหรี่ไฟฟ้า, อาวุธ, สิ่งผิดกฎหมาย และสินค้าควบคุมพิเศษ ไม่สามารถจัดส่งได้"}
               </p>
             </CardContent>
           </Card>
@@ -702,15 +721,15 @@ export default function Pricing() {
         {/* 5. Bottom CTA Banner */}
         <section className="py-12 px-6 bg-slate-950 text-white rounded-3xl text-center space-y-5 shadow-xl">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-            ประเมินราคาเรียบร้อยแล้วใช่ไหม?
+            {t.pricingBottomCtaTitle || "ประเมินราคาเรียบร้อยแล้วใช่ไหม?"}
           </h2>
           <p className="text-slate-300 text-sm max-w-xl mx-auto">
-            ส่งลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall ให้เราได้ทันที ทีมงานพร้อมช่วยเช็คสต็อกและต่อรองราคาให้คุณฟรี
+            {t.pricingBottomCtaSub || "ส่งลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall ให้เราได้ทันที ทีมงานพร้อมช่วยเช็คสต็อกและต่อรองราคาให้คุณฟรี"}
           </p>
           <div>
             <Link href="/inquiry">
               <Button size="lg" variant="orange" className="text-base px-8 h-12 font-black rounded-xl cursor-pointer shadow-lg">
-                ส่งลิงก์ขอใบเสนอราคาฟรีเลย ➔
+                {t.pricingBottomCtaBtn || "ส่งลิงก์ขอใบเสนอราคาฟรีเลย ➔"}
               </Button>
             </Link>
           </div>

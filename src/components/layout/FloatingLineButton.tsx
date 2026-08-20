@@ -1,8 +1,16 @@
 "use client"
 
-import { MessageCircle } from "lucide-react"
+import { useTranslation } from "@/components/providers/language-provider"
 
 export function FloatingLineButton() {
+  const { locale } = useTranslation()
+
+  const tooltipText = locale === 'en' 
+    ? 'LINE Support Chat' 
+    : locale === 'zh' 
+    ? 'LINE 客服咨询' 
+    : 'สอบถามแอดมิน LINE'
+
   return (
     <aside aria-label="Line Support Chat" className="fixed bottom-6 right-6 z-40 flex items-center group">
       {/* Tooltip Badge */}
@@ -16,7 +24,7 @@ export function FloatingLineButton() {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        สอบถามแอดมิน LINE
+        {tooltipText}
       </a>
 
       {/* Main Floating Circle */}
@@ -24,7 +32,7 @@ export function FloatingLineButton() {
         href="https://lin.ee/UC0F9zl"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="ติดต่อผ่าน LINE Official"
+        aria-label="LINE Support"
         className="relative w-14 h-14 bg-[#06C755] hover:bg-[#05b34c] text-white rounded-full flex items-center justify-center shadow-xl shadow-[#06C755]/30 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer"
       >
         {/* Glow Ping Ring */}

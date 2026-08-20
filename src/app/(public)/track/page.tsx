@@ -22,6 +22,7 @@ import {
   Clock
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useTranslation } from "@/components/providers/language-provider"
 import { toast } from "sonner"
 
 type TimelineEvent = {
@@ -33,6 +34,7 @@ type TimelineEvent = {
 }
 
 export default function TrackOrder() {
+  const { t, locale } = useTranslation()
   const [trackingNumber, setTrackingNumber] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -45,7 +47,7 @@ export default function TrackOrder() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
     setCopied(true)
-    toast.success("คัดลอกรหัสออเดอร์แล้ว")
+    toast.success(locale === 'zh' ? "订单号已复制" : locale === 'en' ? "Order ID copied" : "คัดลอกรหัสออเดอร์แล้ว")
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -65,7 +67,6 @@ export default function TrackOrder() {
         searchClean = `ORD-${searchClean}`
       }
       
-      // Try searching by order_number or tracking_number
       let { data: order, error: orderError } = await supabase
         .from("orders")
         .select(`
@@ -94,13 +95,23 @@ export default function TrackOrder() {
         .maybeSingle()
 
       if (orderError || !order) {
-        setError("ไม่พบข้อมูลคำสั่งซื้อในระบบ กรุณาตรวจสอบหมายเลข Order ID อีกครั้ง เช่น ORD-XXXXXX")
+        setError(
+          locale === 'zh' 
+            ? "未找到该订单信息，请再次核对订单号 (如 ORD-XXXXXX)" 
+            : locale === 'en' 
+            ? "Order not found. Please verify your Order ID (e.g. ORD-XXXXXX)" 
+            : "ไม่พบข้อมูลคำสั่งซื้อในระบบ กรุณาตรวจสอบหมายเลข Order ID อีกครั้ง เช่น ORD-XXXXXX"
+        )
         setLoading(false)
         return
       }
 
       const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
       const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
+
+      const shippingLabel = inquiry?.shipping_type === 'BOAT' 
+        ? (locale === 'zh' ? '海运 (SEA)' : locale === 'en' ? 'Sea Cargo (SEA)' : 'ขนส่งทางเรือ (SEA)') 
+        : (locale === 'zh' ? '陆运 (EK)' : locale === 'en' ? 'Road Cargo (EK)' : 'ขนส่งทางรถ (EK)')
 
       setPackageInfo({
         order_id: order.id,
@@ -109,7 +120,7 @@ export default function TrackOrder() {
         thai_carrier: order.shipping_company,
         status: order.status,
         created_at: order.created_at,
-        shipping_type: inquiry?.shipping_type === 'BOAT' ? 'ขนส่งทางเรือ (SEA)' : 'ขนส่งทางรถ (EK)',
+        shipping_type: shippingLabel,
         is_boat: inquiry?.shipping_type === 'BOAT'
       })
 
@@ -129,7 +140,21 @@ export default function TrackOrder() {
       const currentStep = statusMap[order.status] ?? 0
       setCurrentStepIndex(currentStep)
       
-      const allSteps = [
+      const allSteps = locale === 'zh' ? [
+        { status: '提交需求进入系统 / 确认报价', location: 'SabuyShip 系统', icon: Package, color: 'text-slate-500' },
+        { status: '向中国商家采购完成', location: '中国商家 (淘宝/1688)', icon: Truck, color: 'text-blue-500' },
+        { status: '货物已入广州仓 & 装柜发往泰国', location: '广州仓库 (Guangzhou)', icon: MapPin, color: 'text-purple-500' },
+        { status: '货物已安全抵泰 (曼谷仓库)', location: '泰国曼谷仓库', icon: CheckCircle2, color: 'text-indigo-500' },
+        { status: '正在派送往客户收货地址', location: '泰国本地快递', icon: Truck, color: 'text-orange-500' },
+        { status: '派送完成，成功签收', location: '客户地址', icon: CheckCircle2, color: 'text-emerald-500' }
+      ] : locale === 'en' ? [
+        { status: 'Order Submitted / Quotation Confirmed', location: 'SabuyShip System', icon: Package, color: 'text-slate-500' },
+        { status: 'Purchased from Chinese Supplier', location: 'China Supplier (Taobao/1688)', icon: Truck, color: 'text-blue-500' },
+        { status: 'Arrived at Guangzhou Warehouse & Container Loaded', location: 'Guangzhou Warehouse', icon: MapPin, color: 'text-purple-500' },
+        { status: 'Arrived at Thailand Warehouse (Bangkok)', location: 'Thailand Warehouse', icon: CheckCircle2, color: 'text-indigo-500' },
+        { status: 'Out for Delivery to Customer Address', location: 'Domestic Courier', icon: Truck, color: 'text-orange-500' },
+        { status: 'Successfully Delivered', location: 'Customer Doorstep', icon: CheckCircle2, color: 'text-emerald-500' }
+      ] : [
         { status: 'รับคำขอเข้าระบบ / สรุปใบเสนอราคา', location: 'SabuyShip System', icon: Package, color: 'text-slate-500' },
         { status: 'สั่งซื้อสินค้าจากร้านค้าจีนเรียบร้อยแล้ว', location: 'ร้านค้าจีน (Taobao/1688)', icon: Truck, color: 'text-blue-500' },
         { status: 'พัสดุถึงโกดังจีน & ขึ้นตู้ส่งออก', location: 'โกดังกว่างโจว (Guangzhou)', icon: MapPin, color: 'text-purple-500' },
@@ -161,18 +186,18 @@ export default function TrackOrder() {
       setTimeline(combinedTimeline)
     } catch (err: any) {
       console.error(err)
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อระบบ กรุณาลองใหม่อีกครั้ง")
+      setError(locale === 'zh' ? "系统连接错误，请稍后重试" : locale === 'en' ? "Connection error. Please try again." : "เกิดข้อผิดพลาดในการเชื่อมต่อระบบ กรุณาลองใหม่อีกครั้ง")
     } finally {
       setLoading(false)
     }
   }
 
   const stepLabels = [
-    { title: "สั่งซื้อสำเร็จ", icon: Package },
-    { title: "ถึงโกดังจีน", icon: MapPin },
-    { title: "ถึงโกดังไทย", icon: Ship },
-    { title: "กำลังนำส่ง", icon: Truck },
-    { title: "ส่งมอบสำเร็จ", icon: CheckCircle2 }
+    { title: t.trackStep1 || "สั่งซื้อสำเร็จ", icon: Package },
+    { title: t.trackStep2 || "ถึงโกดังจีน", icon: MapPin },
+    { title: t.trackStep3 || "ถึงโกดังไทย", icon: Ship },
+    { title: t.trackStep4 || "กำลังนำส่ง", icon: Truck },
+    { title: t.trackStep5 || "ส่งมอบสำเร็จ", icon: CheckCircle2 }
   ]
 
   return (
@@ -182,13 +207,13 @@ export default function TrackOrder() {
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-primary rounded-full text-xs font-black uppercase tracking-wider">
             <Clock className="w-3.5 h-3.5" />
-            ระบบติดตามสถานะพัสดุเรียลไทม์ 24 ชม.
+            {t.trackLiveBadge || "ระบบติดตามสถานะพัสดุเรียลไทม์ 24 ชม."}
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-            ติดตามสถานะพัสดุ <span className="text-primary">SabuyShip</span>
+            {t.trackTitle || "ติดตามสถานะพัสดุ"} <span className="text-primary">SabuyShip</span>
           </h1>
           <p className="text-base text-slate-600">
-            กรอกหมายเลขคำสั่งซื้อ (Order ID) เพื่อตรวจสอบความเคลื่อนไหวล่าสุด
+            {t.trackSub || "กรอกหมายเลขคำสั่งซื้อ (Order ID) เพื่อตรวจสอบความเคลื่อนไหวล่าสุด"}
           </p>
         </div>
 
@@ -200,7 +225,7 @@ export default function TrackOrder() {
                 <Input 
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  placeholder="กรอก Order ID เช่น ORD-26077893 หรือตัวเลข" 
+                  placeholder={t.trackPlaceholder || "กรอก Order ID เช่น ORD-26077893 หรือตัวเลข"} 
                   className="h-14 text-base sm:text-lg px-5 pr-10 rounded-xl uppercase font-bold border-slate-300 focus:border-primary shadow-2xs"
                   required
                 />
@@ -210,7 +235,7 @@ export default function TrackOrder() {
                     onClick={() => setTrackingNumber("")}
                     className="absolute right-3.5 top-4.5 text-slate-400 hover:text-slate-600 text-xs font-bold"
                   >
-                    ล้าง
+                    {locale === 'zh' ? "清空" : locale === 'en' ? "Clear" : "ล้าง"}
                   </button>
                 )}
               </div>
@@ -224,12 +249,12 @@ export default function TrackOrder() {
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    กำลังค้นหา...
+                    {t.trackSearching || "กำลังค้นหา..."}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Search className="h-5 w-5" />
-                    ติดตามออเดอร์
+                    {t.trackBtn || "ติดตามออเดอร์"}
                   </div>
                 )}
               </Button>
@@ -250,7 +275,9 @@ export default function TrackOrder() {
             <Card className="border border-slate-200 shadow-lg rounded-2xl bg-white overflow-hidden">
               <div className="p-6 bg-gradient-to-r from-blue-50/80 via-white to-slate-50 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">หมายเลขคำสั่งซื้อ (Order Number)</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                    {t.trackOrderNo || "หมายเลขคำสั่งซื้อ (Order Number)"}
+                  </span>
                   <div className="flex items-center gap-2.5 mt-1">
                     <span className="text-2xl font-black text-slate-900 tracking-wider">
                       {packageInfo.tracking_number}
@@ -258,7 +285,7 @@ export default function TrackOrder() {
                     <button
                       onClick={() => handleCopy(packageInfo.tracking_number)}
                       className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-                      title="คัดลอก Order ID"
+                      title="Copy Order ID"
                     >
                       {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                     </button>
@@ -271,7 +298,7 @@ export default function TrackOrder() {
                   </Badge>
                   {packageInfo.thai_tracking && (
                     <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-800 font-bold px-3 py-1 text-xs">
-                      {packageInfo.thai_carrier || "ขนส่งในไทย"}: {packageInfo.thai_tracking}
+                      {packageInfo.thai_carrier || (locale === 'zh' ? "泰国快递" : locale === 'en' ? "TH Courier" : "ขนส่งในไทย")}: {packageInfo.thai_tracking}
                     </Badge>
                   )}
                 </div>
@@ -310,7 +337,7 @@ export default function TrackOrder() {
               {/* Timeline Detail Events */}
               <CardContent className="p-6 md:p-8">
                 <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider mb-6">
-                  ประวัติการเดินทางของพัสดุ (Tracking History)
+                  {t.trackHistoryTitle || "ประวัติการเดินทางของพัสดุ (Tracking History)"}
                 </h4>
 
                 <div className="relative border-l-2 border-blue-200 ml-4 pl-8 py-1 space-y-8">
@@ -335,13 +362,13 @@ export default function TrackOrder() {
                             </span>
                             {isLatest && (
                               <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full uppercase">
-                                ล่าสุด
+                                {t.trackLatestBadge || "ล่าสุด"}
                               </span>
                             )}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                            <span>{new Date(event.date).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                            <span>{new Date(event.date).toLocaleString(locale === 'zh' ? 'zh-CN' : locale === 'en' ? 'en-US' : 'th-TH', { dateStyle: 'medium', timeStyle: 'short' })}</span>
                             {event.location && (
                               <span className="flex items-center gap-1 text-slate-600 font-medium">
                                 <MapPin className="w-3.5 h-3.5 text-slate-400" /> {event.location}
