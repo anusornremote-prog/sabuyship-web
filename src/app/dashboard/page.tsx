@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Package, Truck, Clock, CheckCircle2, ShoppingBag, ArrowRight, ExternalLink, Box, Sparkles } from "lucide-react"
+import { Package, Truck, Clock, CheckCircle2, ShoppingBag, ArrowRight, ExternalLink, Box, Sparkles, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { CustomerWarehouseCard } from "@/components/dashboard/CustomerWarehouseCard"
 
@@ -67,36 +67,21 @@ export default async function DashboardOverview() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-10">
-      {/* 1. Welcome Greeting Banner */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            ภาพรวมบัญชี (Dashboard)
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            ยินดีต้อนรับคุณ <strong className="text-slate-800">{displayName}</strong> เข้าสู่ระบบลูกค้า Sabuy Ship
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Link href="/inquiry">
-            <Button variant="orange" className="font-bold text-sm h-11 px-5 rounded-xl shadow-md cursor-pointer">
-              + ขอใบเสนอราคาใหม่
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* 2. Customer Logistics Account & China Warehouse Card */}
+    <div className="space-y-6 max-w-6xl mx-auto pb-10">
+      {/* 1. Customer Logistics Account & China Warehouse Card */}
       {profile?.customer_code ? (
         <CustomerWarehouseCard customerCode={profile.customer_code} />
-      ) : null}
+      ) : (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-amber-800 text-sm">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <span>ยินดีต้อนรับคุณ {displayName} เข้าสู่ระบบ Sabuy Ship Express</span>
+        </div>
+      )}
 
-      {/* 3. Stat Cards (Balanced 4-Column Grid) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      {/* 2. Stat Cards (Balanced 4-Column Grid) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Orders */}
-        <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 shadow-2xs rounded-2xl bg-white hover:shadow-sm transition-shadow">
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">คำสั่งซื้อทั้งหมด</span>
@@ -112,7 +97,7 @@ export default async function DashboardOverview() {
         </Card>
         
         {/* In Transit */}
-        <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 shadow-2xs rounded-2xl bg-white hover:shadow-sm transition-shadow">
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">อยู่ระหว่างดำเนินการ</span>
@@ -128,7 +113,7 @@ export default async function DashboardOverview() {
         </Card>
 
         {/* Waiting Payment */}
-        <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 shadow-2xs rounded-2xl bg-white hover:shadow-sm transition-shadow">
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">รอชำระเงิน</span>
@@ -144,7 +129,7 @@ export default async function DashboardOverview() {
         </Card>
 
         {/* Completed */}
-        <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 shadow-2xs rounded-2xl bg-white hover:shadow-sm transition-shadow">
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">จัดส่งสำเร็จแล้ว</span>
@@ -160,10 +145,10 @@ export default async function DashboardOverview() {
         </Card>
       </div>
 
-      {/* 4. Recent Orders Section */}
-      <div className="space-y-4">
+      {/* 3. Recent Orders Section */}
+      <div className="space-y-3 pt-2">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg sm:text-xl font-black text-slate-900">
+          <h2 className="text-base sm:text-lg font-black text-slate-900">
             สถานะคำสั่งซื้อล่าสุด (Recent Orders)
           </h2>
           <Link href="/dashboard/orders">
@@ -173,16 +158,16 @@ export default async function DashboardOverview() {
           </Link>
         </div>
 
-        <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
+        <Card className="border border-slate-200 shadow-2xs rounded-2xl bg-white overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                <thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50/80 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4">หมายเลขคำสั่งซื้อ (Order Number)</th>
-                    <th className="px-6 py-4">วันที่ทำรายการ</th>
-                    <th className="px-6 py-4">สถานะปัจจุบัน</th>
-                    <th className="px-6 py-4 text-right">การกระทำ</th>
+                    <th className="px-6 py-3.5">หมายเลขคำสั่งซื้อ (Order Number)</th>
+                    <th className="px-6 py-3.5">วันที่ทำรายการ</th>
+                    <th className="px-6 py-3.5">สถานะปัจจุบัน</th>
+                    <th className="px-6 py-3.5 text-right">การกระทำ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -213,7 +198,7 @@ export default async function DashboardOverview() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm">
+                      <td colSpan={4} className="px-6 py-10 text-center text-slate-400 text-sm">
                         <Package className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         ยังไม่มีรายการคำสั่งซื้อในขณะนี้
                       </td>
@@ -226,10 +211,10 @@ export default async function DashboardOverview() {
         </Card>
       </div>
 
-      {/* 5. Chinese Warehouse Incoming Parcels Section */}
-      <div className="space-y-4">
+      {/* 4. Chinese Warehouse Incoming Parcels Section */}
+      <div className="space-y-3 pt-2">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg sm:text-xl font-black text-slate-900">
+          <h2 className="text-base sm:text-lg font-black text-slate-900">
             พัสดุนำเข้า / สินค้าโกดังจีนล่าสุด (Shipments)
           </h2>
           <Link href="/dashboard/orders">
@@ -239,16 +224,16 @@ export default async function DashboardOverview() {
           </Link>
         </div>
 
-        <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
+        <Card className="border border-slate-200 shadow-2xs rounded-2xl bg-white overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                <thead className="text-xs font-bold text-slate-500 uppercase bg-slate-50/80 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4">เลขแทร็ก (Tracking Number)</th>
-                    <th className="px-6 py-4">ชื่อสินค้า</th>
-                    <th className="px-6 py-4">วันที่เข้าตู้</th>
-                    <th className="px-6 py-4 text-right">ค่าขนส่ง</th>
+                    <th className="px-6 py-3.5">เลขแทร็ก (Tracking Number)</th>
+                    <th className="px-6 py-3.5">ชื่อสินค้า</th>
+                    <th className="px-6 py-3.5">วันที่เข้าตู้</th>
+                    <th className="px-6 py-3.5 text-right">ค่าขนส่ง</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -271,7 +256,7 @@ export default async function DashboardOverview() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center text-slate-400 text-sm">
+                      <td colSpan={4} className="px-6 py-10 text-center text-slate-400 text-sm">
                         <Truck className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         ยังไม่มีรายการพัสดุนำเข้า
                       </td>
