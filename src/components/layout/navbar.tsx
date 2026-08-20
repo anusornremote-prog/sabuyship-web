@@ -83,36 +83,36 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-20 md:h-24 items-center justify-between px-4 md:px-6 lg:px-8 max-w-7xl mx-auto gap-4">
-        {/* Left Side: Logo & Navigation */}
-        <div className="flex items-center gap-4 lg:gap-8 min-w-0">
-          <Link href="/" className="shrink-0 flex items-center">
+      <div className="container flex h-20 md:h-24 items-center justify-between px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* 1. Left: Logo */}
+        <div className="flex items-center shrink-0">
+          <Link href="/" className="flex items-center">
             <img 
               src="/Sabuy_Ship_Express.png" 
               alt="Sabuy Ship Express Logo" 
               className="h-14 sm:h-16 md:h-20 w-auto object-contain hover:scale-105 transition-transform" 
             />
           </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-3 lg:gap-6 text-sm lg:text-base font-semibold">
-            <Link href="/how-it-works" className="transition-colors hover:text-primary whitespace-nowrap">
-              {t.navHowItWorks}
-            </Link>
-            <Link href="/pricing" className="transition-colors hover:text-primary whitespace-nowrap">
-              {t.navPricing}
-            </Link>
-            <Link href="/track" className="transition-colors hover:text-primary whitespace-nowrap">
-              {t.navTrack}
-            </Link>
-            <Link href="/contact" className="transition-colors hover:text-primary whitespace-nowrap">
-              {t.navContact}
-            </Link>
-          </nav>
         </div>
 
-        {/* Right Side: Language Switcher, Login, Submit Button */}
-        <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
+        {/* 2. Center: Balanced Navigation Links */}
+        <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8 text-sm lg:text-base font-semibold">
+          <Link href="/how-it-works" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+            {t.navHowItWorks}
+          </Link>
+          <Link href="/pricing" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+            {t.navPricing}
+          </Link>
+          <Link href="/track" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+            {t.navTrack}
+          </Link>
+          <Link href="/contact" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+            {t.navContact}
+          </Link>
+        </nav>
+
+        {/* 3. Right: Language Switcher, Login, Submit Button */}
+        <div className="hidden md:flex items-center gap-3 shrink-0">
           {!user && <LanguageSwitcher />}
           {user ? (
             <div className="relative user-dropdown">
