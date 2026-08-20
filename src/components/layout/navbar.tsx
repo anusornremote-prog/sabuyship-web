@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuestion, LogOut } from "lucide-react"
+import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuestion, LogOut, ShoppingCart } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { createClient } from "@/lib/supabase/client"
@@ -169,9 +169,20 @@ export function Navbar() {
             </div>
           ) : (
             <Link href="/login">
-              <Button variant="ghost">{t.navLogin}</Button>
+              <Button variant="ghost" className="font-semibold">{t.navLogin}</Button>
             </Link>
           )}
+
+          <Link href="/inquiry">
+            <Button 
+              size="sm" 
+              variant="orange" 
+              className="font-black text-xs sm:text-sm px-4 h-10 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <ShoppingCart className="w-4 h-4 mr-1.5" />
+              {t.navSubmitLink || "ส่งลิงก์สินค้า"}
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Navigation Toggle & Switcher */}
@@ -190,7 +201,13 @@ export function Navbar() {
       {/* Mobile Menu Panel */}
       {isOpen && (
         <div className="md:hidden relative z-[60] border-b bg-background px-4 py-4 pb-8 space-y-4 animate-in slide-in-from-top duration-200 max-h-[calc(100vh-6rem)] overflow-y-auto">
-          
+          <Link href="/inquiry" onClick={() => setIsOpen(false)}>
+            <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              {t.navSubmitLink || "ส่งลิงก์สินค้า"}
+            </Button>
+          </Link>
+
           <div className="flex flex-col gap-2">
             {user ? (
               <div className="flex flex-col gap-1">
