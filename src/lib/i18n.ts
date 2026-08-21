@@ -8,6 +8,7 @@ export const translations = {
     navPricing: "อัตราค่าบริการ",
     navTrack: "ติดตามสถานะสินค้า",
     navContact: "ติดต่อเรา",
+    navFaq: "คำถามที่พบบ่อย",
     navLogin: "เข้าสู่ระบบ",
     navSubmitLink: "ส่งลิงก์สินค้า",
 
@@ -158,6 +159,7 @@ export const translations = {
     navPricing: "Pricing",
     navTrack: "Track Order",
     navContact: "Contact Us",
+    navFaq: "FAQ",
     navLogin: "Log in",
     navSubmitLink: "Submit Link",
 
@@ -308,6 +310,7 @@ export const translations = {
     navPricing: "服务费用",
     navTrack: "追踪订单",
     navContact: "联系我们",
+    navFaq: "常见问题",
     navLogin: "登录",
     navSubmitLink: "发送商品链接",
 

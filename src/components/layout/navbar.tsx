@@ -106,6 +106,9 @@ export function Navbar() {
           <Link href="/track" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
             {t.navTrack}
           </Link>
+          <Link href="/faq" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+            {t.navFaq}
+          </Link>
           <Link href="/contact" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
             {t.navContact}
           </Link>
@@ -276,6 +279,13 @@ export function Navbar() {
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 {t.navTrack}
+              </Link>
+              <Link 
+                href="/faq" 
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                {t.navFaq}
               </Link>
               <Link 
                 href="/contact" 
