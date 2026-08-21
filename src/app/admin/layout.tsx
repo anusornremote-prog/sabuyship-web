@@ -60,12 +60,10 @@ export default function AdminLayout({
     <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col hidden md:flex">
-        <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950 overflow-visible">
-          <div className="relative w-full h-full shrink-0">
-            <Link href="/admin" className="absolute -top-[36px] -left-2 z-50">
-              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
-            </Link>
-          </div>
+        <div className="h-16 flex items-center justify-center px-4 border-b border-slate-800 bg-slate-950">
+          <Link href="/admin" className="flex items-center justify-center w-full">
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-12 w-auto max-h-[48px] max-w-[200px] object-contain hover:scale-105 transition-transform" />
+          </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => (
@@ -97,12 +95,10 @@ export default function AdminLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col max-w-full overflow-hidden">
         {/* Mobile Header */}
-        <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:hidden overflow-visible relative">
-          <div className="relative w-40 h-full shrink-0">
-            <Link href="/admin" className="absolute -top-[36px] -left-2.5 z-50">
-              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-32 w-auto object-contain drop-shadow-md origin-top-left" />
-            </Link>
-          </div>
+        <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:hidden">
+          <Link href="/admin" className="flex items-center">
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-10 w-auto object-contain" />
+          </Link>
           <Link href="/">
             <Button variant="ghost" size="icon" className="text-slate-400">
                <Home className="h-5 w-5" />

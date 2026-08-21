@@ -90,12 +90,12 @@ export default function DashboardLayout({
       {/* 1. Desktop Sidebar */}
       <aside className="w-64 border-r border-slate-200 bg-white flex-shrink-0 flex flex-col hidden md:flex">
         {/* Sidebar Header (h-16 to perfectly align with Top Header) */}
-        <div className="h-16 flex items-center px-5 border-b border-slate-200 bg-white">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="h-16 flex items-center justify-center px-4 border-b border-slate-200 bg-white">
+          <Link href="/" className="flex items-center justify-center w-full">
             <img 
               src="/Sabuy_Ship_Express.png" 
               alt="Sabuy Ship Express Logo" 
-              className="h-10 w-auto object-contain hover:opacity-90 transition-opacity" 
+              className="h-12 w-auto max-h-[48px] max-w-[200px] object-contain hover:scale-105 transition-transform" 
             />
           </Link>
         </div>
