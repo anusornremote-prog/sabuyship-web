@@ -89,13 +89,13 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-slate-50 text-slate-800">
       {/* 1. Desktop Sidebar */}
       <aside className="w-64 border-r border-slate-200 bg-white flex-shrink-0 flex flex-col hidden md:flex">
-        {/* Sidebar Header (h-16 to perfectly align with Top Header) */}
-        <div className="h-16 flex items-center justify-center px-4 border-b border-slate-200 bg-white">
+        {/* Sidebar Header (h-20 to perfectly align with Top Header) */}
+        <div className="h-20 flex items-center justify-center px-4 border-b border-slate-200 bg-white">
           <Link href="/" className="flex items-center justify-center w-full">
             <img 
               src="/Sabuy_Ship_Express.png" 
               alt="Sabuy Ship Express Logo" 
-              className="h-12 w-auto max-h-[48px] max-w-[200px] object-contain hover:scale-105 transition-transform" 
+              className="h-16 w-auto max-h-[64px] max-w-[220px] object-contain hover:scale-105 transition-transform" 
             />
           </Link>
         </div>
@@ -189,12 +189,12 @@ export default function DashboardLayout({
 
       {/* 2. Main Layout Container */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header Bar (Desktop & Mobile) - EXACT SAME h-16 height as Sidebar */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 md:px-8 shrink-0">
+        {/* Top Header Bar (Desktop & Mobile) - EXACT SAME h-20 height as Sidebar */}
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 md:px-8 shrink-0">
           {/* Mobile Logo on the left */}
           <div className="flex items-center gap-3 md:hidden">
             <Link href="/" className="flex items-center">
-              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express" className="h-8 w-auto object-contain" />
+              <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express" className="h-12 w-auto object-contain" />
             </Link>
           </div>
 

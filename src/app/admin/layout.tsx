@@ -60,9 +60,9 @@ export default function AdminLayout({
     <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col hidden md:flex">
-        <div className="h-16 flex items-center justify-center px-4 border-b border-slate-800 bg-slate-950">
+        <div className="h-20 flex items-center justify-center px-4 border-b border-slate-800 bg-slate-950">
           <Link href="/admin" className="flex items-center justify-center w-full">
-            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-12 w-auto max-h-[48px] max-w-[200px] object-contain hover:scale-105 transition-transform" />
+            <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-16 w-auto max-h-[64px] max-w-[220px] object-contain hover:scale-105 transition-transform" />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
