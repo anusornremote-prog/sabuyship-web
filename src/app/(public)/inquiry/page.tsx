@@ -45,6 +45,15 @@ export default function InquiryForm() {
   ])
 
   useEffect(() => {
+    // Check if ?url= is passed from homepage quick quote box
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const urlParam = params.get('url')
+      if (urlParam) {
+        setItems([{ url: urlParam, quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
+      }
+    }
+
     const checkUser = async () => {
       try {
         const supabase = createClient()
