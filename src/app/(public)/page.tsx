@@ -84,42 +84,7 @@ export default function Home() {
         {/* Subtle background ambient circles */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-gradient-to-tr from-blue-400/15 to-orange-400/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="container max-w-6xl mx-auto relative z-10 space-y-8 sm:space-y-12">
-          
-          {/* Top Row: Exchange Rate Pill & Service Badges */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-            {/* Live Exchange Rate Capsule */}
-            {exchangeRate ? (
-              <div className="inline-flex items-center gap-2 p-1.5 sm:px-3.5 sm:py-1.5 bg-white/95 backdrop-blur-md rounded-full border border-blue-200/80 shadow-xs">
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-black uppercase tracking-wider">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  {locale === 'en' ? 'Live Rate' : locale === 'zh' ? '今日汇率' : 'เรทหยวนวันนี้'}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-800 pr-1.5">
-                  <img src="https://flagcdn.com/w20/cn.png" width="16" alt="CN" className="rounded-xs" />
-                  <span>1 ¥</span>
-                  <span className="text-slate-300 font-black">=</span>
-                  <img src="https://flagcdn.com/w20/th.png" width="16" alt="TH" className="rounded-xs" />
-                  <span className="text-primary font-black text-sm sm:text-base">{exchangeRate} ฿</span>
-                </div>
-              </div>
-            ) : <div />}
-
-            {/* Micro USP Badges */}
-            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-900 rounded-full border border-amber-200/80">
-                <Sparkles className="w-3 h-3 text-amber-600" />
-                {locale === 'en' ? '0% Sourcing Fee' : locale === 'zh' ? '0% 免费代购' : 'ฟรีค่ากดสั่ง 0 บาท'}
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-900 rounded-full border border-blue-200/80">
-                <Zap className="w-3 h-3 text-blue-600" />
-                {locale === 'en' ? 'Zero Minimum' : locale === 'zh' ? '无起运门槛' : 'ไม่มีขั้นต่ำ 1 ชิ้นก็ส่ง'}
-              </span>
-            </div>
-          </div>
+        <div className="container max-w-6xl mx-auto relative z-10 space-y-6 sm:space-y-10">
 
           {/* Main Hero Grid: Text & Action Card (Left) | Mascot (Right) */}
           <div className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-center">
@@ -137,8 +102,8 @@ export default function Home() {
             </div>
 
             {/* Main Content (Appears Under Mascot on Mobile with order-2, Left side on Desktop with lg:order-1) */}
-            <div className="lg:col-span-7 space-y-6 text-center sm:text-left order-2 lg:order-1">
-              <div className="space-y-3">
+            <div className="lg:col-span-7 space-y-5 text-center sm:text-left order-2 lg:order-1">
+              <div className="space-y-2.5">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.25]">
                   <span>{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
                   <span className="text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
@@ -152,6 +117,40 @@ export default function Home() {
                 <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto sm:mx-0 leading-relaxed">
                   {t.heroSub || "บริการฝากสั่งซื้อและนำเข้าสินค้าจากจีน Taobao, 1688, Tmall เรทหยวนตรงไปตรงมา ตรวจสอบสถานะได้ 24 ชั่วโมง"}
                 </p>
+              </div>
+
+              {/* 💰 Live Exchange Rate Capsule & Badges (Positioned right above the link paste card) */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-between gap-2.5 pt-1">
+                {exchangeRate ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full border border-blue-200/90 shadow-xs">
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-black uppercase tracking-wider">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      {locale === 'en' ? 'Live Rate' : locale === 'zh' ? '今日汇率' : 'เรทหยวนวันนี้'}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-800 pr-1">
+                      <img src="https://flagcdn.com/w20/cn.png" width="16" alt="CN" className="rounded-xs" />
+                      <span>1 ¥</span>
+                      <span className="text-slate-300 font-black">=</span>
+                      <img src="https://flagcdn.com/w20/th.png" width="16" alt="TH" className="rounded-xs" />
+                      <span className="text-primary font-black text-sm sm:text-base">{exchangeRate} ฿</span>
+                    </div>
+                  </div>
+                ) : <div />}
+
+                {/* Micro Badges */}
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-900 rounded-full border border-amber-200/80">
+                    <Sparkles className="w-3 h-3 text-amber-600" />
+                    {locale === 'en' ? '0% Fee' : locale === 'zh' ? '0% 免费' : 'ฟรีค่ากดสั่ง 0฿'}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-900 rounded-full border border-blue-200/80">
+                    <Zap className="w-3 h-3 text-blue-600" />
+                    {locale === 'en' ? 'No Min' : locale === 'zh' ? '无起运' : 'ไม่มีขั้นต่ำ'}
+                  </span>
+                </div>
               </div>
 
               {/* 🌟 Interactive Quick Action Box (Link Paste / Tracking) */}
