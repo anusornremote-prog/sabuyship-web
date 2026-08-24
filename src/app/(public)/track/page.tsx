@@ -297,9 +297,36 @@ export default function TrackOrder() {
                     {packageInfo.shipping_type}
                   </Badge>
                   {packageInfo.thai_tracking && (
-                    <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-800 font-bold px-3 py-1 text-xs">
-                      {packageInfo.thai_carrier || (locale === 'zh' ? "泰国快递" : locale === 'en' ? "TH Courier" : "ขนส่งในไทย")}: {packageInfo.thai_tracking}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 p-1.5 px-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 shadow-2xs">
+                      <span>🚚 {packageInfo.thai_carrier || "ขนส่งในไทย"}:</span>
+                      <span className="font-mono text-emerald-900">{packageInfo.thai_tracking}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(packageInfo.thai_tracking);
+                          toast.success("คัดลอกเลขพัสดุในไทยแล้ว");
+                        }}
+                        className="p-1 hover:bg-emerald-100 rounded text-emerald-700 cursor-pointer ml-1"
+                        title="คัดลอกเลขพัสดุ"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <a
+                        href={
+                          (packageInfo.thai_carrier || '').toLowerCase().includes('flash')
+                            ? `https://www.flashexpress.co.th/tracking/?se=${packageInfo.thai_tracking}`
+                            : (packageInfo.thai_carrier || '').toLowerCase().includes('j&t')
+                            ? `https://www.jtexpress.co.th/index/query/gzquery.html?bills=${packageInfo.thai_tracking}`
+                            : `https://track.thailandpost.co.th/?trackNumber=${packageInfo.thai_tracking}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1 hover:bg-emerald-100 rounded text-emerald-700 cursor-pointer"
+                        title="เปิดเว็บขนส่ง"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
                   )}
                 </div>
               </div>

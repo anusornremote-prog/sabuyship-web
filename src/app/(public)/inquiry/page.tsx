@@ -25,7 +25,9 @@ import {
   ShieldCheck,
   ArrowRight,
   Package,
-  Search
+  Search,
+  Camera,
+  Image as ImageIcon
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -482,16 +484,53 @@ export default function InquiryForm() {
 
                       {/* Image Upload & Wooden Crate Checkbox */}
                       <div className="grid sm:grid-cols-2 gap-3 pt-1">
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           <label className="text-xs font-bold text-slate-700 block">
-                            {locale === 'en' ? 'Attach Product Image (Optional)' : locale === 'zh' ? '上传商品截图 (可选)' : 'แนบรูปภาพสินค้า (ถ้ามี)'}
+                            {locale === 'en' ? 'Product Photo / Screenshot (Optional)' : locale === 'zh' ? '上传商品截图 (可选)' : 'แนบรูปภาพสินค้า (ถ้ามี)'}
                           </label>
-                          <Input 
-                            type="file" 
-                            accept="image/*"
-                            onChange={(e) => handleItemChange(index, 'file', e.target.files?.[0] || null)}
-                            className="h-11 rounded-xl bg-white text-xs cursor-pointer file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-primary"
-                          />
+
+                          {!item.file ? (
+                            <label className="border-2 border-dashed border-slate-300 hover:border-primary bg-slate-50/70 hover:bg-blue-50/40 rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-all active:scale-[0.99]">
+                              <div className="w-10 h-10 rounded-lg bg-blue-100 text-primary flex items-center justify-center shrink-0">
+                                <Camera className="w-5 h-5" />
+                              </div>
+                              <div className="min-w-0 flex-1 text-left">
+                                <span className="text-xs font-bold text-slate-700 block truncate">แตะเพื่อถ่ายรูป / เลือกภาพ</span>
+                                <span className="text-[10px] text-slate-400">รองรับ JPG, PNG</span>
+                              </div>
+                              <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => handleItemChange(index, 'file', e.target.files?.[0] || null)}
+                                className="hidden"
+                              />
+                            </label>
+                          ) : (
+                            <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in duration-200">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <img 
+                                  src={URL.createObjectURL(item.file)} 
+                                  alt="Product preview" 
+                                  className="w-11 h-11 object-cover rounded-lg border border-slate-200 shrink-0" 
+                                />
+                                <div className="min-w-0">
+                                  <span className="font-bold text-slate-800 text-xs block truncate">{item.file.name}</span>
+                                  <span className="text-emerald-600 text-[10px] font-semibold flex items-center gap-1">
+                                    <Check className="w-3 h-3" /> แนบรูปภาพแล้ว
+                                  </span>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleItemChange(index, 'file', null)}
+                                className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg shrink-0 cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2.5 p-3 bg-amber-50/70 border border-amber-200 rounded-xl mt-auto">
