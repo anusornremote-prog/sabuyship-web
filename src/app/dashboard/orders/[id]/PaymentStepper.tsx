@@ -212,6 +212,7 @@ export function PaymentStepper({
                           orderId={orderId} 
                           paymentRound={step.round as 1 | 2 | 3} 
                           isRejected={step.status === 'REJECTED'} 
+                          defaultAmount={step.amount}
                         />
                       )}
                     </div>

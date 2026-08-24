@@ -82,10 +82,15 @@ export async function POST(request: Request) {
 
     if (inquiry && inquiry.customer_id) {
       const formattedTotal = new Intl.NumberFormat('th-TH').format(total)
-      const actionText = body.quotation_id ? 'อัปเดตยอดชำระ' : 'แจ้งยอดชำระ'
+      const actionText = body.quotation_id ? 'อัปเดตใบเสนอราคา' : 'ออกใบเสนอราคา'
       await sendCustomerNotification(
         inquiry.customer_id,
-        `🧾 ${actionText}รอบ 1 (ค่าสินค้า) สำหรับคำสั่งซื้อ ${inquiry.inquiry_number}\nยอดชำระ: ${formattedTotal} บาท\nกรุณาเข้าสู่ระบบเพื่อชำระเงินค่ะ`
+        `🧾 ${actionText} (รอบ 1 - ค่าสินค้า)\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `📋 คำสั่งซื้อ: ${inquiry.inquiry_number}\n` +
+        `💰 ยอดชำระ: ฿${formattedTotal}\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `👉 ยืนยันสั่งซื้อและชำระเงินได้ที่: https://www.sabuyship.com/dashboard/orders`
       )
     }
 

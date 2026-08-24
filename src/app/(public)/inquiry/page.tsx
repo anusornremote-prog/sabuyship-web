@@ -1,80 +1,90 @@
 "use client"
 
 import imageCompression from 'browser-image-compression'
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { useTranslation } from "@/components/providers/language-provider"
 import { createClient } from "@/lib/supabase/client"
+import { 
+  ShoppingCart, 
+  Truck, 
+  Ship, 
+  Plus, 
+  Trash2, 
+  Upload, 
+  CheckCircle2, 
+  Copy, 
+  Check, 
+  Sparkles, 
+  Globe, 
+  ShieldCheck,
+  ArrowRight,
+  Package,
+  Search
+} from "lucide-react"
+import { toast } from "sonner"
 
 export default function InquiryForm() {
   const router = useRouter()
   const { t, locale } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [createdInquiryNumber, setCreatedInquiryNumber] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [profile, setProfile] = useState<{ full_name?: string; phone?: string } | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [profile, setProfile] = useState<{ full_name?: string; phone?: string; line_id?: string } | null>(null)
   const [serviceType, setServiceType] = useState<'BUY_AND_IMPORT' | 'IMPORT_ONLY'>('BUY_AND_IMPORT')
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean; china_tracking_number?: string }[]>([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean; china_tracking_number?: string }[]>([
+    { url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }
+  ])
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const checkUser = async () => {
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
+          setIsLoggedIn(true)
           const { data } = await supabase
             .from("profiles")
-            .select("full_name, phone")
+            .select("full_name, phone, line_uid")
             .eq("id", user.id)
-            .single()
+            .maybeSingle()
           if (data) {
-            setProfile(data)
+            setProfile({
+              full_name: data.full_name || '',
+              phone: data.phone || '',
+              line_id: ''
+            })
           }
-          setIsCheckingAuth(false)
-        } else {
-          router.push('/login')
         }
       } catch (err) {
-        console.error("Error fetching profile for inquiry:", err)
-        router.push('/login')
+        console.error("Error checking auth in inquiry:", err)
       }
     }
-    fetchProfile()
-  }, [router])
+    checkUser()
+  }, [])
 
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p>{locale === 'en' ? 'Checking authentication...' : locale === 'zh' ? '正在验证身份...' : 'กำลังตรวจสอบสิทธิ์การใช้งาน...'}</p>
-        </div>
-      </div>
-    )
+  const handleCopyOrderNumber = () => {
+    if (!createdInquiryNumber) return
+    navigator.clipboard.writeText(createdInquiryNumber)
+    setCopied(true)
+    toast.success(locale === 'zh' ? "订单号已复制" : locale === 'en' ? "Order ID copied" : "คัดลอกรหัสคำขอแล้ว")
+    setTimeout(() => setCopied(false), 2000)
   }
-
-  const labelContactInfo = locale === 'en' ? 'Contact Information' : locale === 'zh' ? '联系信息' : 'ข้อมูลผู้ติดต่อ'
-  const labelContactSub = locale === 'en' ? 'Provide contact details so we can send the quotation' : locale === 'zh' ? '请提供联系方式以便我们发送报价单' : 'กรอกข้อมูลสินค้าและช่องทางติดต่อ เพื่อให้ทีมงานประเมินราคาและค่าขนส่ง'
-  const labelProductInfo = locale === 'en' ? 'Product Information' : locale === 'zh' ? '商品信息' : 'ข้อมูลสินค้า'
-  const labelProductUrl = locale === 'en' ? 'Product Link / Details *' : locale === 'zh' ? '商品链接 / 详情 *' : 'ลิงก์สินค้า หรือ ข้อมูลสินค้า *'
-  const labelQuantity = locale === 'en' ? 'Quantity *' : locale === 'zh' ? '数量 *' : 'จำนวนที่ต้องการ *'
-  const labelRemark = locale === 'en' ? 'Remarks / Specific details (Color, Size)' : locale === 'zh' ? '备注 / 规格详情 (颜色, 尺码)' : 'หมายเหตุ / รายละเอียดเพิ่มเติม (สี, ไซส์)'
-  const labelRemarkPlaceholder = locale === 'en' ? 'e.g. Black color, size M, 2 pieces' : locale === 'zh' ? '例如：黑色 M码 2件' : 'เช่น เอาสีดำ ไซส์ M อย่างละ 2 ตัว'
-  const labelLineId = locale === 'en' ? 'LINE ID / WeChat ID (Recommended)' : locale === 'zh' ? 'LINE ID / 微信 (推荐)' : 'LINE ID / WeChat ID (แนะนำ)'
-  const labelSuccessTitle = locale === 'en' ? 'Submitted Successfully!' : locale === 'zh' ? '提交成功！' : 'ส่งคำขอสำเร็จ!'
-  const labelSuccessDesc = locale === 'en' ? 'We have received your product link for quotation.\nOur team will review it and reply within 24 hours.' : locale === 'zh' ? '我们已收到您的报价申请。\n团队将审核并于24小时内与您联系。' : 'ทีมงานได้รับคำขอให้ประเมินราคาเรียบร้อยแล้ว\nเราจะทำการตรวจสอบและติดต่อกลับภายใน 24 ชั่วโมง'
-  const labelViewOrders = locale === 'en' ? 'View Orders' : locale === 'zh' ? '查看订单' : 'ดูคำสั่งซื้อ'
 
   const handleAddItem = () => {
     setItems([...items, { url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
   }
 
   const handleRemoveItem = (index: number) => {
+    if (items.length <= 1) return
     setItems(items.filter((_, i) => i !== index))
   }
 
@@ -100,10 +110,8 @@ export default function InquiryForm() {
       }
     }
 
-    // Capture form data synchronously before any await
     const formData = new FormData(e.currentTarget)
     
-    // Validate shipping type
     if (!formData.get("shippingType")) {
       setError(locale === 'en' ? 'Please select a shipping method.' : locale === 'zh' ? '请选择运输方式。' : 'กรุณาเลือกรูปแบบการขนส่ง')
       return
@@ -119,7 +127,6 @@ export default function InquiryForm() {
       const uploadedItems = await Promise.all(items.map(async (item, idx) => {
         let image_url = null
         if (item.file) {
-          // Compress image before uploading
           const options = {
             maxSizeMB: 0.1, // ~100KB limit
             maxWidthOrHeight: 800,
@@ -131,7 +138,6 @@ export default function InquiryForm() {
             fileToUpload = await imageCompression(item.file, options)
           } catch (error) {
             console.error("Compression error:", error)
-            // Fallback to original if compression fails
           }
           
           const fileExt = fileToUpload.name.split('.').pop() || 'jpg'
@@ -184,237 +190,459 @@ export default function InquiryForm() {
         throw new Error(result.error || "Failed to submit inquiry")
       }
 
+      setCreatedInquiryNumber(result.inquiry_number || "ORD-SUCCESS")
       setSuccess(true)
-      setItems([{ url: '', quantity: 1, remark: '', file: null }]) // Reset items
+      setItems([{ url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || "เกิดข้อผิดพลาดในการส่งข้อมูล")
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  // Success Confirmation Screen
   if (success) {
     return (
       <div className="py-20 px-4 md:px-8 min-h-screen bg-slate-50 flex items-center justify-center">
-        <Card className="max-w-md w-full shadow-lg text-center p-8 animate-in fade-in zoom-in-95 duration-200">
-          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+        <Card className="max-w-lg w-full shadow-xl rounded-3xl text-center p-8 bg-white border border-slate-200 animate-in fade-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+            <CheckCircle2 className="w-9 h-9" />
           </div>
-          <h2 className="text-2xl font-bold mb-4">{labelSuccessTitle}</h2>
-          <p className="text-slate-600 mb-8 whitespace-pre-line">
-            {labelSuccessDesc}
+
+          <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-black uppercase tracking-wider mb-2">
+            {locale === 'en' ? 'Submission Successful' : locale === 'zh' ? '提交成功' : 'ส่งคำขอสำเร็จเรียบร้อย'}
+          </span>
+
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
+            {locale === 'en' ? 'Quotation Request Received!' : locale === 'zh' ? '已收到您的询价申请！' : 'ทีมงานได้รับลิงก์สินค้าแล้ว!'}
+          </h2>
+
+          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            {locale === 'en' 
+              ? 'Our sourcing team is verifying stock and negotiating factory pricing. We will issue your quotation within 1-2 hours.' 
+              : locale === 'zh'
+              ? '我们的代购团队正在核实库存并为您洽谈厂家批发价，将在1-2小时内出具报价单。'
+              : 'ทีมงานกำลังตรวจสอบสต็อกและเจรจาต่อรองราคากับร้านค้าจีนให้ฟรี และจะแจ้งใบเสนอราคาให้คุณทราบโดยเร็วที่สุด'}
           </p>
-          <Button onClick={() => router.push("/dashboard/orders")} variant="default" className="w-full cursor-pointer bg-primary text-white hover:bg-primary/90">{labelViewOrders}</Button>
+
+          {/* Order ID Box */}
+          {createdInquiryNumber && (
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 mb-6 space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                {locale === 'en' ? 'Your Request ID' : locale === 'zh' ? '您的询价单号' : 'หมายเลขคำขอของคุณ'}
+              </span>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-2xl font-black text-primary font-mono tracking-wider">
+                  {createdInquiryNumber}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyOrderNumber}
+                  className="p-2 rounded-xl border border-slate-200 hover:bg-white text-slate-600 cursor-pointer shadow-2xs transition-colors"
+                  title="Copy Order ID"
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {locale === 'en' ? '*You can track status anytime with this ID on our Track page' : locale === 'zh' ? '*您可随时使用此单号在“追踪订单”页面查询进度' : '*สามารถใช้รหัสนี้ตรวจสอบสถานะได้ตลอด 24 ชม. ที่หน้าระบบติดตาม'}
+              </p>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {isLoggedIn ? (
+              <Link href="/dashboard/orders" className="block">
+                <Button size="lg" className="w-full h-12 font-bold text-base bg-primary text-white hover:bg-primary/90 rounded-xl cursor-pointer shadow-md">
+                  <Package className="w-5 h-5 mr-2" />
+                  {locale === 'en' ? 'View My Orders' : locale === 'zh' ? '查看我的订单' : 'ดูรายการคำสั่งซื้อของฉัน ➔'}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href={`/track?id=${createdInquiryNumber}`} className="block">
+                  <Button size="lg" variant="orange" className="w-full h-12 font-bold text-base rounded-xl cursor-pointer shadow-md">
+                    <Search className="w-5 h-5 mr-2" />
+                    {locale === 'en' ? 'Track Request Status' : locale === 'zh' ? '查询此单进度' : 'ติดตามสถานะคำขอนี้ ➔'}
+                  </Button>
+                </Link>
+
+                <Link href="/login" className="block">
+                  <Button size="lg" variant="outline" className="w-full h-12 font-bold text-sm rounded-xl cursor-pointer">
+                    {locale === 'en' ? 'Log in / Register Account' : locale === 'zh' ? '登录 / 注册会员账户' : 'เข้าสู่ระบบ / สมัครสมาชิก'}
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            <Button 
+              variant="ghost" 
+              onClick={() => setSuccess(false)}
+              className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer"
+            >
+              {locale === 'en' ? '+ Submit Another Request' : locale === 'zh' ? '+ 提交其他新商品' : '+ ส่งคำขอรายการอื่นเพิ่ม'}
+            </Button>
+          </div>
         </Card>
       </div>
     )
   }
 
   return (
-    <div className="py-20 px-4 md:px-8 min-h-screen bg-slate-50">
-      <div className="container max-w-2xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">{t.navSubmitLink}</h1>
-          <p className="text-slate-600">
-            {labelContactSub}
+    <div className="py-16 md:py-24 px-4 md:px-8 min-h-screen bg-slate-50">
+      <div className="container max-w-3xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-primary rounded-full text-xs font-black uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            {locale === 'en' ? '0% Free Sourcing Fee' : locale === 'zh' ? '0% 免费代购服务' : 'ฟรีค่าบริการกดสั่ง 0 บาท'}
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+            {locale === 'en' ? 'Submit Product Link for Quote' : locale === 'zh' ? '发送商品链接 免费获取报价' : 'ส่งลิงก์สินค้า ขอใบเสนอราคาฟรี'}
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+            {locale === 'en' 
+              ? 'Paste links from 1688, Taobao, Tmall, or Pinduoduo. Our team will verify stock and calculate THB pricing.'
+              : locale === 'zh'
+              ? '粘贴 1688、淘宝、天猫或拼多多链接，客服免费为您核算价格与运费。'
+              : 'แปะลิงก์จาก 1688, Taobao, Tmall หรือระบุรายละเอียด ทีมงานช่วยต่อรองราคาส่งและคำนวณเงินบาทให้ฟรี'}
           </p>
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>{locale === 'en' ? 'Quotation Request Form' : locale === 'zh' ? '价格评估申请表' : 'แบบฟอร์มคำขอประเมินราคา'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md mb-6">{error}</div>}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold border-b pb-2">{locale === 'en' ? 'Service Type' : locale === 'zh' ? '服务类型' : 'ประเภทบริการ'}</h3>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <label className={`flex-1 border rounded-xl p-4 cursor-pointer transition-all ${serviceType === 'BUY_AND_IMPORT' ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-200 hover:border-primary/50'}`}>
-                    <div className="flex items-center gap-3">
-                      <input type="radio" name="serviceType" value="BUY_AND_IMPORT" checked={serviceType === 'BUY_AND_IMPORT'} onChange={() => setServiceType('BUY_AND_IMPORT')} className="w-4 h-4 text-primary" />
-                      <div>
-                        <div className="font-semibold text-slate-800">{locale === 'en' ? 'Order & Import' : locale === 'zh' ? '代购 + 进口' : 'ฝากสั่งซื้อ + นำเข้า'}</div>
-                        <div className="text-xs text-slate-500 mt-1">{locale === 'en' ? 'Provide URL, we buy for you' : locale === 'zh' ? '提供链接，我们为您代购' : 'ใส่ลิงก์สินค้า เราจัดการสั่งให้ตั้งแต่ต้น'}</div>
-                      </div>
-                    </div>
-                  </label>
-                  <label className={`flex-1 border rounded-xl p-4 cursor-pointer transition-all ${serviceType === 'IMPORT_ONLY' ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-200 hover:border-primary/50'}`}>
-                    <div className="flex items-center gap-3">
-                      <input type="radio" name="serviceType" value="IMPORT_ONLY" checked={serviceType === 'IMPORT_ONLY'} onChange={() => setServiceType('IMPORT_ONLY')} className="w-4 h-4 text-primary" />
-                      <div>
-                        <div className="font-semibold text-slate-800">{locale === 'en' ? 'Import Only' : locale === 'zh' ? '仅进口 (客户自行下单)' : 'ลูกค้านำเข้าเอง (นำเข้าอย่างเดียว)'}</div>
-                        <div className="text-xs text-slate-500 mt-1">{locale === 'en' ? 'You buy, provide tracking number' : locale === 'zh' ? '您自行下单，提供快递单号' : 'ลูกค้าสั่งเอง ใส่แค่เลขพัสดุจีน'}</div>
-                      </div>
-                    </div>
-                  </label>
-                </div>
+        {/* Main Form Card */}
+        <Card className="border border-slate-200 shadow-xl rounded-3xl bg-white overflow-hidden">
+          <CardContent className="p-6 md:p-8 space-y-8">
+            {error && (
+              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-2xl animate-in fade-in duration-200">
+                {error}
               </div>
+            )}
 
-              <div className="space-y-4">
-                <h3 className="font-semibold border-b pb-2">{labelContactInfo}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t.formName} *</label>
-                    <Input 
-                      key={`name-${profile?.full_name || "empty"}`}
-                      required 
-                      placeholder={t.formNamePlaceholder} 
-                      name="customerName" 
-                      defaultValue={profile?.full_name || ""} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t.formPhone} *</label>
-                    <Input 
-                      key={`phone-${profile?.phone || "empty"}`}
-                      required 
-                      placeholder={t.formPhonePlaceholder} 
-                      name="phone" 
-                      defaultValue={profile?.phone || ""} 
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{labelLineId}</label>
-                  <Input placeholder="Line ID / WeChat ID" name="lineId" />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center border-b pb-2 pt-4">
-                  <h3 className="font-semibold">{locale === 'en' ? 'Shipping Method' : locale === 'zh' ? '运输方式' : 'รูปแบบการขนส่ง'} *</h3>
-                </div>
-                <div className="flex gap-6 pt-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="shippingType" value="CAR" required className="w-4 h-4 text-primary" />
-                    <span>{locale === 'en' ? 'By Truck (ทางรถ)' : locale === 'zh' ? '陆运 (ทางรถ)' : 'ทางรถ (Truck)'}</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="shippingType" value="BOAT" required className="w-4 h-4 text-primary" />
-                    <span>{locale === 'en' ? 'By Sea (ทางเรือ)' : locale === 'zh' ? '海运 (ทางเรือ)' : 'ทางเรือ (Sea)'}</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center border-b pb-2 pt-4">
-                  <h3 className="font-semibold">{labelProductInfo}</h3>
-                </div>
-                
-                {items.map((item, index) => (
-                  <div key={index} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4 relative">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-bold text-slate-700 text-sm">{locale === 'en' ? `Item ${index + 1}` : locale === 'zh' ? `商品 ${index + 1}` : `รายการที่ ${index + 1}`}</span>
-                      {items.length > 1 && (
-                        <button type="button" onClick={() => handleRemoveItem(index)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold cursor-pointer">
-                          {locale === 'en' ? 'Remove' : locale === 'zh' ? '删除' : 'ลบรายการนี้'}
-                        </button>
-                      )}
-                    </div>
-                    {serviceType === 'BUY_AND_IMPORT' ? (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">{labelProductUrl}</label>
-                        <Input 
-                          required 
-                          type="text" 
-                          placeholder="https://item.taobao.com/... หรือใส่ข้อความได้" 
-                          value={item.url}
-                          onChange={(e) => handleItemChange(index, 'url', e.target.value)}
-                        />
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-blue-700">{locale === 'en' ? 'China Tracking Number *' : locale === 'zh' ? '中国快递单号 *' : 'เลขพัสดุจีน (Tracking Number) *'}</label>
-                        <Input 
-                          required 
-                          type="text" 
-                          placeholder={locale === 'en' ? 'e.g. YT123456789' : 'เช่น YT123456789'}
-                          value={item.china_tracking_number}
-                          onChange={(e) => handleItemChange(index, 'china_tracking_number', e.target.value)}
-                        />
-                        <p className="text-xs text-slate-500">
-                          {locale === 'en' ? 'Required so warehouse can identify your package.' : locale === 'zh' ? '必须填写以便仓库识别包裹。' : 'จำเป็นต้องใส่เพื่อให้โกดังจีนทราบว่าเป็นพัสดุของท่าน'}
-                        </p>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">{labelQuantity}</label>
-                      <Input 
-                        required 
-                        type="number" 
-                        min="1" 
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* 1. Service Type Selector */}
+              <div className="space-y-3">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wider block">
+                  {locale === 'en' ? '1. Select Service Type' : locale === 'zh' ? '1. 选择服务类型' : '1. เลือกประเภทบริการ'}
+                </label>
+                <div className="grid sm:grid-cols-2 gap-3.5">
+                  <label className={`border-2 rounded-2xl p-4 cursor-pointer transition-all ${
+                    serviceType === 'BUY_AND_IMPORT' 
+                      ? 'border-primary bg-blue-50/60 shadow-sm' 
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <input 
+                        type="radio" 
+                        name="serviceType" 
+                        value="BUY_AND_IMPORT" 
+                        checked={serviceType === 'BUY_AND_IMPORT'} 
+                        onChange={() => setServiceType('BUY_AND_IMPORT')} 
+                        className="w-4 h-4 text-primary mt-1 accent-primary" 
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">{labelRemark}</label>
-                      <textarea 
-                        value={item.remark}
-                        onChange={(e) => handleItemChange(index, 'remark', e.target.value)}
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder={labelRemarkPlaceholder}
-                      ></textarea>
-                    </div>
-                    
-                    <div className="flex flex-col space-y-2 pt-1 border-t mt-4">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`wooden-crate-${index}`}
-                          checked={item.wooden_crate || false}
-                          onChange={(e) => handleItemChange(index, 'wooden_crate', e.target.checked)}
-                          className="w-4 h-4 text-primary rounded border-slate-300"
-                        />
-                        <label htmlFor={`wooden-crate-${index}`} className="text-sm font-medium text-slate-700 cursor-pointer">
-                          {locale === 'en' ? 'Require Wooden Crate (ตีลังไม้)' : locale === 'zh' ? '需要木箱包装 (ตีลังไม้)' : 'ต้องการบริการตีลังไม้ (ป้องกันสินค้าเสียหาย)'}
-                        </label>
-                      </div>
-                      <div className="text-[10px] text-slate-500 bg-slate-100 p-2 rounded ml-6">
-                        <span className="font-semibold block mb-1">อัตราค่าบริการตีลังไม้ (ชำระพร้อมค่าขนส่งรอบ 2):</span>
-                        <ul className="list-disc list-inside grid grid-cols-1 sm:grid-cols-2 gap-x-2">
-                          <li>ต่ำกว่า 0.2 คิว: 200 บาท</li>
-                          <li>0.2 - 0.5 คิว: 350 บาท</li>
-                          <li>0.5 - 1 คิว: 550 บาท</li>
-                          <li>1 - 2 คิว: 950 บาท</li>
-                          <li>2 คิวขึ้นไป: 1,250 บาท</li>
-                        </ul>
+                      <div>
+                        <div className="font-black text-slate-900 text-sm sm:text-base">
+                          {locale === 'en' ? 'Order & Import (Recommended)' : locale === 'zh' ? '代购 + 进口 (推荐)' : 'ฝากสั่งซื้อ + นำเข้า (แนะนำ)'}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1 leading-relaxed">
+                          {locale === 'en' ? 'Paste product URL, we buy from China supplier for you' : locale === 'zh' ? '提供链接，我们为您代购并把控流程' : 'ใส่ลิงก์สินค้า เราดูแลคุยร้านจีน สั่งซื้อ และนำเข้าให้ครบ'}
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2 pt-2">
-                      <label className="text-sm font-medium">{locale === 'en' ? 'Product Image (Optional)' : locale === 'zh' ? '商品图片 (选填)' : 'รูปภาพสินค้าเพิ่มเติม (ถ้ามี)'}</label>
-                      <Input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null
-                          handleItemChange(index, 'file', file)
-                        }}
+                  </label>
+
+                  <label className={`border-2 rounded-2xl p-4 cursor-pointer transition-all ${
+                    serviceType === 'IMPORT_ONLY' 
+                      ? 'border-primary bg-blue-50/60 shadow-sm' 
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <input 
+                        type="radio" 
+                        name="serviceType" 
+                        value="IMPORT_ONLY" 
+                        checked={serviceType === 'IMPORT_ONLY'} 
+                        onChange={() => setServiceType('IMPORT_ONLY')} 
+                        className="w-4 h-4 text-primary mt-1 accent-primary" 
                       />
-                      {item.file && (
-                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                          {item.file.name}
+                      <div>
+                        <div className="font-black text-slate-900 text-sm sm:text-base">
+                          {locale === 'en' ? 'Import Only (Self-Purchased)' : locale === 'zh' ? '仅进口 (客户自行下单)' : 'ลูกค้านำเข้าเอง (ส่งเข้าโกดังจีน)'}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1 leading-relaxed">
+                          {locale === 'en' ? 'You buy directly, just provide China tracking number' : locale === 'zh' ? '您自行向商家购买，仅需提供中国快递单号' : 'ลูกค้ากดสั่งเอง ใส่เลขพัสดุจีนเพื่อให้เรานำเข้าสู่ไทย'}
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* 2. Product Items Section */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                  <label className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                    {locale === 'en' ? '2. Product Links & Details' : locale === 'zh' ? '2. 商品信息与规格' : '2. รายการสินค้าที่ต้องการสั่งซื้อ'}
+                  </label>
+                  <span className="text-xs text-slate-400 font-bold">
+                    {items.length} {locale === 'en' ? 'Items' : locale === 'zh' ? '件' : 'รายการ'}
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {items.map((item, index) => (
+                    <div key={index} className="p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-4 relative">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-black text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                          {locale === 'en' ? `Item #${index + 1}` : locale === 'zh' ? `商品 #${index + 1}` : `สินค้าชิ้นที่ ${index + 1}`}
+                        </span>
+
+                        {items.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveItem(index)}
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-8 px-2 text-xs font-bold cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1" />
+                            {locale === 'en' ? 'Remove' : locale === 'zh' ? '删除' : 'ลบรายการนี้'}
+                          </Button>
+                        )}
+                      </div>
+
+                      {serviceType === 'BUY_AND_IMPORT' ? (
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-700 block">
+                            {locale === 'en' ? 'Product URL (1688 / Taobao / Tmall) *' : locale === 'zh' ? '商品链接 (1688 / 淘宝 / 天猫) *' : 'ลิงก์สินค้า (Taobao / 1688 / Tmall) *'}
+                          </label>
+                          <Input 
+                            type="url" 
+                            placeholder="https://detail.1688.com/offer/..." 
+                            value={item.url}
+                            onChange={(e) => handleItemChange(index, 'url', e.target.value)}
+                            required
+                            className="h-11 rounded-xl bg-white border-slate-300 font-mono text-xs sm:text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-700 block">
+                            {locale === 'en' ? 'China Domestic Tracking Number *' : locale === 'zh' ? '中国国内快递单号 *' : 'เลขพัสดุจีน (China Tracking Number) *'}
+                          </label>
+                          <Input 
+                            type="text" 
+                            placeholder="เช่น 77329849204..." 
+                            value={item.china_tracking_number || ''}
+                            onChange={(e) => handleItemChange(index, 'china_tracking_number', e.target.value)}
+                            required
+                            className="h-11 rounded-xl bg-white border-slate-300 font-mono text-xs sm:text-sm"
+                          />
                         </div>
                       )}
+
+                      {/* Quantity & Remark Row */}
+                      <div className="grid sm:grid-cols-12 gap-3">
+                        <div className="sm:col-span-4 space-y-1">
+                          <label className="text-xs font-bold text-slate-700 block">
+                            {locale === 'en' ? 'Quantity *' : locale === 'zh' ? '数量 *' : 'จำนวนที่ต้องการ *'}
+                          </label>
+                          <Input 
+                            type="number" 
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                            required
+                            className="h-11 rounded-xl bg-white text-center font-bold"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-8 space-y-1">
+                          <label className="text-xs font-bold text-slate-700 block">
+                            {locale === 'en' ? 'Remarks (Color, Size, Option)' : locale === 'zh' ? '规格备注 (颜色、尺码、型号)' : 'ระบุสี / ไซส์ / แบบที่ต้องการ'}
+                          </label>
+                          <Input 
+                            type="text" 
+                            placeholder={locale === 'en' ? 'e.g. Black color, size L' : locale === 'zh' ? '如：黑色 L码' : 'เช่น สีดำ ไซส์ L อย่างละ 2 ชิ้น'} 
+                            value={item.remark}
+                            onChange={(e) => handleItemChange(index, 'remark', e.target.value)}
+                            className="h-11 rounded-xl bg-white text-xs sm:text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Image Upload & Wooden Crate Checkbox */}
+                      <div className="grid sm:grid-cols-2 gap-3 pt-1">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-700 block">
+                            {locale === 'en' ? 'Attach Product Image (Optional)' : locale === 'zh' ? '上传商品截图 (可选)' : 'แนบรูปภาพสินค้า (ถ้ามี)'}
+                          </label>
+                          <Input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => handleItemChange(index, 'file', e.target.files?.[0] || null)}
+                            className="h-11 rounded-xl bg-white text-xs cursor-pointer file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-primary"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2.5 p-3 bg-amber-50/70 border border-amber-200 rounded-xl mt-auto">
+                          <input 
+                            type="checkbox"
+                            id={`crate-${index}`}
+                            checked={item.wooden_crate || false}
+                            onChange={(e) => handleItemChange(index, 'wooden_crate', e.target.checked)}
+                            className="w-4 h-4 rounded border-amber-300 text-orange-600 focus:ring-orange-500 cursor-pointer accent-orange-600"
+                          />
+                          <label htmlFor={`crate-${index}`} className="text-xs font-bold text-amber-900 cursor-pointer">
+                            {locale === 'en' ? 'Wooden crate packing (+200 THB)' : locale === 'zh' ? '需要打木架加固 (+200泰铢)' : 'บริการเสริมตีลังไม้ (+200 บาท)'}
+                          </label>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                
-                <Button 
-                  type="button" 
-                  onClick={handleAddItem} 
-                  variant="outline" 
-                  className="w-full border-dashed border-2 py-6 text-slate-600 hover:text-slate-900 cursor-pointer"
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddItem}
+                  className="w-full h-11 border-dashed border-2 border-slate-300 hover:border-primary hover:bg-blue-50/50 text-slate-700 font-bold text-xs rounded-xl cursor-pointer"
                 >
-                  + {locale === 'en' ? 'Add Another Item' : locale === 'zh' ? '添加另一件商品' : 'เพิ่มรายการสินค้า'}
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  {locale === 'en' ? '+ Add Another Item' : locale === 'zh' ? '+ 添加更多商品' : '+ เพิ่มรายการสินค้าอีก 1 ชิ้น'}
                 </Button>
               </div>
 
-              <Button type="submit" className="w-full h-12 text-lg cursor-pointer" variant="orange" disabled={isSubmitting}>
-                {isSubmitting ? (locale === 'en' ? 'Submitting...' : locale === 'zh' ? '正在提交...' : 'กำลังส่งข้อมูล...') : (locale === 'en' ? 'Submit for Quotation' : locale === 'zh' ? '提交以评估价格' : 'ส่งลิงก์ให้ประเมินราคา')}
-              </Button>
+              {/* 3. Shipping Channel Selector */}
+              <div className="space-y-3">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wider block">
+                  {locale === 'en' ? '3. Select Shipping Method (China to Thailand)' : locale === 'zh' ? '3. 选择跨境运输方式' : '3. เลือกช่องทางการขนส่ง (จีน-ไทย)'}
+                </label>
+
+                <div className="grid grid-cols-2 gap-3.5">
+                  <label className="border-2 rounded-2xl p-4 cursor-pointer transition-all border-slate-200 hover:border-orange-400 has-checked:border-orange-500 has-checked:bg-orange-50/60 shadow-2xs">
+                    <div className="flex items-start gap-3">
+                      <input 
+                        type="radio" 
+                        name="shippingType" 
+                        value="CAR" 
+                        defaultChecked
+                        className="w-4 h-4 text-orange-600 mt-1 accent-orange-600" 
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5 font-black text-slate-900 text-sm sm:text-base">
+                          <Truck className="w-4 h-4 text-orange-600 shrink-0" />
+                          <span>{locale === 'en' ? 'Express Road (EK)' : locale === 'zh' ? '特快陆运 (EK)' : 'ทางรถด่วน (EK)'}</span>
+                        </div>
+                        <div className="text-xs text-orange-700 font-bold mt-1">
+                          {locale === 'en' ? '5 - 7 Business Days' : locale === 'zh' ? '5 - 7 工作日送达' : 'ระยะเวลา 5 - 7 วันถึงไทย'}
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="border-2 rounded-2xl p-4 cursor-pointer transition-all border-slate-200 hover:border-blue-400 has-checked:border-blue-600 has-checked:bg-blue-50/60 shadow-2xs">
+                    <div className="flex items-start gap-3">
+                      <input 
+                        type="radio" 
+                        name="shippingType" 
+                        value="BOAT" 
+                        className="w-4 h-4 text-blue-600 mt-1 accent-blue-600" 
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5 font-black text-slate-900 text-sm sm:text-base">
+                          <Ship className="w-4 h-4 text-blue-600 shrink-0" />
+                          <span>{locale === 'en' ? 'Economy Sea (SEA)' : locale === 'zh' ? '经济海运 (SEA)' : 'ทางเรือประหยัด (SEA)'}</span>
+                        </div>
+                        <div className="text-xs text-blue-700 font-bold mt-1">
+                          {locale === 'en' ? '15 - 20 Business Days' : locale === 'zh' ? '15 - 20 工作日送达' : 'ระยะเวลา 15 - 20 วันถึงไทย'}
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* 4. Contact Information Section */}
+              <div className="space-y-4 pt-2 border-t border-slate-100">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wider block">
+                  {locale === 'en' ? '4. Contact Details for Quotation' : locale === 'zh' ? '4. 接收报价的联系方式' : '4. ข้อมูลสำหรับรับใบเสนอราคา'}
+                </label>
+
+                <div className="grid sm:grid-cols-3 gap-3.5">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 block">
+                      {locale === 'en' ? 'Full Name *' : locale === 'zh' ? '您的姓名 *' : 'ชื่อ-นามสกุลของคุณ *'}
+                    </label>
+                    <Input 
+                      type="text" 
+                      name="customerName"
+                      placeholder={locale === 'en' ? 'John Doe' : locale === 'zh' ? '例如：张先生' : 'เช่น คุณสมชาย'} 
+                      defaultValue={profile?.full_name || ''}
+                      required
+                      className="h-11 rounded-xl bg-white font-medium text-xs sm:text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 block">
+                      {locale === 'en' ? 'Phone Number *' : locale === 'zh' ? '手机号码 *' : 'เบอร์โทรศัพท์ติดต่อ *'}
+                    </label>
+                    <Input 
+                      type="tel" 
+                      name="phone"
+                      placeholder="08X-XXX-XXXX" 
+                      defaultValue={profile?.phone || ''}
+                      required
+                      className="h-11 rounded-xl bg-white font-medium text-xs sm:text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 block">
+                      {locale === 'en' ? 'LINE ID / WeChat (Optional)' : locale === 'zh' ? 'LINE ID / 微信 (可选)' : 'LINE ID (แนะนำ)'}
+                    </label>
+                    <Input 
+                      type="text" 
+                      name="lineId"
+                      placeholder="@yourlineid" 
+                      defaultValue={profile?.line_id || ''}
+                      className="h-11 rounded-xl bg-white font-medium text-xs sm:text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit CTA Button */}
+              <div className="pt-4">
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  variant="orange" 
+                  disabled={isSubmitting}
+                  className="w-full h-14 text-base sm:text-lg font-black rounded-2xl shadow-lg shadow-orange-500/25 cursor-pointer hover:shadow-orange-500/35 transition-all"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>{locale === 'en' ? 'Submitting Request...' : locale === 'zh' ? '正在提交申请...' : 'กำลังส่งคำขอใบเสนอราคา...'}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5" />
+                      <span>{locale === 'en' ? 'Submit for Free Quotation ➔' : locale === 'zh' ? '免费获取报价 ➔' : 'ส่งลิงก์ ขอใบเสนอราคาฟรี ➔'}</span>
+                    </div>
+                  )}
+                </Button>
+
+                <p className="text-center text-xs text-slate-400 mt-3">
+                  {locale === 'en' 
+                    ? '🔒 Free quotation service. 0% purchasing service fee without obligation.' 
+                    : locale === 'zh'
+                    ? '🔒 免费询价与价格评估，无代购手续费，无需任何预付款。'
+                    : '🔒 บริการประเมินราคาฟรี ไม่มีค่ากดสั่งซื้อ 0 บาท ไม่มีข้อผูกมัดใดๆ'}
+                </p>
+              </div>
             </form>
           </CardContent>
         </Card>

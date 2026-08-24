@@ -138,7 +138,12 @@ export async function POST(
       const formattedCost = new Intl.NumberFormat('th-TH').format(newShippingCost)
       await sendCustomerNotification(
         order.customer_id,
-        `🚚 แจ้งยอดชำระรอบ 3 (ค่าจัดส่งในไทย) สำหรับคำสั่งซื้อ ${order.order_number}\nยอดชำระ: ${formattedCost} บาท\nกรุณาเข้าสู่ระบบเพื่อชำระเงินและรับสินค้าค่ะ`
+        `📦 แจ้งยอดค่าจัดส่งในไทย (รอบ 3)\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `📋 ออเดอร์: ${order.order_number}\n` +
+        `💰 ยอดชำระ: ฿${formattedCost}\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `👉 ชำระเงินและแนบสลิปเพื่อนำจ่าย: https://www.sabuyship.com/dashboard/orders/${order.order_number}`
       )
     }
 

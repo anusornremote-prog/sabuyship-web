@@ -195,18 +195,36 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
            ((item.status === 'THAILAND_WAREHOUSE' || item.status === 'OUT_FOR_DELIVERY') && item.payment_round_3_status === 'PENDING');
   }
 
+  const eligibleConsolidationItems = items.filter(item => 
+    item.type === 'ORDER' && 
+    item.status === 'THAILAND_WAREHOUSE' && 
+    item.payment_round_3_status !== 'PAID' && 
+    !item.consolidated_into_id
+  )
+
   return (
     <div className="space-y-4">
-      {items.some(item => item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id) && (
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-sm mb-4">
-          <div>
-            <h4 className="font-bold text-blue-900">รวมบิลค่าจัดส่งในไทย (รอบ 3)</h4>
-            <p className="text-blue-700 mt-1">เลือกออเดอร์ที่พัสดุถึงไทยแล้วตั้งแต่ 2 ออเดอร์ขึ้นไป เพื่อรวมเป็นรอบบิลจัดส่งเดียวกันและประหยัดค่าส่งในไทย</p>
+      {eligibleConsolidationItems.length >= 1 && (
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 p-4 sm:p-5 rounded-2xl border border-blue-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-sm mb-4 shadow-sm">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 bg-blue-600 text-white rounded-full text-xs font-black">
+                ✨ รวมบิลประหยัดค่าส่ง ({eligibleConsolidationItems.length} รายการ)
+              </span>
+            </div>
+            <h4 className="font-bold text-blue-950 text-base">ระบบรวมบิลค่าจัดส่งในไทย (รอบ 3)</h4>
+            <p className="text-blue-800 text-xs sm:text-sm leading-relaxed">
+              ติ๊กเลือกออเดอร์ที่พัสดุถึงไทยแล้วตั้งแต่ 2 รายการขึ้นไป เพื่อแพ็ครวมกล่องใหญ่จัดส่งพร้อมกัน ช่วยคุณประหยัดค่าขนส่งในไทยได้ทันที
+            </p>
           </div>
-          {selectedConsolidationIds.length >= 2 && (
-            <Button onClick={handleConsolidate} className="bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0 min-h-[44px]">
-              ดำเนินการรวมบิล ({selectedConsolidationIds.length} รายการ)
+          {selectedConsolidationIds.length >= 2 ? (
+            <Button onClick={handleConsolidate} className="bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0 min-h-[44px] rounded-xl px-5 shadow-md cursor-pointer animate-pulse">
+              🚀 ดำเนินการรวมบิล ({selectedConsolidationIds.length} รายการ)
             </Button>
+          ) : (
+            <div className="text-xs text-blue-600 font-bold bg-white/80 px-3 py-2 rounded-xl border border-blue-200 shrink-0">
+              ติ๊กเลือกอย่างน้อย 2 รายการด้านล่าง
+            </div>
           )}
         </div>
       )}
@@ -239,7 +257,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                         {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
                           <input 
                             type="checkbox"
-                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer accent-blue-600"
                             checked={selectedConsolidationIds.includes(item.id)}
                             onChange={() => handleToggleSelectConsolidation(item.id)}
                             title="เลือกเพื่อรวมบิล"
@@ -254,6 +272,11 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                         >
                           {item.order_number || item.inquiry_number}
                         </span>
+                        {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
+                          <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                            ✨ พร้อมรวมบิล
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
                         {item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH', {
@@ -348,6 +371,11 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                       >
                         {item.order_number || item.inquiry_number}
                       </span>
+                      {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
+                        <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                          ✨ รวมบิล
+                        </span>
+                      )}
                     </div>
                     <span className={`text-[10px] font-bold px-2 py-1 rounded ${getStatusBadge(item.status, item)}`}>
                       {getStatusText(item.status, item)}

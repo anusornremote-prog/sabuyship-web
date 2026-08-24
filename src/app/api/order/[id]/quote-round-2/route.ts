@@ -119,9 +119,15 @@ export async function POST(
     }
 
     if (order.customer_id && newShippingCost > 0) {
+      const formattedCost = new Intl.NumberFormat('th-TH').format(newShippingCost)
       await sendCustomerNotification(
         order.customer_id,
-        `📦 สินค้าของคุณมาถึงโกดังไทยแล้ว!\nโปรดชำระค่าจัดส่ง (รอบ 2) จำนวน ${newShippingCost.toLocaleString('th-TH')} บาท\n\nเข้าสู่ระบบเพื่อแนบสลิปชำระเงินได้ที่เว็บไซต์เลยค่ะ`
+        `🚚 แจ้งยอดค่าขนส่ง จีน-ไทย (รอบ 2)\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `📋 ออเดอร์: ${order.order_number}\n` +
+        `💰 ยอดชำระ: ฿${formattedCost}\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `👉 ชำระเงินและแนบสลิปได้ที่: https://www.sabuyship.com/dashboard/orders/${order.order_number}`
       )
     }
 
