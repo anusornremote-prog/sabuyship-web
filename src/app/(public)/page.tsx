@@ -122,10 +122,22 @@ export default function Home() {
           </div>
 
           {/* Main Hero Grid: Text & Action Card (Left) | Mascot (Right) */}
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          <div className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             
-            {/* Left Content (7 cols on desktop) */}
-            <div className="lg:col-span-7 space-y-6 text-center sm:text-left">
+            {/* Mascot Container (Appears First on Mobile with order-1, Right side on Desktop with lg:order-2) */}
+            <div className="lg:col-span-5 flex justify-center order-1 lg:order-2">
+              <div className="relative w-44 sm:w-60 lg:w-full max-w-sm aspect-square">
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-300/30 via-indigo-200/20 to-orange-200/30 rounded-full blur-2xl animate-pulse" />
+                <img 
+                  src="/mascod.png" 
+                  alt="Sabuy Ship Mascot" 
+                  className="relative z-10 w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" 
+                />
+              </div>
+            </div>
+
+            {/* Main Content (Appears Under Mascot on Mobile with order-2, Left side on Desktop with lg:order-1) */}
+            <div className="lg:col-span-7 space-y-6 text-center sm:text-left order-2 lg:order-1">
               <div className="space-y-3">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.25]">
                   <span>{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
@@ -241,18 +253,6 @@ export default function Home() {
                     </span>
                   ))}
                 </div>
-              </div>
-            </div>
-
-            {/* Right Mascot (5 cols on desktop, compact & balanced on mobile) */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-56 sm:w-72 lg:w-full max-w-sm aspect-square">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-300/30 via-indigo-200/20 to-orange-200/30 rounded-full blur-2xl animate-pulse" />
-                <img 
-                  src="/mascod.png" 
-                  alt="Sabuy Ship Mascot" 
-                  className="relative z-10 w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" 
-                />
               </div>
             </div>
 
