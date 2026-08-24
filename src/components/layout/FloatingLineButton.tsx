@@ -12,7 +12,7 @@ export function FloatingLineButton() {
     : 'สอบถามแอดมิน LINE'
 
   return (
-    <aside aria-label="Line Support Chat" className="fixed bottom-6 right-6 z-40 flex items-center group">
+    <aside aria-label="Line Support Chat" className="hidden md:flex fixed bottom-6 right-6 z-40 items-center group">
       {/* Tooltip Badge */}
       <a
         href="https://lin.ee/UC0F9zl"

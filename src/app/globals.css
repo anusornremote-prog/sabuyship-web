@@ -80,13 +80,32 @@
   --sidebar-ring: oklch(0.871 0.006 286.286);
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Mobile-Specific UX / iOS Safari Optimizations */
+@media (max-width: 767px) {
+  /* Prevent iOS Safari from auto-zooming on input focus when font-size is < 16px */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe Area Utility Classes for Mobile Devices */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+}
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 1rem);
 }

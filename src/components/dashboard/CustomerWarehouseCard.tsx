@@ -109,12 +109,20 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                   </span>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => handleCopy(consigneeName, "ชื่อผู้รับ")}
-                  className="h-8 px-2.5 text-xs text-slate-600 hover:text-primary shrink-0 cursor-pointer"
+                  className="h-9 sm:h-8 px-3 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
                 >
-                  {copiedField === "ชื่อผู้รับ" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedField === "ชื่อผู้รับ" ? (
+                    <span className="flex items-center gap-1 text-emerald-600">
+                      <Check className="w-3.5 h-3.5" /> คัดลอกแล้ว
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <Copy className="w-3.5 h-3.5" /> คัดลอก
+                    </span>
+                  )}
                 </Button>
               </div>
 
@@ -130,10 +138,10 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                     </span>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleCopy(phone, "เบอร์โทรศัพท์")}
-                    className="h-8 px-2 text-xs text-slate-600 hover:text-primary shrink-0 cursor-pointer"
+                    className="h-9 sm:h-8 px-2.5 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
                   >
                     {copiedField === "เบอร์โทรศัพท์" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   </Button>
@@ -149,10 +157,10 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                     </span>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleCopy(zipCode, "รหัสไปรษณีย์")}
-                    className="h-8 px-2 text-xs text-slate-600 hover:text-primary shrink-0 cursor-pointer"
+                    className="h-9 sm:h-8 px-2.5 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
                   >
                     {copiedField === "รหัสไปรษณีย์" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   </Button>
@@ -161,15 +169,15 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
 
               {/* Detailed Address */}
               <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1.5">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center flex-wrap gap-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     ที่อยู่โกดัง (Detailed Address / 详细地址)
                   </span>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleCopy(address, "ที่อยู่โกดัง")}
-                    className="h-7 px-2 text-xs text-primary font-bold hover:bg-blue-50 shrink-0 cursor-pointer"
+                    className="h-8 px-2.5 text-xs text-primary font-bold hover:bg-blue-50 border-blue-200 shrink-0 cursor-pointer shadow-2xs"
                   >
                     {copiedField === "ที่อยู่โกดัง" ? (
                       <span className="flex items-center gap-1 text-emerald-600">

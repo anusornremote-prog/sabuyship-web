@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Prompt } from "next/font/google";
 import { cookies } from "next/headers";
 import { LanguageProvider } from "@/components/providers/language-provider";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -12,11 +13,24 @@ const promptFont = Prompt({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#1e3a8a",
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "Sabuy Ship | นำเข้าสินค้าจากจีนง่าย รวดเร็ว และปลอดภัย",
   description: "บริการนำเข้าสินค้าจากจีนถึงไทยอย่างมืออาชีพ รวดเร็ว ปลอดภัย ตรวจสอบสถานะได้ 24 ชั่วโมง พร้อมบริการสั่งซื้อสินค้าและขนส่ง",
   icons: {
     icon: "/favicon.ico?v=2",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SabuyShip",
   },
 };
 
@@ -34,7 +48,12 @@ export default async function RootLayout({
       className={`${promptFont.variable} font-sans h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <div className="flex-1 flex flex-col pb-18 md:pb-0">
+            {children}
+          </div>
+          <MobileBottomNav />
+        </LanguageProvider>
         <Toaster richColors position="top-right" />
       </body>
     </html>
