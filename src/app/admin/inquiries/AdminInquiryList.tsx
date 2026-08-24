@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import * as XLSX from "xlsx"
 import { Input } from "@/components/ui/input"
-import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle } from "lucide-react"
+import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Phone, MessageCircle, Calculator, Sparkles, RefreshCw } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 import {
   Dialog,
   DialogContent,
@@ -45,8 +46,27 @@ export default function AdminInquiryList({
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [isCleaning, setIsCleaning] = useState(false)
 
+  const [exchangeRate, setExchangeRate] = useState<number>(5.1)
+  const [productCostRMB, setProductCostRMB] = useState("")
+  const [shippingCostCnCnRMB, setShippingCostCnCnRMB] = useState("")
+  const [itemCostsRMB, setItemCostsRMB] = useState<Record<number, string>>({})
+  const [itemShippingCostsRMB, setItemShippingCostsRMB] = useState<Record<number, string>>({})
+
   useEffect(() => {
     setInquiries(initialInquiries)
+    const fetchRate = async () => {
+      try {
+        const supabase = createClient()
+        const { data } = await supabase.from('site_settings').select('value').eq('key', 'exchange_rate').single()
+        if (data?.value) {
+          const rate = parseFloat(data.value.toString())
+          if (!isNaN(rate) && rate > 0) setExchangeRate(rate)
+        }
+      } catch (err) {
+        console.error("Error fetching rate:", err)
+      }
+    }
+    fetchRate()
   }, [initialInquiries])
   
   // Modal states
@@ -72,31 +92,112 @@ export default function AdminInquiryList({
   const [shippingCostCnCn, setShippingCostCnCn] = useState("")
   const [otherFee, setOtherFee] = useState("")
 
+  // RMB to THB helper handlers
+  const handleItemCostRMBChange = (idx: number, rmbStr: string) => {
+    setItemCostsRMB(prev => ({ ...prev, [idx]: rmbStr }))
+    const rmb = parseFloat(rmbStr)
+    if (!isNaN(rmb) && rmb >= 0) {
+      const thb = (rmb * exchangeRate).toFixed(2)
+      setItemCosts(prev => ({ ...prev, [idx]: thb }))
+    } else if (rmbStr === "") {
+      setItemCosts(prev => ({ ...prev, [idx]: "" }))
+    }
+  }
+
+  const handleItemCostTHBChange = (idx: number, thbStr: string) => {
+    setItemCosts(prev => ({ ...prev, [idx]: thbStr }))
+    const thb = parseFloat(thbStr)
+    if (!isNaN(thb) && thb >= 0 && exchangeRate > 0) {
+      const rmb = (thb / exchangeRate).toFixed(2)
+      setItemCostsRMB(prev => ({ ...prev, [idx]: rmb }))
+    } else if (thbStr === "") {
+      setItemCostsRMB(prev => ({ ...prev, [idx]: "" }))
+    }
+  }
+
+  const handleItemShippingRMBChange = (idx: number, rmbStr: string) => {
+    setItemShippingCostsRMB(prev => ({ ...prev, [idx]: rmbStr }))
+    const rmb = parseFloat(rmbStr)
+    if (!isNaN(rmb) && rmb >= 0) {
+      const thb = (rmb * exchangeRate).toFixed(2)
+      setItemShippingCosts(prev => ({ ...prev, [idx]: thb }))
+    } else if (rmbStr === "") {
+      setItemShippingCosts(prev => ({ ...prev, [idx]: "" }))
+    }
+  }
+
+  const handleItemShippingTHBChange = (idx: number, thbStr: string) => {
+    setItemShippingCosts(prev => ({ ...prev, [idx]: thbStr }))
+    const thb = parseFloat(thbStr)
+    if (!isNaN(thb) && thb >= 0 && exchangeRate > 0) {
+      const rmb = (thb / exchangeRate).toFixed(2)
+      setItemShippingCostsRMB(prev => ({ ...prev, [idx]: rmb }))
+    } else if (thbStr === "") {
+      setItemShippingCostsRMB(prev => ({ ...prev, [idx]: "" }))
+    }
+  }
+
+  const handleSingleProductCostRMBChange = (rmbStr: string) => {
+    setProductCostRMB(rmbStr)
+    const rmb = parseFloat(rmbStr)
+    if (!isNaN(rmb) && rmb >= 0) {
+      setProductCost((rmb * exchangeRate).toFixed(2))
+    } else if (rmbStr === "") {
+      setProductCost("")
+    }
+  }
+
+  const handleSingleProductCostTHBChange = (thbStr: string) => {
+    setProductCost(thbStr)
+    const thb = parseFloat(thbStr)
+    if (!isNaN(thb) && thb >= 0 && exchangeRate > 0) {
+      setProductCostRMB((thb / exchangeRate).toFixed(2))
+    } else if (thbStr === "") {
+      setProductCostRMB("")
+    }
+  }
+
   const openQuoteModal = (inquiry: any, existingQuote?: any) => {
     setSelectedInquiry(inquiry)
     
     if (existingQuote) {
-      setProductCost(existingQuote.product_cost?.toString() || "")
-      setShippingCostCnCn(existingQuote.shipping_cost_cn_cn?.toString() || "")
+      const pCost = existingQuote.product_cost?.toString() || ""
+      const sCost = existingQuote.shipping_cost_cn_cn?.toString() || ""
+      setProductCost(pCost)
+      setShippingCostCnCn(sCost)
       setOtherFee(existingQuote.other_fee?.toString() || "")
+      if (parseFloat(pCost) && exchangeRate > 0) setProductCostRMB((parseFloat(pCost) / exchangeRate).toFixed(2))
+      if (parseFloat(sCost) && exchangeRate > 0) setShippingCostCnCnRMB((parseFloat(sCost) / exchangeRate).toFixed(2))
       
       const newCostMap: Record<number, string> = {}
+      const newCostRMBMap: Record<number, string> = {}
       const newShippingMap: Record<number, string> = {}
+      const newShippingRMBMap: Record<number, string> = {}
       if (inquiry.items && inquiry.items.length > 0) {
         inquiry.items.forEach((item: any, idx: number) => {
-          newCostMap[idx] = item.quoted_price !== undefined ? item.quoted_price.toString() : ""
-          newShippingMap[idx] = item.quoted_shipping_cn_cn !== undefined ? item.quoted_shipping_cn_cn.toString() : ""
+          const cost = item.quoted_price !== undefined ? item.quoted_price.toString() : ""
+          const ship = item.quoted_shipping_cn_cn !== undefined ? item.quoted_shipping_cn_cn.toString() : ""
+          newCostMap[idx] = cost
+          newShippingMap[idx] = ship
+          if (parseFloat(cost) && exchangeRate > 0) newCostRMBMap[idx] = (parseFloat(cost) / exchangeRate).toFixed(2)
+          if (parseFloat(ship) && exchangeRate > 0) newShippingRMBMap[idx] = (parseFloat(ship) / exchangeRate).toFixed(2)
         })
       }
       setItemCosts(newCostMap)
+      setItemCostsRMB(newCostRMBMap)
       setItemShippingCosts(newShippingMap)
+      setItemShippingCostsRMB(newShippingRMBMap)
       setSelectedQuoteForEdit(existingQuote.id)
     } else {
       setProductCost("")
+      setProductCostRMB("")
       setItemCosts({})
+      setItemCostsRMB({})
       setShippingCostCnCn("")
+      setShippingCostCnCnRMB("")
       setOtherFee("")
       setItemShippingCosts({})
+      setItemShippingCostsRMB({})
       setSelectedQuoteForEdit(null)
     }
     
@@ -709,14 +810,25 @@ export default function AdminInquiryList({
                 </div>
               )}
 
+              {/* Rate Capsule */}
+              <div className="flex items-center justify-between p-2.5 bg-blue-50 rounded-xl border border-blue-200 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                  <Calculator className="w-4 h-4 text-primary" />
+                  <span>เรทเงินระบบ: 1 ¥ = {exchangeRate} ฿</span>
+                </div>
+                <span className="text-[10px] text-primary font-bold bg-white px-2 py-0.5 rounded-full border border-blue-200 shadow-2xs">
+                  คำนวณ หยวน ➔ บาท สด
+                </span>
+              </div>
+
               <div className="space-y-2">
                 <span className="text-xs text-slate-500 uppercase tracking-wider block font-bold">รายการสินค้าและประเมินราคา</span>
                 {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
-                  <div className="space-y-3 max-h-60 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-100">
+                  <div className="space-y-3 max-h-64 overflow-y-auto bg-slate-50 p-2 rounded-xl border border-slate-200">
                     {selectedInquiry.items.map((item: any, idx: number) => (
-                      <div key={idx} className="flex flex-col gap-2 p-2 bg-white rounded border border-slate-200 shadow-sm">
+                      <div key={idx} className="flex flex-col gap-2 p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
                         <div className="flex justify-between items-center text-xs">
-                           <a href={extractUrl(item.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">
+                           <a href={extractUrl(item.url)} target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline truncate max-w-[200px]">
                              {idx + 1}. {item.url}
                            </a>
                            {item.wooden_crate && (
@@ -724,33 +836,71 @@ export default function AdminInquiryList({
                                📦 ตีลังไม้
                              </span>
                            )}
-                           <span className="font-semibold text-slate-600 whitespace-nowrap">จำนวน: {item.quantity}</span>
+                           <span className="font-bold text-slate-700 whitespace-nowrap">จำนวน: {item.quantity}</span>
                         </div>
+                        
                         <div className="grid grid-cols-2 gap-2 mt-1">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-semibold text-slate-500 uppercase">ค่าสินค้า (บาท):</label>
-                            <Input
-                              required
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="ราคาชิ้นนี้"
-                              className="h-8 text-xs"
-                              value={itemCosts[idx] || ""}
-                              onChange={(e) => setItemCosts({ ...itemCosts, [idx]: e.target.value })}
-                            />
+                          {/* Item Cost Dual Input */}
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase block">ค่าสินค้า:</label>
+                            <div className="flex items-center gap-1">
+                              <div className="relative flex-1">
+                                <span className="absolute left-2 top-1.5 text-[10px] font-bold text-amber-600 font-mono">¥</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="หยวน"
+                                  className="h-8 text-xs pl-5 bg-amber-50/40 border-amber-200 font-mono"
+                                  value={itemCostsRMB[idx] || ""}
+                                  onChange={(e) => handleItemCostRMBChange(idx, e.target.value)}
+                                />
+                              </div>
+                              <div className="relative flex-1">
+                                <span className="absolute left-2 top-1.5 text-[10px] font-bold text-primary font-mono">฿</span>
+                                <Input
+                                  required
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="บาท"
+                                  className="h-8 text-xs pl-5 bg-white font-bold text-primary font-mono"
+                                  value={itemCosts[idx] || ""}
+                                  onChange={(e) => handleItemCostTHBChange(idx, e.target.value)}
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-semibold text-slate-500 uppercase">ค่าจัดส่งจีน-จีน (ถ้ามี):</label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="ค่าจัดส่งชิ้นนี้"
-                              className="h-8 text-xs"
-                              value={itemShippingCosts[idx] || ""}
-                              onChange={(e) => setItemShippingCosts({ ...itemShippingCosts, [idx]: e.target.value })}
-                            />
+
+                          {/* Item Shipping Dual Input */}
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase block">ค่าส่งจีน-จีน:</label>
+                            <div className="flex items-center gap-1">
+                              <div className="relative flex-1">
+                                <span className="absolute left-2 top-1.5 text-[10px] font-bold text-slate-400 font-mono">¥</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="หยวน"
+                                  className="h-8 text-xs pl-5 bg-slate-50 font-mono"
+                                  value={itemShippingCostsRMB[idx] || ""}
+                                  onChange={(e) => handleItemShippingRMBChange(idx, e.target.value)}
+                                />
+                              </div>
+                              <div className="relative flex-1">
+                                <span className="absolute left-2 top-1.5 text-[10px] font-bold text-slate-700 font-mono">฿</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="บาท"
+                                  className="h-8 text-xs pl-5 bg-white font-mono"
+                                  value={itemShippingCosts[idx] || ""}
+                                  onChange={(e) => handleItemShippingTHBChange(idx, e.target.value)}
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -772,68 +922,79 @@ export default function AdminInquiryList({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {(!selectedInquiry.items || selectedInquiry.items.length === 0) && (
+              {/* Single Item Fallback Inputs */}
+              {(!selectedInquiry.items || selectedInquiry.items.length === 0) && (
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">ค่าสินค้ารวม (บาท) *</label>
-                    <Input
-                      required
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="เช่น 1500"
-                      value={productCost}
-                      onChange={(e) => setProductCost(e.target.value)}
-                    />
+                    <label className="text-xs font-bold text-slate-700">ค่าสินค้า (หยวน ¥ / บาท ฿) *</label>
+                    <div className="flex items-center gap-1">
+                      <div className="relative flex-1">
+                        <span className="absolute left-2 top-2 text-xs font-bold text-amber-600 font-mono">¥</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="หยวน"
+                          className="pl-5 bg-amber-50/40 border-amber-200 font-mono text-xs"
+                          value={productCostRMB}
+                          onChange={(e) => handleSingleProductCostRMBChange(e.target.value)}
+                        />
+                      </div>
+                      <div className="relative flex-1">
+                        <span className="absolute left-2 top-2 text-xs font-bold text-primary font-mono">฿</span>
+                        <Input
+                          required
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="บาท"
+                          className="pl-5 bg-white font-bold text-primary font-mono text-xs"
+                          value={productCost}
+                          onChange={(e) => handleSingleProductCostTHBChange(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                )}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {selectedInquiry.items && selectedInquiry.items.length > 0 
-                      ? 'ค่าส่งรวมทั้งหมด (จีน-จีน)' 
-                      : 'ค่าจัดส่ง จีน-จีน (ถ้ามี)'}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-500">฿</span>
-                    {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
-                      <Input 
-                        type="number"
-                        step="0.01"
-                        disabled
-                        className="pl-8 bg-slate-100 font-bold"
-                        value={Object.values(itemShippingCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)}
-                      />
-                    ) : (
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700">ค่าจัดส่ง จีน-จีน (ถ้ามี)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-500 font-mono">฿</span>
                       <Input 
                         type="number"
                         step="0.01"
                         min="0"
-                        className="pl-8 bg-white"
+                        className="pl-8 bg-white font-mono text-xs"
                         value={shippingCostCnCn}
                         onChange={(e) => setShippingCostCnCn(e.target.value)}
                       />
-                    )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Other Fee */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">ค่าธรรมเนียมอื่น ๆ (บาท)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-500 font-mono">฿</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="เช่น 50"
+                      className="pl-8 bg-white font-mono text-xs"
+                      value={otherFee}
+                      onChange={(e) => setOtherFee(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">ค่าธรรมเนียมอื่น ๆ (บาท)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="เช่น 50"
-                    value={otherFee}
-                    onChange={(e) => setOtherFee(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex justify-between items-center text-sm font-bold mt-4">
+              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex justify-between items-center text-sm font-bold mt-3">
                 <span className="text-slate-700">รวมราคาสุทธิเสนอขาย:</span>
-                <span className="text-primary text-base">
+                <span className="text-primary text-base font-black font-mono">
                   ฿ {(
                     (selectedInquiry?.items && selectedInquiry.items.length > 0 
                       ? Object.values(itemCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0) +
