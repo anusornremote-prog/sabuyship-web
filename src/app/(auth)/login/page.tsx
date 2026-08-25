@@ -25,9 +25,20 @@ export default function Login() {
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "449039415658-57snl0en8sa78c0pp0l2ttc9ld54q89d.apps.googleusercontent.com",
         callback: handleGoogleCallback,
       });
+
+      const containerWidth = googleButtonRef.current.parentElement?.clientWidth || googleButtonRef.current.clientWidth || 380;
+      const targetWidth = Math.min(Math.max(containerWidth, 200), 400);
+
       (window as any).google.accounts.id.renderButton(
         googleButtonRef.current,
-        { theme: "outline", size: "large", text: "signin_with", shape: "rectangular" }
+        { 
+          theme: "outline", 
+          size: "large", 
+          text: "signin_with", 
+          shape: "rectangular",
+          width: targetWidth,
+          logo_alignment: "left"
+        }
       );
     }
   }
@@ -202,18 +213,18 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 w-full">
+          <div className="flex flex-col gap-2.5 w-full">
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-md shadow-[#06C755]/20 flex items-center justify-center gap-2"
+              className="w-full h-[40px] bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
               onClick={handleLineLogin}
               disabled={loading}
             >
               <LineIcon className="w-5 h-5 text-white" />
               <span>เข้าสู่ระบบด้วย LINE</span>
             </Button>
-            <div className="flex justify-center w-full" ref={googleButtonRef}></div>
+            <div className="w-full flex justify-center [&>div]:!w-full [&_iframe]:!w-full [&_iframe]:!h-[40px] [&_iframe]:!rounded-md min-h-[40px]" ref={googleButtonRef}></div>
           </div>
         </form>
       </CardContent>
