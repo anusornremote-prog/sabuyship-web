@@ -6,9 +6,9 @@ import { Timeline, TimelineItem } from "@/components/ui/timeline"
 import { ArrowLeft, FileText, Globe, Truck, Printer } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
-import { PaymentStepper } from "@/app/dashboard/orders/[id]/PaymentStepper"
-import { ConfirmReceiptButton } from "@/app/dashboard/orders/[id]/ConfirmReceiptButton"
-import { CopyTrackingButton } from "@/app/dashboard/orders/[id]/CopyTrackingButton"
+import { PaymentStepper } from "@/components/orders/PaymentStepper"
+import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
+import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 import { AdminOrderActions } from "./AdminOrderActions"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {

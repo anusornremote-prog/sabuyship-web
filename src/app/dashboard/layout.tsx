@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { PhoneSetupModal } from "@/components/PhoneSetupModal"
+import { PhoneSetupModal } from "@/components/dashboard/PhoneSetupModal"
 import { 
   LayoutDashboard, 
   Package, 

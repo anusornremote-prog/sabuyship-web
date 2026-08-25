@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PackageX } from "lucide-react"
-import { OutOfStockModal } from "../OutOfStockModal"
+import { OutOfStockModal } from "@/components/admin/OutOfStockModal"
 import { useRouter } from "next/navigation"
 
 export function AdminOrderActions({ order }: { order: any }) {

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, FileQuestion, FileText, Package } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { DashboardChartsWrapper } from "./components/DashboardChartsWrapper"
+import { DashboardChartsWrapper } from "@/components/admin/DashboardChartsWrapper"
 
 export default async function AdminOverview() {
   try {
