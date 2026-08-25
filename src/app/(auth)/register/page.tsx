@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { LineIcon } from "@/components/ui/icons"
 
 export default function Register() {
   const [fullName, setFullName] = useState("")
@@ -211,14 +212,12 @@ export default function Register() {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent"
+              className="w-full h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-md shadow-[#06C755]/20 flex items-center justify-center gap-2"
               onClick={handleLineRegister}
               disabled={loading}
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.122.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.647 1.281-.54 6.911-4.069 9.428-6.967 1.739-1.907 2.572-3.843 2.572-5.992z"/>
-              </svg>
-              สมัครสมาชิกด้วย LINE
+              <LineIcon className="w-5 h-5 text-white" />
+              <span>สมัครสมาชิกด้วย LINE</span>
             </Button>
             <div className="flex justify-center w-full" ref={googleButtonRef}></div>
           </div>
