@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuestion, LogOut, ShoppingCart } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
+import { NotificationBell } from "./NotificationBell"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -115,8 +116,9 @@ export function Navbar() {
         </nav>
 
         {/* 3. Right: Language Switcher, Login, Submit Button */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
+        <div className="hidden md:flex items-center gap-2.5 shrink-0">
           {!user && <LanguageSwitcher />}
+          {user && <NotificationBell />}
           {user ? (
             <div className="relative user-dropdown">
               <Button 
@@ -193,8 +195,9 @@ export function Navbar() {
         </div>
 
         {/* Mobile Navigation Toggle & Switcher */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1.5">
           {!user && <LanguageSwitcher />}
+          {user && <NotificationBell />}
           <button 
             onClick={() => setIsOpen(!isOpen)} 
             className="p-2 text-muted-foreground hover:text-foreground cursor-pointer"

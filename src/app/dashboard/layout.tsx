@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import { NotificationBell } from "@/components/layout/NotificationBell"
 
 export default function DashboardLayout({
   children,
@@ -206,11 +207,14 @@ export default function DashboardLayout({
           </div>
 
           {/* Right Header Actions */}
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+            <NotificationBell />
+
             <Link href="/inquiry">
-              <Button size="sm" variant="orange" className="h-9 px-4 text-xs font-black rounded-xl shadow-xs cursor-pointer">
+              <Button size="sm" variant="orange" className="h-9 px-3 sm:px-4 text-xs font-black rounded-xl shadow-xs cursor-pointer">
                 <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
-                ส่งลิงก์สั่งของ
+                <span className="hidden sm:inline">ส่งลิงก์สั่งของ</span>
+                <span className="sm:hidden">สั่งของ</span>
               </Button>
             </Link>
             <Link href="/" className="hidden sm:inline-flex">
