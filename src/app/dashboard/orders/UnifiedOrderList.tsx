@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard, Globe, ExternalLink, Package } from "lucide-react"
+import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard, Globe, ExternalLink, Package, Copy, Check, Sparkles } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { AddressSelectionModal } from "../inquiries/AddressSelectionModal"
+import { vibrateTap, vibrateSuccess } from "@/lib/haptics"
 
 interface UnifiedOrderListProps {
   items: any[]
@@ -24,6 +25,15 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [previewQuotationItem, setPreviewQuotationItem] = useState<any>(null)
   const [selectedConsolidationIds, setSelectedConsolidationIds] = useState<string[]>([])
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleCopyNumber = (e: React.MouseEvent, num: string) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(num)
+    vibrateSuccess()
+    setCopiedId(num)
+    setTimeout(() => setCopiedId(null), 1800)
+  }
 
   const handleToggleSelectConsolidation = (id: string) => {
     setSelectedConsolidationIds(prev => 
@@ -346,100 +356,142 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
             </table>
           </div>
 
-          {/* Mobile Card View */}
-          <div className="md:hidden flex flex-col divide-y border-t">
+          {/* Mobile Card View (Elevated Touch-Friendly Cards) */}
+          <div className="md:hidden p-3 bg-slate-50/60 space-y-3">
             {items && items.length > 0 ? (
-              items.map((item) => (
-                <div key={item.id} className="p-4 flex flex-col gap-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
-                        <input 
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
-                          checked={selectedConsolidationIds.includes(item.id)}
-                          onChange={() => handleToggleSelectConsolidation(item.id)}
-                          title="เลือกเพื่อรวมบิล"
-                        />
-                      )}
-                      <span 
-                        onClick={() => {
-                          setSelectedDetailsItem(item);
-                          setIsDetailsOpen(true);
-                        }}
-                        className="font-bold text-primary text-base cursor-pointer hover:underline"
-                      >
-                        {item.order_number || item.inquiry_number}
+              items.map((item) => {
+                const itemNum = item.order_number || item.inquiry_number
+                const waitingPay = isWaitingPayment(item)
+
+                return (
+                  <div 
+                    key={item.id} 
+                    className={`p-4 bg-white rounded-2xl border transition-all shadow-xs flex flex-col gap-3 ${
+                      waitingPay ? 'border-amber-300 ring-2 ring-amber-100' : 'border-slate-200/90'
+                    }`}
+                  >
+                    {/* Header: Number & Status Badge */}
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
+                          <input 
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer shrink-0"
+                            checked={selectedConsolidationIds.includes(item.id)}
+                            onChange={() => handleToggleSelectConsolidation(item.id)}
+                            title="เลือกเพื่อรวมบิล"
+                          />
+                        )}
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span 
+                            onClick={() => {
+                              setSelectedDetailsItem(item);
+                              setIsDetailsOpen(true);
+                            }}
+                            className="font-black text-primary text-sm sm:text-base cursor-pointer hover:underline truncate"
+                          >
+                            {itemNum}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => handleCopyNumber(e, itemNum)}
+                            className="text-slate-400 hover:text-primary p-1 rounded-md transition-colors shrink-0"
+                            title="คัดลอกรหัสคำสั่งซื้อ"
+                          >
+                            {copiedId === itemNum ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg shrink-0 ${getStatusBadge(item.status, item)}`}>
+                        {getStatusText(item.status, item)}
                       </span>
-                      {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
-                        <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                          ✨ รวมบิล
-                        </span>
-                      )}
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded ${getStatusBadge(item.status, item)}`}>
-                      {getStatusText(item.status, item)}
-                    </span>
-                  </div>
 
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500">
-                      {item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      }) : '-'}
-                    </span>
-                    <span className="font-bold text-slate-900">
-                      {item.total_price !== undefined 
-                        ? `฿ ${Number(item.total_price).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                        : '-'}
-                    </span>
-                  </div>
-
-                  <div className="pt-2">
-                    {item.type === 'INQUIRY' && item.status === 'QUOTED' && item.quotation_id && (
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer w-full min-h-[44px]"
-                        onClick={() => setPreviewQuotationItem(item)}
-                        disabled={processingId === item.quotation_id}
-                      >
-                        ยืนยันคำสั่งซื้อ
-                      </Button>
-                    )}
-                    
-                    {item.type === 'ORDER' && (
-                      <Link href={`/dashboard/orders/${item.order_number}${isWaitingPayment(item) ? '#payment' : ''}`} className="w-full block">
-                        <Button variant={isWaitingPayment(item) ? "default" : "outline"} size="sm" className="cursor-pointer w-full min-h-[44px]">
-                          {isWaitingPayment(item) ? (
-                            <>
-                              <CreditCard className="h-4 w-4 mr-2" />
-                              ดำเนินการชำระเงิน
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4 mr-2" />
-                              ดูรายละเอียด
-                            </>
-                          )}
-                        </Button>
-                      </Link>
-                    )}
-                    
-                    {item.type === 'INQUIRY' && item.status === 'PENDING' && (
-                      <div className="text-center w-full py-2 bg-slate-50 rounded text-slate-400 text-xs italic">
-                        กำลังรอแอดมินประเมินราคา
+                    {/* Consolidation Badge if eligible */}
+                    {item.type === 'ORDER' && item.status === 'THAILAND_WAREHOUSE' && item.payment_round_3_status !== 'PAID' && !item.consolidated_into_id && (
+                      <div className="flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg font-bold">
+                        <Sparkles className="w-3 h-3 text-blue-600" />
+                        <span>สินค้าถึงไทยแล้ว สามารถติ๊กหน้ารายการเพื่อรวมบิลได้</span>
                       </div>
                     )}
+
+                    {/* Meta Row: Date and Total Price */}
+                    <div className="flex justify-between items-center bg-slate-50/80 p-2.5 rounded-xl text-xs border border-slate-100">
+                      <span className="text-slate-500">
+                        {item.created_at ? new Date(item.created_at).toLocaleDateString('th-TH', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : '-'}
+                      </span>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 block">ยอดรวม</span>
+                        <span className="font-black text-slate-900 text-sm font-mono">
+                          {item.total_price !== undefined 
+                            ? `฿ ${Number(item.total_price).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                            : '-'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="pt-1">
+                      {item.type === 'INQUIRY' && item.status === 'QUOTED' && item.quotation_id && (
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer w-full min-h-[44px] rounded-xl font-black text-xs active:scale-[0.98] shadow-sm shadow-emerald-600/20"
+                          onClick={() => setPreviewQuotationItem(item)}
+                          disabled={processingId === item.quotation_id}
+                        >
+                          ✓ ยืนยันคำสั่งซื้อ
+                        </Button>
+                      )}
+                      
+                      {item.type === 'ORDER' && (
+                        <Link href={`/dashboard/orders/${item.order_number}${waitingPay ? '#payment' : ''}`} className="w-full block">
+                          <Button 
+                            variant={waitingPay ? "default" : "outline"} 
+                            size="sm" 
+                            className={`cursor-pointer w-full min-h-[44px] rounded-xl font-black text-xs active:scale-[0.98] transition-all ${
+                              waitingPay 
+                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/25' 
+                                : 'text-slate-700 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {waitingPay ? (
+                              <>
+                                <CreditCard className="h-4 w-4 mr-1.5 text-white" />
+                                ⚡ ดำเนินการชำระเงิน
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-1.5 text-slate-500" />
+                                ดูรายละเอียดคำสั่งซื้อ
+                              </>
+                            )}
+                          </Button>
+                        </Link>
+                      )}
+                      
+                      {item.type === 'INQUIRY' && item.status === 'PENDING' && (
+                        <div className="text-center w-full py-2.5 bg-slate-50 rounded-xl text-slate-400 text-xs italic font-medium">
+                          กำลังรอแอดมินประเมินราคา
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             ) : (
-              <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-2">
+              <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-2 bg-white rounded-2xl border border-slate-200">
                 <Package className="h-8 w-8 text-slate-300" />
-                <p>ไม่พบข้อมูล</p>
+                <p className="text-xs font-semibold">ไม่พบข้อมูลคำสั่งซื้อ</p>
               </div>
             )}
           </div>

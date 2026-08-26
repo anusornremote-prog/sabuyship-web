@@ -213,6 +213,7 @@ export function PaymentStepper({
                           paymentRound={step.round as 1 | 2 | 3} 
                           isRejected={step.status === 'REJECTED'} 
                           defaultAmount={step.amount}
+                          triggerId={orderId}
                         />
                       )}
                     </div>
@@ -223,6 +224,47 @@ export function PaymentStepper({
           })}
         </div>
       </div>
+
+      {/* Sticky Mobile Floating Pay Pill (Appears only on mobile when payment is required) */}
+      {(() => {
+        const activePayStep = steps.find(
+          s => s.isActive && s.amount > 0 && s.status !== 'UPLOADED' && (s.round !== 2 || savedMethod)
+        )
+        if (!activePayStep) return null
+
+        return (
+          <div className="fixed bottom-[68px] left-3 right-3 z-40 block md:hidden animate-in slide-in-from-bottom-6 duration-300">
+            <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 text-white p-3.5 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                  <span className="text-[11px] font-bold text-amber-300 tracking-tight truncate">
+                    ยอดรอชำระ (รอบที่ {activePayStep.round})
+                  </span>
+                </div>
+                <div className="text-lg font-black font-mono text-white leading-tight">
+                  {formatCurrency(activePayStep.amount)}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('open-payment-modal', {
+                      detail: { orderId, round: activePayStep.round }
+                    }))
+                  }
+                }}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 transition-transform"
+              >
+                <span>⚡ ชำระเงินด่วน</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

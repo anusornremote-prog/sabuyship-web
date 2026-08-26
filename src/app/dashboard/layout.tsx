@@ -222,44 +222,58 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        {/* Mobile Sub Navigation */}
-        <nav className="flex md:hidden bg-white border-b border-slate-200 overflow-x-auto px-2 py-1 gap-1">
+        {/* Mobile Sub Navigation (Glassmorphic Scroll Snap Pill Bar) */}
+        <nav className="flex md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200/80 overflow-x-auto no-scrollbar scroll-snap-x px-3 py-2 gap-2 sticky top-0 z-30">
           <Link 
             href="/dashboard" 
-            className={`whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-colors ${
-              pathname === '/dashboard' ? 'bg-blue-50 text-primary' : 'text-slate-600'
+            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+              pathname === '/dashboard' 
+                ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            ภาพรวม
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span>ภาพรวม</span>
           </Link>
           <Link 
             href="/dashboard/orders" 
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-colors ${
-              pathname.startsWith('/dashboard/orders') ? 'bg-blue-50 text-primary' : 'text-slate-600'
+            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+              pathname.startsWith('/dashboard/orders') 
+                ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            คำสั่งซื้อ
-            {(badgeCounts.ordersCount + badgeCounts.inquiriesCount) > 0 ? (
-              <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+            <Package className="w-3.5 h-3.5" />
+            <span>คำสั่งซื้อ</span>
+            {(badgeCounts.ordersCount + badgeCounts.inquiriesCount) > 0 && (
+              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                pathname.startsWith('/dashboard/orders') ? 'bg-white text-primary' : 'bg-red-500 text-white'
+              }`}>
                 {badgeCounts.ordersCount + badgeCounts.inquiriesCount}
               </span>
-            ) : null}
+            )}
           </Link>
           <Link 
             href="/dashboard/addresses" 
-            className={`whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-colors ${
-              pathname.startsWith('/dashboard/addresses') ? 'bg-blue-50 text-primary' : 'text-slate-600'
+            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+              pathname.startsWith('/dashboard/addresses') 
+                ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            สมุดที่อยู่
+            <MapPin className="w-3.5 h-3.5" />
+            <span>สมุดที่อยู่</span>
           </Link>
           <Link 
             href="/dashboard/profile" 
-            className={`whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-colors ${
-              pathname.startsWith('/dashboard/profile') ? 'bg-blue-50 text-primary' : 'text-slate-600'
+            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+              pathname.startsWith('/dashboard/profile') 
+                ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            ข้อมูลส่วนตัว
+            <User className="w-3.5 h-3.5" />
+            <span>ข้อมูลส่วนตัว</span>
           </Link>
         </nav>
 

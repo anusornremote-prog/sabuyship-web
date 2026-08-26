@@ -15,6 +15,7 @@ import {
   Truck, 
   Ship, 
   Plus, 
+  Minus,
   Trash2, 
   Upload, 
   CheckCircle2, 
@@ -27,9 +28,11 @@ import {
   Package,
   Search,
   Camera,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Clipboard
 } from "lucide-react"
 import { toast } from "sonner"
+import { vibrateTap, vibrateSuccess, readClipboardText } from "@/lib/haptics"
 
 export default function InquiryForm() {
   const router = useRouter()
@@ -85,16 +88,38 @@ export default function InquiryForm() {
   const handleCopyOrderNumber = () => {
     if (!createdInquiryNumber) return
     navigator.clipboard.writeText(createdInquiryNumber)
+    vibrateSuccess()
     setCopied(true)
     toast.success(locale === 'zh' ? "订单号已复制" : locale === 'en' ? "Order ID copied" : "คัดลอกรหัสคำขอแล้ว")
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handlePasteUrl = async (index: number) => {
+    vibrateTap()
+    const text = await readClipboardText()
+    if (text) {
+      handleItemChange(index, 'url', text)
+      vibrateSuccess()
+      toast.success(locale === 'zh' ? "链接已粘贴" : locale === 'en' ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
+    } else {
+      toast.info(locale === 'zh' ? "请手动在输入框粘贴" : locale === 'en' ? "Please paste into the box" : "กรุณากดวางลิงก์ลงในช่อง")
+    }
+  }
+
+  const handleQuantityStep = (index: number, delta: number) => {
+    vibrateTap()
+    const current = parseInt(String(items[index].quantity)) || 1
+    const next = Math.max(1, current + delta)
+    handleItemChange(index, 'quantity', next)
+  }
+
   const handleAddItem = () => {
+    vibrateTap()
     setItems([...items, { url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
   }
 
   const handleRemoveItem = (index: number) => {
+    vibrateTap()
     if (items.length <= 1) return
     setItems(items.filter((_, i) => i !== index))
   }
@@ -424,9 +449,19 @@ export default function InquiryForm() {
 
                       {serviceType === 'BUY_AND_IMPORT' ? (
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-700 block">
-                            {locale === 'en' ? 'Product URL (1688 / Taobao / Tmall) *' : locale === 'zh' ? '商品链接 (1688 / 淘宝 / 天猫) *' : 'ลิงก์สินค้า (Taobao / 1688 / Tmall) *'}
-                          </label>
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs font-bold text-slate-700 block">
+                              {locale === 'en' ? 'Product URL (1688 / Taobao / Tmall) *' : locale === 'zh' ? '商品链接 (1688 / 淘宝 / 天猫) *' : 'ลิงก์สินค้า (Taobao / 1688 / Tmall) *'}
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => handlePasteUrl(index)}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer active:scale-95"
+                            >
+                              <Clipboard className="w-3 h-3 text-primary" />
+                              <span>{locale === 'zh' ? '粘贴链接' : locale === 'en' ? 'Paste' : 'วางลิงก์'}</span>
+                            </button>
+                          </div>
                           <Input 
                             type="url" 
                             placeholder="https://detail.1688.com/offer/..." 
@@ -454,21 +489,39 @@ export default function InquiryForm() {
 
                       {/* Quantity & Remark Row */}
                       <div className="grid sm:grid-cols-12 gap-3">
-                        <div className="sm:col-span-4 space-y-1">
+                        <div className="sm:col-span-5 space-y-1">
                           <label className="text-xs font-bold text-slate-700 block">
                             {locale === 'en' ? 'Quantity *' : locale === 'zh' ? '数量 *' : 'จำนวนที่ต้องการ *'}
                           </label>
-                          <Input 
-                            type="number" 
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                            required
-                            className="h-11 rounded-xl bg-white text-center font-bold"
-                          />
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleQuantityStep(index, -1)}
+                              className="w-11 h-11 bg-white border border-slate-300 hover:bg-slate-100 active:bg-slate-200 rounded-xl flex items-center justify-center text-slate-700 font-black cursor-pointer shrink-0 transition-transform active:scale-95 select-none"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <Input 
+                              type="number" 
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                              required
+                              className="h-11 rounded-xl bg-white text-center font-bold text-base flex-1 min-w-0"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleQuantityStep(index, 1)}
+                              className="w-11 h-11 bg-white border border-slate-300 hover:bg-slate-100 active:bg-slate-200 rounded-xl flex items-center justify-center text-slate-700 font-black cursor-pointer shrink-0 transition-transform active:scale-95 select-none"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="sm:col-span-8 space-y-1">
+                        <div className="sm:col-span-7 space-y-1">
                           <label className="text-xs font-bold text-slate-700 block">
                             {locale === 'en' ? 'Remarks (Color, Size, Option)' : locale === 'zh' ? '规格备注 (颜色、尺码、型号)' : 'ระบุสี / ไซส์ / แบบที่ต้องการ'}
                           </label>

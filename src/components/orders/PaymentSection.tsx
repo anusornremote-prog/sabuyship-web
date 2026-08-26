@@ -9,15 +9,27 @@ import { createClient } from "@/lib/supabase/client"
 import imageCompression from 'browser-image-compression'
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { vibrateTap, vibrateSuccess, vibrateWarning } from "@/lib/haptics"
 
 interface PaymentSectionProps {
   orderId: string
   paymentRound: 1 | 2 | 3
   isRejected?: boolean
   defaultAmount?: number
+  triggerId?: string
+  buttonLabel?: string
+  buttonClassName?: string
 }
 
-export function PaymentSection({ orderId, paymentRound, isRejected = false, defaultAmount = 0 }: PaymentSectionProps) {
+export function PaymentSection({ 
+  orderId, 
+  paymentRound, 
+  isRejected = false, 
+  defaultAmount = 0,
+  triggerId,
+  buttonLabel,
+  buttonClassName
+}: PaymentSectionProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [amount, setAmount] = useState(defaultAmount ? defaultAmount.toString() : '')
   const [paymentDate, setPaymentDate] = useState('')
@@ -30,6 +42,18 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
   
   const router = useRouter()
   const supabase = createClient()
+
+  // Listen to custom open event if triggerId is provided
+  useEffect(() => {
+    if (!triggerId) return
+    const handleTrigger = (e: CustomEvent) => {
+      if (e.detail?.orderId === orderId && e.detail?.round === paymentRound) {
+        handleOpenModal()
+      }
+    }
+    window.addEventListener('open-payment-modal' as any, handleTrigger as any)
+    return () => window.removeEventListener('open-payment-modal' as any, handleTrigger as any)
+  }, [triggerId, orderId, paymentRound])
 
   // Company bank details
   const bankAccount = "123-4-56789-0"
@@ -49,6 +73,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
   }
 
   const handleOpenModal = () => {
+    vibrateTap()
     if (defaultAmount && defaultAmount > 0) {
       setAmount(defaultAmount.toString())
     }
@@ -60,6 +85,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
     const selectedFile = e.target.files?.[0] || null
     setFile(selectedFile)
     if (selectedFile) {
+      vibrateTap()
       const url = URL.createObjectURL(selectedFile)
       setPreviewUrl(url)
     } else {
@@ -69,6 +95,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
 
   const handleCopyAccount = (accountNo: string) => {
     navigator.clipboard.writeText(accountNo.replace(/-/g, ''))
+    vibrateSuccess()
     setCopiedBank(true)
     toast.success("คัดลอกเลขบัญชีเรียบร้อย")
     setTimeout(() => setCopiedBank(false), 2000)
@@ -77,6 +104,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
   const handleCopyAmount = () => {
     if (!amount) return
     navigator.clipboard.writeText(amount)
+    vibrateSuccess()
     setCopiedAmount(true)
     toast.success(`คัดลอกยอด ฿${amount} เรียบร้อย`)
     setTimeout(() => setCopiedAmount(false), 2000)
@@ -87,6 +115,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
   const qrUrl = `https://promptpay.io/${promptpayId}/${qrAmount > 0 ? qrAmount.toFixed(2) : ''}.png`
 
   const handleDownloadQr = async () => {
+    vibrateTap()
     try {
       const response = await fetch(qrUrl)
       const blob = await response.blob()
@@ -98,6 +127,7 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
       a.click()
       document.body.removeChild(a)
       window.URL.revokeObjectURL(blobUrl)
+      vibrateSuccess()
       toast.success("บันทึกรูป QR Code ลงเครื่องเรียบร้อยแล้วค่ะ")
     } catch (e) {
       // Fallback: Open in new tab
@@ -195,18 +225,21 @@ export function PaymentSection({ orderId, paymentRound, isRejected = false, defa
         onClick={handleOpenModal} 
         size="sm" 
         variant={isRejected ? "destructive" : "default"}
-        className={`w-full mt-2 font-bold cursor-pointer rounded-xl h-11 shadow-sm transition-all ${
+        className={buttonClassName || `w-full mt-2 font-bold cursor-pointer rounded-xl h-11 shadow-sm transition-all active:scale-[0.98] ${
           isRejected 
             ? "bg-rose-600 hover:bg-rose-700 text-white" 
             : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
         }`}
       >
         <Upload className="w-4 h-4 mr-2" />
-        {isRejected ? `แนบสลิปใหม่อีกครั้ง (รอบที่ ${paymentRound})` : `แนบสลิปชำระเงิน (รอบที่ ${paymentRound})`}
+        {buttonLabel || (isRejected ? `แนบสลิปใหม่อีกครั้ง (รอบที่ ${paymentRound})` : `แนบสลิปชำระเงิน (รอบที่ ${paymentRound})`)}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && setIsOpen(false)}>
-        <DialogContent className="max-w-md bg-white rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+        <DialogContent className="max-w-md w-full bg-white rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto fixed bottom-0 sm:bottom-auto left-1/2 -translate-x-1/2 animate-bottom-sheet sm:animate-none pb-safe">
+          {/* Mobile Bottom Sheet Pull Indicator Handle */}
+          <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-3 sm:hidden" />
+
           <div className="flex justify-between items-start border-b border-slate-100 pb-3">
             <DialogHeader>
               <DialogTitle className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">

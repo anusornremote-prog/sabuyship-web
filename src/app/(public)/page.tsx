@@ -23,10 +23,13 @@ import {
   Zap,
   Globe,
   Layers,
-  Check
+  Check,
+  Clipboard
 } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { createClient } from "@/lib/supabase/client"
+import { vibrateTap, vibrateSuccess, readClipboardText } from "@/lib/haptics"
+import { toast } from "sonner"
 
 export default function Home() {
   const router = useRouter()
@@ -35,6 +38,18 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"quote" | "track">("quote")
   const [quickUrl, setQuickUrl] = useState("")
   const [quickTrackId, setQuickTrackId] = useState("")
+
+  const handlePasteQuickUrl = async () => {
+    vibrateTap()
+    const text = await readClipboardText()
+    if (text) {
+      setQuickUrl(text)
+      vibrateSuccess()
+      toast.success(locale === 'zh' ? "链接已粘贴" : locale === 'en' ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
+    } else {
+      toast.info(locale === 'zh' ? "请手动粘贴" : locale === 'en' ? "Please paste into the box" : "กรุณากดวางลิงก์ลงในช่อง")
+    }
+  }
 
   useEffect(() => {
     const fetchRate = async () => {
@@ -192,13 +207,21 @@ export default function Home() {
                         placeholder="วางลิงก์ 1688, Taobao, Tmall ที่นี่..."
                         value={quickUrl}
                         onChange={(e) => setQuickUrl(e.target.value)}
-                        className="h-12 sm:h-13 rounded-xl bg-slate-50 border-slate-200 font-mono text-xs sm:text-sm pl-3 pr-3"
+                        className="h-12 sm:h-13 rounded-xl bg-slate-50 border-slate-200 font-mono text-xs sm:text-sm pl-3 pr-24"
                       />
+                      <button
+                        type="button"
+                        onClick={handlePasteQuickUrl}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/60 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 shadow-2xs"
+                      >
+                        <Clipboard className="w-3 h-3 text-primary" />
+                        <span>{locale === 'zh' ? '粘贴' : locale === 'en' ? 'Paste' : 'วางลิงก์'}</span>
+                      </button>
                     </div>
                     <Button 
                       type="submit" 
                       variant="orange" 
-                      className="h-12 sm:h-13 px-6 text-sm sm:text-base font-black rounded-xl cursor-pointer shadow-md shadow-orange-500/25 shrink-0"
+                      className="h-12 sm:h-13 px-6 text-sm sm:text-base font-black rounded-xl cursor-pointer shadow-md shadow-orange-500/25 shrink-0 active:scale-[0.98] transition-transform"
                     >
                       <Sparkles className="w-4 h-4 mr-1.5" />
                       {locale === 'en' ? 'Get Free Quote' : locale === 'zh' ? '获取报价' : 'ประเมินราคาฟรี ➔'}
