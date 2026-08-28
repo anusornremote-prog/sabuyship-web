@@ -52,6 +52,11 @@ export function QuickRmbCalculator() {
       }
     }
     fetchRate()
+
+    // Listen for custom open event
+    const handleOpenEvent = () => setIsOpen(true)
+    window.addEventListener("open-rmb-calculator", handleOpenEvent)
+    return () => window.removeEventListener("open-rmb-calculator", handleOpenEvent)
   }, [])
 
   // Quick Chips

@@ -95,49 +95,42 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-white">
       {/* 1. Hero Section (Mobile-First & Desktop Optimized) */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/90 via-indigo-50/30 to-white pt-8 pb-12 sm:pt-14 sm:pb-20 px-4 sm:px-6 md:px-8">
+      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/90 via-indigo-50/30 to-white pt-6 pb-14 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-24 px-4 sm:px-6 lg:px-8">
         {/* Subtle background ambient circles */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-gradient-to-tr from-blue-400/15 to-orange-400/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-gradient-to-tr from-blue-400/15 via-indigo-400/10 to-orange-400/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="container max-w-6xl mx-auto relative z-10 space-y-6 sm:space-y-10">
+        <div className="container max-w-7xl mx-auto relative z-10">
 
           {/* Main Hero Grid: Text & Action Card (Left) | Mascot (Right) */}
-          <div className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
             {/* Mascot Container (Appears First on Mobile with order-1, Right side on Desktop with lg:order-2) */}
             <div className="lg:col-span-5 flex justify-center order-1 lg:order-2">
-              <div className="relative w-44 sm:w-60 lg:w-full max-w-sm aspect-square">
+              <div className="relative w-48 sm:w-64 lg:w-full max-w-md aspect-square">
                 <div className="absolute inset-0 bg-gradient-to-tr from-blue-300/30 via-indigo-200/20 to-orange-200/30 rounded-full blur-2xl animate-pulse" />
                 <img 
                   src="/mascod.png" 
                   alt="Sabuy Ship Mascot" 
-                  className="relative z-10 w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" 
+                  className="relative z-10 w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" 
                 />
               </div>
             </div>
 
             {/* Main Content (Appears Under Mascot on Mobile with order-2, Left side on Desktop with lg:order-1) */}
-            <div className="lg:col-span-7 space-y-5 text-center sm:text-left order-2 lg:order-1">
-              <div className="space-y-2.5">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.25]">
-                  <span>{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
-                  <span className="text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
-                  <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
-                    {t.heroTitleHighlight1 || "แค่ส่งลิงก์มา..."}{" "}
-                    {t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}
-                  </span>
-                </h1>
-                
-                <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto sm:mx-0 leading-relaxed">
-                  {t.heroSub || "บริการฝากสั่งซื้อและนำเข้าสินค้าจากจีน Taobao, 1688, Tmall เรทหยวนตรงไปตรงมา ตรวจสอบสถานะได้ 24 ชั่วโมง"}
-                </p>
-              </div>
-
-              {/* 💰 Live Exchange Rate Capsule & Badges (Positioned right above the link paste card) */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-between gap-2.5 pt-1">
-                {exchangeRate ? (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full border border-blue-200/90 shadow-xs">
+            <div className="lg:col-span-7 space-y-6 text-center sm:text-left order-2 lg:order-1">
+              
+              {/* 💰 Live Exchange Rate Capsule & Badges (Interactive Top Eyebrow) */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
+                {exchangeRate && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      vibrateTap()
+                      window.dispatchEvent(new CustomEvent('open-rmb-calculator'))
+                    }}
+                    className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/95 backdrop-blur-md rounded-full border border-blue-200/90 shadow-xs hover:border-primary hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+                    title="คลิกเพื่อเปิดเครื่องคิดเลขแปลงเรทหยวน"
+                  >
                     <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-black uppercase tracking-wider">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -150,34 +143,55 @@ export default function Home() {
                       <span>1 ¥</span>
                       <span className="text-slate-300 font-black">=</span>
                       <img src="https://flagcdn.com/w20/th.png" width="16" alt="TH" className="rounded-xs" />
-                      <span className="text-primary font-black text-sm sm:text-base">{exchangeRate} ฿</span>
+                      <span className="text-primary font-black text-sm sm:text-base group-hover:underline">{exchangeRate} ฿</span>
                     </div>
-                  </div>
-                ) : <div />}
+                    <span className="text-[10px] text-slate-400 group-hover:text-primary font-bold pl-0.5">➔ คำนวณ</span>
+                  </button>
+                )}
 
                 {/* Micro Badges */}
-                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-900 rounded-full border border-amber-200/80">
-                    <Sparkles className="w-3 h-3 text-amber-600" />
-                    {locale === 'en' ? '0% Fee' : locale === 'zh' ? '0% 免费' : 'ฟรีค่ากดสั่ง 0฿'}
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-full border border-amber-200/80 shadow-2xs">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    {locale === 'en' ? '0% Service Fee' : locale === 'zh' ? '0% 免费采购' : 'ฟรีค่ากดสั่ง 0%'}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-900 rounded-full border border-blue-200/80">
-                    <Zap className="w-3 h-3 text-blue-600" />
-                    {locale === 'en' ? 'No Min' : locale === 'zh' ? '无起运' : 'ไม่มีขั้นต่ำ'}
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-900 rounded-full border border-blue-200/80 shadow-2xs">
+                    <Zap className="w-3.5 h-3.5 text-blue-600" />
+                    {locale === 'en' ? 'No Minimum' : locale === 'zh' ? '无起运限制' : 'ไม่มีขั้นต่ำ 1 ชิ้นก็ส่ง'}
                   </span>
                 </div>
               </div>
 
-              {/* 🌟 Interactive Quick Action Box (Link Paste / Tracking) */}
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border-2 border-blue-200/90 shadow-xl shadow-blue-900/10 p-2 sm:p-4 space-y-3 text-left">
+              {/* Main Headline */}
+              <div className="space-y-3">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[50px] font-black tracking-tight text-slate-900 leading-[1.2]">
+                  <span>{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
+                  <span className="text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
+                    {t.heroTitleHighlight1 || "ก๊อปปี้ลิงก์ส่งมา..."}{" "}
+                    {t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}
+                  </span>
+                </h1>
+                
+                <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-xl mx-auto sm:mx-0 leading-relaxed">
+                  {t.heroSub || "บริการฝากสั่งซื้อและนำเข้าสินค้าจากจีน Taobao, 1688, Tmall เรทหยวนตรงไปตรงมา ตรวจสอบสถานะได้ 24 ชั่วโมง"}
+                </p>
+              </div>
+
+              {/* 🌟 Interactive Quick Action Box (Hero Centerpiece) */}
+              <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-xl shadow-blue-950/5 p-3 sm:p-5 space-y-4 text-left">
                 {/* Tab Switcher */}
-                <div className="flex bg-slate-100 p-1 rounded-xl">
+                <div className="flex bg-slate-100/90 p-1.5 rounded-2xl gap-1">
                   <button
                     type="button"
-                    onClick={() => setActiveTab("quote")}
-                    className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    onClick={() => {
+                      vibrateTap()
+                      setActiveTab("quote")
+                    }}
+                    className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       activeTab === "quote" 
-                        ? "bg-white text-primary shadow-sm" 
+                        ? "bg-white text-primary shadow-xs" 
                         : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
@@ -186,10 +200,13 @@ export default function Home() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("track")}
-                    className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    onClick={() => {
+                      vibrateTap()
+                      setActiveTab("track")
+                    }}
+                    className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       activeTab === "track" 
-                        ? "bg-white text-primary shadow-sm" 
+                        ? "bg-white text-primary shadow-xs" 
                         : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
@@ -200,28 +217,28 @@ export default function Home() {
 
                 {/* Tab Content 1: Quick Quote Form */}
                 {activeTab === "quote" && (
-                  <form onSubmit={handleQuickQuoteSubmit} className="flex flex-col sm:flex-row gap-2 pt-1 animate-in fade-in duration-200">
+                  <form onSubmit={handleQuickQuoteSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1 animate-in fade-in duration-200">
                     <div className="relative flex-1">
                       <Input
                         type="url"
                         placeholder="วางลิงก์ 1688, Taobao, Tmall ที่นี่..."
                         value={quickUrl}
                         onChange={(e) => setQuickUrl(e.target.value)}
-                        className="h-12 sm:h-13 rounded-xl bg-slate-50 border-slate-200 font-mono text-xs sm:text-sm pl-3 pr-24"
+                        className="h-13 sm:h-14 rounded-2xl bg-slate-50 border-slate-300/80 font-mono text-xs sm:text-sm pl-4 pr-24 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
                       />
                       <button
                         type="button"
                         onClick={handlePasteQuickUrl}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/60 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 shadow-2xs"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 text-xs font-black text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 px-3 py-1.5 rounded-xl transition-all cursor-pointer active:scale-95 shadow-2xs"
                       >
-                        <Clipboard className="w-3 h-3 text-primary" />
+                        <Clipboard className="w-3.5 h-3.5 text-primary" />
                         <span>{locale === 'zh' ? '粘贴' : locale === 'en' ? 'Paste' : 'วางลิงก์'}</span>
                       </button>
                     </div>
                     <Button 
                       type="submit" 
                       variant="orange" 
-                      className="h-12 sm:h-13 px-6 text-sm sm:text-base font-black rounded-xl cursor-pointer shadow-md shadow-orange-500/25 shrink-0 active:scale-[0.98] transition-transform"
+                      className="h-13 sm:h-14 px-7 text-sm sm:text-base font-black rounded-2xl cursor-pointer shadow-lg shadow-orange-500/25 shrink-0 active:scale-[0.98] transition-all bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
                     >
                       <Sparkles className="w-4 h-4 mr-1.5" />
                       {locale === 'en' ? 'Get Free Quote' : locale === 'zh' ? '获取报价' : 'ประเมินราคาฟรี ➔'}
@@ -231,19 +248,19 @@ export default function Home() {
 
                 {/* Tab Content 2: Quick Track Form */}
                 {activeTab === "track" && (
-                  <form onSubmit={handleQuickTrackSubmit} className="flex flex-col sm:flex-row gap-2 pt-1 animate-in fade-in duration-200">
+                  <form onSubmit={handleQuickTrackSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1 animate-in fade-in duration-200">
                     <div className="relative flex-1">
                       <Input
                         type="text"
                         placeholder="กรอกรหัสออเดอร์ เช่น ORD-2608... หรือเลขพัสดุ"
                         value={quickTrackId}
                         onChange={(e) => setQuickTrackId(e.target.value)}
-                        className="h-12 sm:h-13 rounded-xl bg-slate-50 border-slate-200 font-mono text-xs sm:text-sm pl-3 pr-3"
+                        className="h-13 sm:h-14 rounded-2xl bg-slate-50 border-slate-300/80 font-mono text-xs sm:text-sm pl-4 pr-3 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
                       />
                     </div>
                     <Button 
                       type="submit" 
-                      className="h-12 sm:h-13 px-6 bg-primary text-white hover:bg-primary/90 text-sm sm:text-base font-black rounded-xl cursor-pointer shadow-md shrink-0"
+                      className="h-13 sm:h-14 px-7 bg-primary text-white hover:bg-primary/90 text-sm sm:text-base font-black rounded-2xl cursor-pointer shadow-md shrink-0 active:scale-[0.98] transition-all"
                     >
                       <Search className="w-4 h-4 mr-1.5" />
                       {locale === 'en' ? 'Track Now' : locale === 'zh' ? '立即查询' : 'ตรวจสอบสถานะ ➔'}
@@ -251,32 +268,38 @@ export default function Home() {
                   </form>
                 )}
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-0.5">
-                  <span>⚡ ออกใบเสนอราคาฟรีใน 1-2 ชม.</span>
-                  <Link href="/how-it-works" className="text-primary font-bold hover:underline">
-                    ดูวิธีสั่งซื้อ ➔
+                <div className="flex items-center justify-between text-xs text-slate-500 px-1 pt-0.5">
+                  <span className="flex items-center gap-1 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    ออกใบเสนอราคาฟรีใน 1-2 ชม.
+                  </span>
+                  <Link href="/how-it-works" className="text-primary font-black hover:underline flex items-center gap-0.5">
+                    <span>ดูวิธีสั่งซื้อ</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
 
               {/* Supported Platforms Chips */}
-              <div className="space-y-2 pt-1">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider text-left">
-                  {locale === 'en' ? 'Supported Platforms:' : locale === 'zh' ? '支持采购平台：' : 'รองรับการสั่งซื้อจากทุกเว็บจีน:'}
+              <div className="space-y-2.5 pt-2">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-wider text-left">
+                  {locale === 'en' ? 'Supported Platforms:' : locale === 'zh' ? '支持采购平台：' : 'รองรับการสั่งซื้อจากทุกเว็บจีนยอดนิยม:'}
                 </p>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center sm:justify-start">
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                   {platforms.map((p, idx) => (
                     <span 
                       key={idx} 
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-2xs ${p.bg}`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border shadow-2xs ${p.bg}`}
                     >
                       <span className="font-black">{p.name}</span>
-                      <span className="text-[10px] opacity-75">({p.tag})</span>
+                      <span className="text-[11px] opacity-75">({p.tag})</span>
                     </span>
                   ))}
                 </div>
               </div>
+
             </div>
+
 
           </div>
         </div>

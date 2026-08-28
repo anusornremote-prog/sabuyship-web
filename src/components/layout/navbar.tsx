@@ -83,21 +83,21 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-20 md:h-24 items-center justify-between px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+      <div className="container flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* 1. Left: Logo */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="flex items-center">
             <img 
               src="/Sabuy_Ship_Express.png" 
               alt="Sabuy Ship Express Logo" 
-              className="h-14 sm:h-16 md:h-20 w-auto object-contain hover:scale-105 transition-transform" 
+              className="h-12 sm:h-14 md:h-16 w-auto object-contain hover:scale-105 transition-transform" 
             />
           </Link>
         </div>
 
         {/* 2. Center: Balanced Navigation Links */}
-        <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8 text-sm lg:text-base font-semibold">
+        <nav className="hidden md:flex items-center justify-center gap-5 lg:gap-7 xl:gap-8 text-sm font-bold">
           <Link href="/how-it-works" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
             {t.navHowItWorks}
           </Link>
@@ -116,14 +116,14 @@ export function Navbar() {
         </nav>
 
         {/* 3. Right: Language Switcher, Login, Submit Button */}
-        <div className="hidden md:flex items-center gap-2.5 shrink-0">
+        <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
           {!user && <LanguageSwitcher />}
           {user && <NotificationBell />}
           {user ? (
             <div className="relative user-dropdown">
               <Button 
                 variant="ghost" 
-                className="font-bold text-primary flex items-center gap-1.5"
+                className="font-bold text-primary flex items-center gap-1.5 h-10 px-3 hover:bg-slate-100/80 rounded-xl"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 {user?.user_metadata?.avatar_url ? (
