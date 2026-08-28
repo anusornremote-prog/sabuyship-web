@@ -165,13 +165,13 @@ export default function Home() {
 
               {/* Main Headline */}
               <div className="space-y-3">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[46px] xl:text-[50px] font-black tracking-tight text-slate-900 leading-[1.2]">
-                  <span>{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
-                  <span className="text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
-                  <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
-                    {t.heroTitleHighlight1 || "ก๊อปปี้ลิงก์ส่งมา..."}{" "}
-                    {t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}
+                <h1 className="text-3xl sm:text-4xl lg:text-[42px] xl:text-[48px] font-black tracking-tight text-slate-900 leading-[1.25]">
+                  <span className="inline-block">{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
+                  <span className="inline-block text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
+                  <br className="hidden sm:inline" />
+                  <span className="mt-1 inline-block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
+                    <span className="inline-block whitespace-nowrap">{t.heroTitleHighlight1 || "ก๊อปปี้ลิงก์ส่งมา..."}</span>{" "}
+                    <span className="inline-block whitespace-nowrap">{t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}</span>
                   </span>
                 </h1>
                 
