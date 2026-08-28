@@ -24,7 +24,8 @@ import {
   Globe,
   Layers,
   Check,
-  Clipboard
+  Clipboard,
+  ChevronRight
 } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { createClient } from "@/lib/supabase/client"

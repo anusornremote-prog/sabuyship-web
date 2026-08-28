@@ -197,7 +197,8 @@ export async function GET() {
         }
 
         // Check Out of Stock
-        let items = quotation?.inquiry?.items
+        const inqData: any = Array.isArray(quotation?.inquiry) ? quotation?.inquiry[0] : quotation?.inquiry
+        let items = inqData?.items
         if (typeof items === 'string') {
           try { items = JSON.parse(items) } catch { items = [] }
         }
