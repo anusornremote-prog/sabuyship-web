@@ -99,8 +99,8 @@ export function QuickRmbCalculator() {
 
   return (
     <>
-      {/* 1. Floating Action Pill Button */}
-      <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-40">
+      {/* 1. Floating Action Pill Button (Bottom-Left Corner to balance with LINE button on Bottom-Right) */}
+      <div className="fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40">
         <button
           type="button"
           onClick={handleOpen}
