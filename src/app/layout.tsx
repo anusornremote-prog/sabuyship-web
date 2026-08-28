@@ -3,6 +3,7 @@ import { Prompt } from "next/font/google";
 import { cookies } from "next/headers";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { QuickRmbCalculator } from "@/components/calculator/QuickRmbCalculator";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({
           <div className="flex-1 flex flex-col pb-18 md:pb-0">
             {children}
           </div>
+          <QuickRmbCalculator />
           <MobileBottomNav />
         </LanguageProvider>
         <Toaster richColors position="top-right" />
