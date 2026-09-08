@@ -4,8 +4,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Sparkles, AlertTriangle, FileQuestion, ArrowRight, ShieldCheck, MapPin, Phone, User, Building } from "lucide-react"
+import { Copy, Check, Sparkles, AlertTriangle, FileQuestion, ArrowRight, ShieldCheck, Zap, MapPin, Phone, User, Building } from "lucide-react"
 import { toast } from "sonner"
+import { vibrateSuccess } from "@/lib/haptics"
 
 interface CustomerWarehouseCardProps {
   customerCode: string
@@ -19,8 +20,21 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
   const zipCode = "510470"
   const address = `广东省广州市白云区人和镇人和大街68号（万宝集团）进大门右转直走到底61号仓（泰国专线仓库） (${customerCode})`
 
+    const smartAddressText = `${consigneeName}, ${phone}, ${address}, ${zipCode}`
+
+  const handleSmartCopy = () => {
+    navigator.clipboard.writeText(smartAddressText)
+    vibrateSuccess()
+    setCopiedField("smart-paste")
+    toast.success("คัดลอกที่อยู่ Smart Paste สำเร็จ!", {
+      description: "นำไปวางในช่อง 智能识别 (Smart Identify) ของ Taobao / 1688 ได้ทันที ระบบจะแยกช่องให้อัตโนมัติ",
+    })
+    setTimeout(() => setCopiedField(null), 2500)
+  }
+
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text)
+    vibrateSuccess()
     setCopiedField(fieldName)
     toast.success(`คัดลอก${fieldName}แล้ว`)
     setTimeout(() => setCopiedField(null), 2000)
@@ -98,6 +112,43 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
             </div>
 
             <div className="space-y-3 text-xs">
+                          {/* Smart Paste 1-Click for Taobao / 1688 */}
+            <div className="p-3.5 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 rounded-xl border border-orange-200/90 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm mt-0.5">
+                    <Zap className="h-4 w-4 fill-white" />
+                  </span>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-black text-slate-900 text-sm">คัดลอกแบบ Smart Paste</span>
+                      <span className="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200">
+                        🔥 แนะนำสำหรับ Taobao / 1688
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-snug">
+                      แตะปุ่มนี้แล้วไปวางในช่อง <span className="font-bold text-slate-800">智能识别地址</span> ของ Taobao / 1688 ได้ใน 1 คลิก ระบบจีนจะแยกชื่อ เบอร์ ที่อยู่ และรหัสไปรษณีย์ให้อัตโนมัติ
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleSmartCopy}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold h-10 px-4 rounded-xl shadow-md cursor-pointer shrink-0 text-xs w-full sm:w-auto"
+                >
+                  {copiedField === "smart-paste" ? (
+                    <span className="flex items-center gap-1.5 text-white">
+                      <Check className="w-4 h-4" /> คัดลอกสำเร็จ!
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <Copy className="w-4 h-4" /> คัดลอก Smart Paste
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </div>
+
               {/* Consignee */}
               <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
