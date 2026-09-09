@@ -1,11 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Prompt } from "next/font/google";
 import { cookies } from "next/headers";
+import dynamic from "next/dynamic";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
-import { QuickRmbCalculator } from "@/components/calculator/QuickRmbCalculator";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+// Code-split floating calculator chunk for optimal initial page load
+const QuickRmbCalculator = dynamic(
+  () => import("@/components/calculator/QuickRmbCalculator").then((mod) => mod.QuickRmbCalculator)
+);
 
 const promptFont = Prompt({
   weight: ["300", "400", "500", "600", "700"],

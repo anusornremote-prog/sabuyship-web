@@ -35,7 +35,12 @@ import { toast } from "sonner"
 export default function Home() {
   const router = useRouter()
   const { t, locale } = useTranslation()
-  const [exchangeRate, setExchangeRate] = useState<string | null>(null)
+  const [exchangeRate, setExchangeRate] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("sabuy_exchange_rate") || "5.10"
+    }
+    return "5.10"
+  })
   const [activeTab, setActiveTab] = useState<"quote" | "track">("quote")
   const [quickUrl, setQuickUrl] = useState("")
   const [quickTrackId, setQuickTrackId] = useState("")
@@ -58,7 +63,11 @@ export default function Home() {
         const supabase = createClient()
         const { data } = await supabase.from('site_settings').select('value').eq('key', 'exchange_rate').single()
         if (data?.value) {
-          setExchangeRate(data.value.toString())
+          const valStr = data.value.toString()
+          setExchangeRate(valStr)
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("sabuy_exchange_rate", valStr)
+          }
         }
       } catch (err) {
         console.error("Error fetching exchange rate:", err)
@@ -109,11 +118,17 @@ export default function Home() {
             <div className="lg:col-span-5 flex justify-center order-1 lg:order-2">
               <div className="relative w-48 sm:w-64 lg:w-full max-w-md aspect-square">
                 <div className="absolute inset-0 bg-gradient-to-tr from-blue-300/30 via-indigo-200/20 to-orange-200/30 rounded-full blur-2xl animate-pulse" />
-                <img 
-                  src="/mascod.png" 
-                  alt="Sabuy Ship Mascot" 
-                  className="relative z-10 w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" 
-                />
+                <picture>
+                  <source srcSet="/mascod.webp" type="image/webp" />
+                  <img 
+                    src="/mascod.png" 
+                    alt="Sabuy Ship Mascot" 
+                    width={400}
+                    height={400}
+                    fetchPriority="high"
+                    className="relative z-10 w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" 
+                  />
+                </picture>
               </div>
             </div>
 

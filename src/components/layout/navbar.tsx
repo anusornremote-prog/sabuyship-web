@@ -88,11 +88,17 @@ export function Navbar() {
         {/* 1. Left: Logo */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="flex items-center">
-            <img 
-              src="/Sabuy_Ship_Express.png" 
-              alt="Sabuy Ship Express Logo" 
-              className="h-12 sm:h-14 md:h-16 w-auto object-contain hover:scale-105 transition-transform" 
-            />
+            <picture>
+              <source srcSet="/Sabuy_Ship_Express.webp" type="image/webp" />
+              <img 
+                src="/Sabuy_Ship_Express.png" 
+                alt="Sabuy Ship Express Logo" 
+                width={200}
+                height={64}
+                fetchPriority="high"
+                className="h-12 sm:h-14 md:h-16 w-auto object-contain hover:scale-105 transition-transform" 
+              />
+            </picture>
           </Link>
         </div>
 
