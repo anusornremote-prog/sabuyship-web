@@ -105,8 +105,12 @@ try {
   const customer = await signedInClient(customerEmail)
   const admin = await signedInClient(adminEmail)
 
-  const anonymousProfiles = must(await anonymous.from("profiles").select("id"), "anonymous profile query")
-  assert(anonymousProfiles.length === 0, "anonymous cannot read profiles")
+  const anonymousProfileResult = await anonymous.from("profiles").select("id")
+  assert(
+    anonymousProfileResult.error?.code === "42501" ||
+      (!anonymousProfileResult.error && anonymousProfileResult.data.length === 0),
+    "anonymous cannot read profiles",
+  )
 
   const customerProfiles = must(await customer.from("profiles").select("id, role"), "customer profile query")
   assert(customerProfiles.length === 1 && customerProfiles[0].id === customerUser.id, "customer sees only own profile")
