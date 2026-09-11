@@ -324,9 +324,11 @@ CREATE POLICY "Admins can manage addresses" ON public.addresses
 FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 CREATE POLICY "Guests can create inquiries" ON public.inquiries
-FOR INSERT TO anon WITH CHECK (customer_id IS NULL);
+FOR INSERT TO anon WITH CHECK (customer_id IS NULL AND status = 'PENDING');
 CREATE POLICY "Customers can create own inquiries" ON public.inquiries
-FOR INSERT TO authenticated WITH CHECK (customer_id = auth.uid() OR customer_id IS NULL);
+FOR INSERT TO authenticated WITH CHECK (
+  (customer_id = auth.uid() OR customer_id IS NULL) AND status = 'PENDING'
+);
 CREATE POLICY "Customers can view own inquiries" ON public.inquiries
 FOR SELECT TO authenticated USING (customer_id = auth.uid());
 CREATE POLICY "Admins can manage inquiries" ON public.inquiries
@@ -391,7 +393,10 @@ FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admi
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.site_settings TO anon, authenticated;
-GRANT INSERT ON public.inquiries TO anon;
+GRANT INSERT (
+  inquiry_number, customer_id, customer_name, phone, line_id, product_url,
+  quantity, items, shipping_type, service_type, status
+) ON public.inquiries TO anon;
 GRANT SELECT, INSERT ON public.inquiries TO authenticated;
 GRANT SELECT ON public.profiles, public.quotations, public.orders, public.payments,
   public.tracking_logs, public.wallet_transactions, public.shipments TO authenticated;
