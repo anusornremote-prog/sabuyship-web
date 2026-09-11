@@ -17,6 +17,7 @@ export default function Register() {
   const [phone, setPhone] = useState("")
   const [lineId, setLineId] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -103,11 +104,13 @@ export default function Register() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setSuccess(null)
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
         data: {
           full_name: fullName,
           phone: phone,
@@ -125,6 +128,13 @@ export default function Register() {
       setLoading(false)
       return
     }
+
+    if (!data.session) {
+      setSuccess("สมัครสมาชิกสำเร็จ กรุณาตรวจสอบอีเมลและกดลิงก์ยืนยันก่อนเข้าสู่ระบบ")
+      setLoading(false)
+      return
+    }
+
     router.push("/dashboard")
   }
 
@@ -157,6 +167,7 @@ export default function Register() {
       <CardContent>
         <form onSubmit={handleRegister} className="space-y-4">
           {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
+          {success && <div className="p-3 bg-emerald-50 text-emerald-700 text-sm rounded-md">{success}</div>}
           <div className="space-y-2">
             <label className="text-sm font-medium">ชื่อ - นามสกุล *</label>
             <Input 

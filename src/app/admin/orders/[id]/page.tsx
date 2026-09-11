@@ -11,11 +11,10 @@ import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 import { AdminOrderActions } from "./AdminOrderActions"
 
-export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   try {
   const supabase = await createClient()
-  const resolvedParams = await params
-  const { id } = resolvedParams as { id: string }
+  const { id } = await params
   const orderIdOrNumber = id
 
   // Check if uuid format or order number

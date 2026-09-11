@@ -66,63 +66,20 @@ export default function AdminNewOrder() {
     try {
       setLoading(true)
       
-      const { data: userData } = await supabase.auth.getUser()
-      const orderNumber = `ORD${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`
-
-      // 1. Create Inquiry (as base)
-      const { data: inquiry, error: inquiryError } = await supabase
-        .from('inquiries')
-        .insert({
+      const response = await fetch('/api/admin/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           customer_id: selectedCustomerId,
-          status: 'QUOTED', // Automatically quoted
-          product_url: orderItems[0].product_url || 'Manual Order',
-          product_name: orderItems[0].product_name || 'Manual Order',
-          quantity: orderItems.reduce((sum, item) => sum + Number(item.quantity), 0),
-          notes: 'สร้างโดยแอดมิน (Manual)'
-        })
-        .select()
-        .single()
+          items: orderItems,
+          shipping_cost_cn_cn: shippingRate,
+          status,
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'ไม่สามารถสร้างออเดอร์ได้')
 
-      if (inquiryError) throw inquiryError
-
-      // 2. Create Quotation
-      const { data: quotation, error: quotationError } = await supabase
-        .from('quotations')
-        .insert({
-          inquiry_id: inquiry.id,
-          total_price: calculateTotal(),
-          admin_notes: 'สร้างโดยแอดมิน (Manual)',
-          valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        })
-        .select()
-        .single()
-        
-      if (quotationError) throw quotationError
-
-      // 3. Create Order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          customer_id: selectedCustomerId,
-          quotation_id: quotation.id,
-          order_number: orderNumber,
-          status: status
-        })
-        .select()
-        .single()
-
-      if (orderError) throw orderError
-
-      // 4. Create Tracking Log
-      await supabase
-        .from('tracking_logs')
-        .insert({
-          order_id: order.id,
-          status: status,
-          notes: `สร้างใบสั่งซื้อ (Manual) สถานะ: ${status}`
-        })
-
-      alert(`สร้างออเดอร์ ${orderNumber} สำเร็จ!`)
+      alert(`สร้างออเดอร์ ${result.data.order_number} สำเร็จ!`)
       router.push('/admin/orders')
 
     } catch (err: any) {

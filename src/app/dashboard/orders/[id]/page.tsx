@@ -10,11 +10,10 @@ import { PaymentStepper } from "@/components/orders/PaymentStepper"
 import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 
-export default async function OrderDetail({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   try {
   const supabase = await createClient()
-  const resolvedParams = await params
-  const { id } = resolvedParams as { id: string }
+  const { id } = await params
   const orderIdOrNumber = id
 
   // Check if uuid format or order number
@@ -48,6 +47,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       shipping_cost_cn_cn,
       shipping_cost_cn_th,
       shipping_cost_th_th,
+      wooden_crate_cost,
       other_fee,
       total_price,
       inquiry:inquiry_id (

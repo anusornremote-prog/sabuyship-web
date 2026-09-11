@@ -4,9 +4,10 @@ import AdminInquiryList from "./AdminInquiryList"
 export default async function AdminInquiries({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page = parseInt(searchParams.page || "1")
+  const resolvedSearchParams = await searchParams
+  const page = parseInt(resolvedSearchParams.page || "1")
   const ITEMS_PER_PAGE = 20
   
   const supabase = await createClient()
@@ -53,4 +54,3 @@ export default async function AdminInquiries({
     </div>
   )
 }
-

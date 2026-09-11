@@ -164,32 +164,18 @@ export function PaymentSection({
 
       const slipUrl = publicUrlData.publicUrl
 
-      const { error: insertError } = await supabase
-        .from('payments')
-        .insert({
-          order_id: orderId,
+      const paymentResponse = await fetch(`/api/order/${orderId}/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_round: paymentRound,
           amount: parseFloat(amount),
           payment_date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),
           slip_url: slipUrl,
-          status: 'PENDING'
-        })
-
-      if (insertError) throw insertError
-
-      const roundColumn = `payment_round_${paymentRound}_status`
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update({ [roundColumn]: 'UPLOADED' })
-        .eq('id', orderId)
-
-      if (orderError) throw orderError
-
-      // Insert tracking log
-      await supabase.from('tracking_logs').insert({
-        order_id: orderId,
-        status: `UPLOADED_ROUND_${paymentRound}`,
-        notes: `แนบหลักฐานชำระเงิน รอบที่ ${paymentRound} (ยอด ${amount} บาท)`
+        }),
       })
+      const paymentResult = await paymentResponse.json()
+      if (!paymentResponse.ok) throw new Error(paymentResult.error || 'ไม่สามารถบันทึกการชำระเงินได้')
 
       // Trigger admin notification
       try {

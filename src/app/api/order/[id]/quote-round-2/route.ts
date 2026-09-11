@@ -30,7 +30,7 @@ export async function POST(
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
     let orderQuery = supabase
       .from("orders")
-      .select("id, customer_id, quotation_id, payment_round_2_status")
+      .select("id, order_number, customer_id, quotation_id, payment_round_2_status")
       
     if (isUUID) {
       orderQuery = orderQuery.eq("id", orderId)

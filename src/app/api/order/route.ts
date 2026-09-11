@@ -1,134 +1,138 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { sendAdminNotification } from "@/lib/notify"
 
-// POST /api/order - Create an order (Node-RED integration or external API)
+import { hasValidApiKey } from "@/lib/api-auth"
+import { sendAdminNotification } from "@/lib/notify"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { createClient } from "@/lib/supabase/server"
+
+// POST /api/order - Create an order from an accepted quotation.
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const sessionClient = await createClient()
+    const adminClient = createAdminClient()
+    const apiKeyAuthorized = hasValidApiKey(request)
+    const {
+      data: { user },
+    } = await sessionClient.auth.getUser()
 
-    // 1. Check Auth (API Key or User Session)
-    let isAuthorized = false
-    let customerId = null
-    const apiKey = request.headers.get("x-api-key")
-
-    if (apiKey === process.env.SABUY_API_KEY && apiKey) {
-      isAuthorized = true
-    } else {
-      // Check user session
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        isAuthorized = true
-        customerId = user.id
-      }
-    }
-
-    if (!isAuthorized) {
+    if (!apiKeyAuthorized && !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
-    const targetCustomerId = customerId || body.customer_id // enforce own id if user, or allow body if api key
+    const targetCustomerId = apiKeyAuthorized ? body.customer_id : user?.id
 
     if (!targetCustomerId || !body.quotation_id) {
       return NextResponse.json(
         { error: "Missing required fields: customer_id, quotation_id" },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
-    // 2. Validate Ownership and Get Inquiry Number
-    let orderNumber = ""
-    let inquiryId = null
-    
-    if (!apiKey) {
-      const { data: quoteCheck, error: quoteError } = await supabase
-        .from('quotations')
-        .select(`inquiry_id, inquiries!inner(customer_id, inquiry_number)`)
-        .eq('id', body.quotation_id)
+    const { data: quotation, error: quotationError } = await adminClient
+      .from("quotations")
+      .select("id, inquiry_id, status, inquiries!inner(customer_id, inquiry_number)")
+      .eq("id", body.quotation_id)
+      .maybeSingle()
+
+    const inquiry = quotation?.inquiries as unknown as {
+      customer_id: string | null
+      inquiry_number: string
+    } | null
+
+    if (quotationError || !quotation || !inquiry) {
+      return NextResponse.json({ error: "Quotation not found" }, { status: 404 })
+    }
+
+    if (inquiry.customer_id !== targetCustomerId) {
+      return NextResponse.json({ error: "Invalid quotation or unauthorized" }, { status: 403 })
+    }
+
+    if (body.shipping_address_id) {
+      const { data: address } = await adminClient
+        .from("addresses")
+        .select("id")
+        .eq("id", body.shipping_address_id)
+        .eq("customer_id", targetCustomerId)
         .maybeSingle()
-        
-      if (quoteError || !quoteCheck || (quoteCheck.inquiries as any)?.customer_id !== targetCustomerId) {
-        return NextResponse.json({ error: "Invalid quotation or unauthorized" }, { status: 403 })
-      }
-      
-      orderNumber = (quoteCheck.inquiries as any)?.inquiry_number
-      inquiryId = quoteCheck.inquiry_id
-    } else {
-      // For API key flow, we still need to get the inquiry number
-      const { data: quoteCheck, error: quoteError } = await supabase
-        .from('quotations')
-        .select(`inquiries!inner(inquiry_number)`)
-        .eq('id', body.quotation_id)
-        .maybeSingle()
-        
-      if (!quoteError && quoteCheck) {
-        orderNumber = (quoteCheck.inquiries as any)?.inquiry_number
-      } else {
-        const date = new Date()
-        orderNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${Math.floor(1000 + Math.random() * 9000)}`
+
+      if (!address) {
+        return NextResponse.json({ error: "Invalid shipping address" }, { status: 400 })
       }
     }
 
-    // Check if order already exists to prevent duplicate key errors
-    const { data: existingOrder } = await supabase
+    const orderNumber = inquiry.inquiry_number
+    const { data: existingOrder, error: existingOrderError } = await adminClient
       .from("orders")
-      .select("id, order_number")
+      .select("*")
       .eq("order_number", orderNumber)
       .maybeSingle()
 
-    let orderData = existingOrder;
-
-    if (!existingOrder) {
-      const { data, error } = await supabase
-        .from("orders")
-        .insert({
-          order_number: orderNumber,
-          customer_id: targetCustomerId,
-          quotation_id: body.quotation_id,
-          status: "NEW",
-          admin_notes: body.admin_notes || null,
-          shipping_address_id: body.shipping_address_id || null
-        })
-        .select()
-        .maybeSingle()
-
-      if (error) throw error
-      if (!data) throw new Error("Failed to insert order or RLS prevented reading the inserted row")
-      orderData = data
-
-      // Initial tracking log will be inserted below
-    }
-
-    // Insert initial tracking log
-    if (orderData) {
-      await supabase.from("tracking_logs").insert({
-        order_id: orderData.id,
-        status: "NEW",
-        notes: "สร้างคำสั่งซื้อเข้าระบบเรียบร้อยแล้ว"
-      })
-    }
-
-    // Update quotation status to ACCEPTED
-    await supabase.from("quotations").update({ status: "ACCEPTED" }).eq("id", body.quotation_id)
-    
-    // Also update inquiry status so it's formally closed
-    if (inquiryId && !apiKey) {
-      const { error: inqUpdateError } = await supabase
-        .from('inquiries')
-        .update({ status: 'ACCEPTED' })
-        .eq('id', inquiryId)
-        
-      if (inqUpdateError) {
-        console.error("Failed to update inquiry status:", inqUpdateError)
+    if (existingOrderError) throw existingOrderError
+    if (existingOrder) {
+      if (existingOrder.customer_id !== targetCustomerId) {
+        return NextResponse.json({ error: "Order number conflict" }, { status: 409 })
       }
+      return NextResponse.json(
+        { success: true, data: existingOrder, order: existingOrder, existing: true },
+        { status: 200 },
+      )
     }
 
-    // Send admin notification
-    await sendAdminNotification(`✅ ลูกค้ายอมรับใบเสนอราคาแล้ว!\nออเดอร์ถูกสร้าง: ${orderNumber}\nตรวจสอบในระบบด่วน: https://www.sabuyship.com/admin/orders`);
+    const { data: order, error: orderError } = await adminClient
+      .from("orders")
+      .insert({
+        order_number: orderNumber,
+        customer_id: targetCustomerId,
+        quotation_id: quotation.id,
+        status: "WAITING_PAYMENT",
+        payment_round_1_status: "PENDING",
+        admin_notes: body.admin_notes || null,
+        shipping_address_id: body.shipping_address_id || null,
+      })
+      .select()
+      .single()
 
-    return NextResponse.json({ success: true, order: orderData }, { status: 201 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    if (orderError) throw orderError
+
+    const { error: trackingError } = await adminClient.from("tracking_logs").insert({
+      order_id: order.id,
+      status: "WAITING_PAYMENT",
+      notes: "สร้างคำสั่งซื้อและรอชำระเงินรอบที่ 1",
+      created_by: user?.id || null,
+    })
+
+    if (trackingError) {
+      await adminClient.from("orders").delete().eq("id", order.id)
+      throw trackingError
+    }
+
+    const { error: quotationUpdateError } = await adminClient
+      .from("quotations")
+      .update({ status: "ACCEPTED" })
+      .eq("id", quotation.id)
+    if (quotationUpdateError) throw quotationUpdateError
+
+    const { error: inquiryUpdateError } = await adminClient
+      .from("inquiries")
+      .update({ status: "ORDERED" })
+      .eq("id", quotation.inquiry_id)
+    if (inquiryUpdateError) throw inquiryUpdateError
+
+    try {
+      await sendAdminNotification(
+        `✅ ลูกค้ายอมรับใบเสนอราคาแล้ว!\nออเดอร์ถูกสร้าง: ${orderNumber}\nตรวจสอบในระบบด่วน: https://www.sabuyship.com/admin/orders`,
+      )
+    } catch (notificationError) {
+      console.error("Order notification failed:", notificationError)
+    }
+
+    return NextResponse.json(
+      { success: true, data: order, order },
+      { status: 201 },
+    )
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

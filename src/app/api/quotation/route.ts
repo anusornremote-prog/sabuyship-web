@@ -6,13 +6,38 @@ import { sendCustomerNotification } from "@/lib/notify"
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    const body = await request.json()
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle()
+    if (profile?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 })
+    }
+
+    const body = await request.json()
     if (!body.inquiry_id || body.product_cost === undefined) {
       return NextResponse.json(
         { error: "Missing required fields: inquiry_id, product_cost" },
         { status: 400 }
       )
+    }
+
+    const { data: inquiry, error: inquiryError } = await supabase
+      .from("inquiries")
+      .select("id, customer_id, inquiry_number")
+      .eq("id", body.inquiry_id)
+      .maybeSingle()
+    if (inquiryError || !inquiry) {
+      return NextResponse.json({ error: "Inquiry not found" }, { status: 404 })
     }
 
     let total = 
@@ -43,6 +68,7 @@ export async function POST(request: Request) {
           total_price: total
         })
         .eq("id", body.quotation_id)
+        .eq("inquiry_id", body.inquiry_id)
         .select()
         .single()
         
@@ -53,6 +79,7 @@ export async function POST(request: Request) {
         .from("quotations")
         .insert({
           inquiry_id: body.inquiry_id,
+          customer_id: inquiry.customer_id,
           product_cost: body.product_cost,
           shipping_cost_cn_cn: body.shipping_cost_cn_cn || 0,
           other_fee: body.other_fee || 0,
@@ -74,12 +101,6 @@ export async function POST(request: Request) {
     await supabase.from("inquiries").update(updatePayload).eq("id", body.inquiry_id)
 
     // Notify customer about Round 1 quote
-    const { data: inquiry } = await supabase
-      .from("inquiries")
-      .select("customer_id, inquiry_number")
-      .eq("id", body.inquiry_id)
-      .single()
-
     if (inquiry && inquiry.customer_id) {
       const formattedTotal = new Intl.NumberFormat('th-TH').format(total)
       const actionText = body.quotation_id ? 'อัปเดตใบเสนอราคา' : 'ออกใบเสนอราคา'

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(
@@ -39,18 +40,24 @@ export async function POST(
       return NextResponse.json({ error: "Invalid status for confirming receipt" }, { status: 400 })
     }
 
-    const { error: updateError } = await supabase
+    const adminClient = createAdminClient()
+    const deliveredAt = new Date().toISOString()
+    const { error: updateError } = await adminClient
       .from("orders")
-      .update({ status: 'DELIVERED' })
+      .update({ status: 'DELIVERED', delivered_at: deliveredAt })
       .eq("id", order.id)
+      .eq("customer_id", user.id)
+      .eq("status", "OUT_FOR_DELIVERY")
 
     if (updateError) throw updateError
 
-    await supabase.from("tracking_logs").insert({
+    const { error: logError } = await adminClient.from("tracking_logs").insert({
       order_id: order.id,
       status: "DELIVERED",
-      notes: "ลูกค้ายืนยันการได้รับสินค้าเรียบร้อยแล้ว (การขนส่งเสร็จสิ้น)"
+      notes: "ลูกค้ายืนยันการได้รับสินค้าเรียบร้อยแล้ว (การขนส่งเสร็จสิ้น)",
+      created_by: user.id,
     })
+    if (logError) throw logError
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

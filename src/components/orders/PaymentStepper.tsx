@@ -3,7 +3,6 @@
 import { Package, Truck, Home, AlertTriangle } from "lucide-react"
 import { PaymentSection } from "./PaymentSection"
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 
 interface PaymentStepperProps {
   orderId: string
@@ -33,7 +32,6 @@ export function PaymentStepper({
   rejectionReason
 }: PaymentStepperProps) {
   
-  const supabase = createClient()
   const [shippingMethod, setShippingMethod] = useState<string>(initialShippingMethod)
   const [savedMethod, setSavedMethod] = useState<string>(initialShippingMethod)
   const [isUpdatingMethod, setIsUpdatingMethod] = useState(false)
@@ -46,11 +44,13 @@ export function PaymentStepper({
     if (!shippingMethod) return
     try {
       setIsUpdatingMethod(true)
-      const { error } = await supabase
-        .from("orders")
-        .update({ shipping_company: shippingMethod }) // Reusing this text column to store the method
-        .eq("id", orderId)
-      if (error) throw error
+      const response = await fetch(`/api/order/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shipping_company: shippingMethod }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถบันทึกวิธีจัดส่งได้")
       setSavedMethod(shippingMethod)
     } catch (e) {
       console.error(e)
@@ -177,7 +177,7 @@ export function PaymentStepper({
                   {/* Render Payment Button/Section if Active */}
                   {step.isActive && (
                     <div className="mt-3 text-center md:text-left">
-                      {step.round === 2 && paymentRound2Status !== 'PAID' && paymentRound2Status !== 'UPLOADED' && (
+                      {step.round === 3 && status === 'THAILAND_WAREHOUSE' && paymentRound3Status !== 'PAID' && paymentRound3Status !== 'UPLOADED' && (
                         <div className="mb-3 text-sm">
                           <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่งในไทย (เพื่อให้แอดมินประเมินราคา):</p>
                           <div className="flex flex-col sm:flex-row gap-2">
@@ -185,7 +185,7 @@ export function PaymentStepper({
                               className="w-full text-sm p-2 rounded border border-slate-300 bg-white"
                               onChange={(e) => setShippingMethod(e.target.value)}
                               value={shippingMethod}
-                              disabled={isUpdatingMethod || paymentRound2Status === 'PAID'}
+                              disabled={isUpdatingMethod || paymentRound3Status === 'PAID'}
                             >
                               <option value="">-- กรุณาเลือกวิธีจัดส่ง --</option>
                               <option value="รับสินค้าด้วยตัวเองที่โกดัง">รับสินค้าด้วยตัวเองที่โกดัง</option>
@@ -194,7 +194,7 @@ export function PaymentStepper({
                             </select>
                             <button
                               onClick={handleUpdateShippingMethod}
-                              disabled={isUpdatingMethod || !shippingMethod || shippingMethod === savedMethod || paymentRound2Status === 'PAID'}
+                              disabled={isUpdatingMethod || !shippingMethod || shippingMethod === savedMethod || paymentRound3Status === 'PAID'}
                               className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
                             >
                               {isUpdatingMethod ? 'กำลังบันทึก...' : savedMethod ? 'อัปเดตวิธีจัดส่ง' : 'ยืนยันวิธีจัดส่ง'}
@@ -206,8 +206,8 @@ export function PaymentStepper({
                         </div>
                       )}
                       
-                      {/* Only allow upload if amount > 0, status is not UPLOADED, and if it's Round 2, a shipping method is selected */}
-                      {step.amount > 0 && step.status !== 'UPLOADED' && (step.round !== 2 || savedMethod) && (
+                      {/* Round 3 requires a saved Thailand delivery method before payment. */}
+                      {step.amount > 0 && step.status !== 'UPLOADED' && (step.round !== 3 || savedMethod) && (
                         <PaymentSection 
                           orderId={orderId} 
                           paymentRound={step.round as 1 | 2 | 3} 

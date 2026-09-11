@@ -1,6 +1,8 @@
 -- Sabuyship baseline schema for a fresh Supabase project.
 -- This file is intended for staging/bootstrap. Do not run it on production.
 
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TYPE public.user_role AS ENUM ('CUSTOMER', 'ADMIN');
@@ -425,3 +427,5 @@ CREATE POLICY "Admins can delete Sabuyship uploads" ON storage.objects
 FOR DELETE TO authenticated USING (
   bucket_id IN ('inquiries', 'payment_slips') AND public.is_admin()
 );
+
+COMMIT;

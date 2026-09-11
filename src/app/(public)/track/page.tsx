@@ -21,7 +21,6 @@ import {
   Ship,
   Clock
 } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 import { useTranslation } from "@/components/providers/language-provider"
 import { toast } from "sonner"
 
@@ -42,7 +41,6 @@ export default function TrackOrder() {
   const [packageInfo, setPackageInfo] = useState<any>(null)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [copied, setCopied] = useState(false)
-  const supabase = createClient()
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -67,34 +65,11 @@ export default function TrackOrder() {
         searchClean = `ORD-${searchClean}`
       }
       
-      let { data: order, error: orderError } = await supabase
-        .from("orders")
-        .select(`
-          id,
-          order_number,
-          status,
-          tracking_number,
-          shipping_company,
-          created_at,
-          quotation:quotation_id (
-            inquiry:inquiry_id (
-              product_url,
-              items,
-              shipping_type
-            )
-          ),
-          shipments (
-            tracking_number,
-            container_date,
-            arrival_date,
-            thailand_tracking_number,
-            status
-          )
-        `)
-        .or(`order_number.eq.${searchClean},tracking_number.eq.${searchRaw}`)
-        .maybeSingle()
+      const trackingResponse = await fetch(`/api/tracking/${encodeURIComponent(searchClean || searchRaw)}`)
+      const trackingResult = await trackingResponse.json()
+      const order = trackingResult.data
 
-      if (orderError || !order) {
+      if (!trackingResponse.ok || !order) {
         setError(
           locale === 'zh' 
             ? "未找到该订单信息，请再次核对订单号 (如 ORD-XXXXXX)" 

@@ -61,6 +61,9 @@ export const translations = {
     ctaTitle: "พร้อมเริ่มต้นสั่งซื้อสินค้าจากจีนแล้วหรือยัง?",
     ctaSub: "เพียงคัดลอกลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall แล้วส่งมาให้เรา เราจัดการต่อรองราคาและนำเข้าให้คุณแบบครบวงจร",
     ctaBtn: "ส่งลิงก์ประเมินราคาฟรีเลย ➔",
+    calcTitle: "โปรแกรมคำนวณค่าขนส่งจีน-ไทย",
+    calcSubtitle: "คำนวณค่าขนส่งเบื้องต้นตามปริมาตร (CBM) หรือน้ำหนัก (KG)",
+    noteTitle: "ข้อแนะนำในการคำนวณ",
 
     // How It Works Page
     howBadge: "คู่มือการนำเข้าสินค้า จีน-ไทย ฉบับสมบูรณ์",
@@ -212,6 +215,9 @@ export const translations = {
     ctaTitle: "Ready to Start Importing from China?",
     ctaSub: "Simply copy product links from Taobao, 1688, or Tmall. We'll handle price negotiation and import logistics seamlessly.",
     ctaBtn: "Get a Free Quotation Now ➔",
+    calcTitle: "China–Thailand Shipping Calculator",
+    calcSubtitle: "Estimate shipping by volume (CBM) or weight (KG)",
+    noteTitle: "Calculation Notes",
 
     // How It Works Page
     howBadge: "Complete China-Thailand Import Guide",
@@ -363,6 +369,9 @@ export const translations = {
     ctaTitle: "准备好开始从中国采购了吗？",
     ctaSub: "只需复制淘宝、1688或天猫的商品链接发给我们，我们将为您代购并处理一站式报关运输。",
     ctaBtn: "立即发送链接免费获取报价 ➔",
+    calcTitle: "中泰运费计算器",
+    calcSubtitle: "按体积（CBM）或重量（KG）估算运费",
+    noteTitle: "计算说明",
 
     // How It Works Page
     howBadge: "中泰代购与物流进口完整指南",

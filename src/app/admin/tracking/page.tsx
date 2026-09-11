@@ -38,7 +38,7 @@ export default function AdminTrackingPage() {
           profiles:customer_id(full_name, phone),
           quotations:quotation_id(*)
         `)
-        .in('status', ['SHIPPING', 'ARRIVED', 'DELIVERED'])
+        .in('status', ['SHIPPING', 'THAILAND_WAREHOUSE', 'OUT_FOR_DELIVERY', 'DELIVERED'])
         .order("created_at", { ascending: false })
 
       if (error) throw error

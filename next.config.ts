@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   // Optimize workspace file tracing root
   outputFileTracingRoot: path.join(__dirname),
 

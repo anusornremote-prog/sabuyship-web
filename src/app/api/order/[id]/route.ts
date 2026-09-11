@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 // GET /api/order/[id] - Get order details
 export async function GET(
@@ -49,5 +50,57 @@ export async function GET(
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+const shippingMethods = new Set([
+  "รับสินค้าด้วยตัวเองที่โกดัง",
+  "จัดส่งแบบเหมาจ่าย(เฉพาะกรุงเทพและปริมณฑล)",
+  "จัดส่งโดยขนส่งภายในประเทศ",
+])
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const body = await request.json()
+    if (!shippingMethods.has(body.shipping_company)) {
+      return NextResponse.json({ error: "Invalid shipping method" }, { status: 400 })
+    }
+
+    const { id } = await params
+    const adminClient = createAdminClient()
+    const { data: order } = await adminClient
+      .from("orders")
+      .select("id, customer_id, status, payment_round_3_status")
+      .eq("id", id)
+      .maybeSingle()
+
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
+    if (order.customer_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+    if (order.status !== "THAILAND_WAREHOUSE" || ["UPLOADED", "PAID"].includes(order.payment_round_3_status)) {
+      return NextResponse.json({ error: "Shipping method cannot be changed now" }, { status: 409 })
+    }
+
+    const { error } = await adminClient
+      .from("orders")
+      .update({ shipping_company: body.shipping_company })
+      .eq("id", id)
+      .eq("customer_id", user.id)
+    if (error) throw error
+
+    return NextResponse.json({ success: true })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal Server Error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

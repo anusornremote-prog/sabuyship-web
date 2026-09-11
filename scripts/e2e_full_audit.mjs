@@ -1,15 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-import path from 'path';
 import fs from 'fs';
 
 dotenv.config({ path: '.env.local' });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const E2E_CUSTOMER_EMAIL = process.env.E2E_CUSTOMER_EMAIL;
+const E2E_CUSTOMER_PASSWORD = process.env.E2E_CUSTOMER_PASSWORD;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error("Missing Supabase configuration in .env.local");
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !E2E_CUSTOMER_EMAIL || !E2E_CUSTOMER_PASSWORD) {
+  console.error("Missing Supabase or E2E customer configuration in .env.local");
   process.exit(1);
 }
 
@@ -50,33 +51,13 @@ async function runAudit() {
     logStep("1. Authentication & User Profile Check", "Authenticating test customer and test admin...");
 
     // 1.1 Customer Auth
-    const customerEmail = 'sabuy@admin.com';
-    const customerPassword = 'password123';
-    
-    let { data: custAuth, error: custAuthErr } = await supabase.auth.signInWithPassword({
-      email: customerEmail,
-      password: customerPassword
+    const { data: custAuth, error: custAuthErr } = await supabase.auth.signInWithPassword({
+      email: E2E_CUSTOMER_EMAIL,
+      password: E2E_CUSTOMER_PASSWORD
     });
 
     if (custAuthErr) {
-      // Try fallback password
-      const fallback = await supabase.auth.signInWithPassword({
-        email: customerEmail,
-        password: 'password'
-      });
-      if (fallback.error) {
-        // Try test@admin.com
-        const testAuth = await supabase.auth.signInWithPassword({
-          email: 'test@admin.com',
-          password: 'password123'
-        });
-        if (testAuth.error) {
-          throw new Error(`Customer login failed: ${custAuthErr.message}`);
-        }
-        custAuth = testAuth;
-      } else {
-        custAuth = fallback;
-      }
+      throw new Error(`Customer login failed: ${custAuthErr.message}`);
     }
 
     const customerUser = custAuth.user;
