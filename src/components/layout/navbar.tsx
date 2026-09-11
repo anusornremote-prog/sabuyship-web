@@ -103,7 +103,7 @@ export function Navbar() {
         </div>
 
         {/* 2. Center: Balanced Navigation Links */}
-        <nav className="hidden md:flex items-center justify-center gap-5 lg:gap-7 xl:gap-8 text-sm font-bold">
+        <nav className="hidden xl:flex items-center justify-center gap-8 text-sm font-bold">
           <Link href="/how-it-works" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
             {t.navHowItWorks}
           </Link>
@@ -122,7 +122,7 @@ export function Navbar() {
         </nav>
 
         {/* 3. Right: Language Switcher, Login, Submit Button */}
-        <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
+        <div className="hidden xl:flex items-center gap-3 shrink-0">
           {!user && <LanguageSwitcher />}
           {user && <NotificationBell />}
           {user ? (
@@ -201,7 +201,7 @@ export function Navbar() {
         </div>
 
         {/* Mobile Navigation Toggle & Switcher */}
-        <div className="flex md:hidden items-center gap-1.5">
+        <div className="flex xl:hidden items-center gap-1.5">
           {!user && <LanguageSwitcher />}
           {user && <NotificationBell />}
           <button 
@@ -216,7 +216,7 @@ export function Navbar() {
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="md:hidden relative z-[60] border-b bg-background px-4 py-4 pb-8 space-y-4 animate-in slide-in-from-top duration-200 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="xl:hidden relative z-[60] border-b bg-background px-4 py-4 pb-8 space-y-4 animate-in slide-in-from-top duration-200 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <Link href="/inquiry" onClick={() => setIsOpen(false)}>
             <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
               <ShoppingCart className="w-5 h-5 mr-2" />

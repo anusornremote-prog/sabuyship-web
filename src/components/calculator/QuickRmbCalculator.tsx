@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   Calculator, 
   ArrowRightLeft, 
@@ -20,6 +20,7 @@ import { toast } from "sonner"
 
 export function QuickRmbCalculator() {
   const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [rate, setRate] = useState<number>(5.10)
   const [activeTab, setActiveTab] = useState<"convert" | "landed">("convert")
@@ -105,11 +106,12 @@ export function QuickRmbCalculator() {
   return (
     <>
       {/* 1. Floating Action Pill Button (Bottom-Left Corner to balance with LINE button on Bottom-Right) */}
-      <div className="fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40">
+      <div className={`${pathname === "/inquiry" ? "hidden" : ""} fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40`}>
         <button
           type="button"
           onClick={handleOpen}
-          className="group flex items-center gap-2 bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-primary text-white px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer border border-white/20 backdrop-blur-md"
+          aria-label="เปิดเครื่องคิดเลขแปลงเรทหยวน"
+          className="group flex w-11 h-11 sm:w-auto sm:h-auto items-center justify-center gap-2 bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-primary text-white sm:px-4 sm:py-3 rounded-full shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer border border-white/20 backdrop-blur-md"
           title="คำนวณเรทหยวนด่วน"
         >
           <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-amber-300 font-black text-xs group-hover:rotate-12 transition-transform">
@@ -119,7 +121,6 @@ export function QuickRmbCalculator() {
             <p className="text-[10px] font-bold text-blue-100 uppercase leading-none">แปลงเรทหยวนวันนี้</p>
             <p className="text-xs font-black text-white leading-tight">1¥ = ฿{rate.toFixed(2)}</p>
           </div>
-          <span className="sm:hidden text-xs font-black">แปลงเรท ¥</span>
         </button>
       </div>
 

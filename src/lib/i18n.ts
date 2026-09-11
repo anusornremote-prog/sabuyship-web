@@ -40,7 +40,7 @@ export const translations = {
     speedCheckSub: "มั่นใจของตรงปก",
     speedSupport: "ทีมงานไทยดูแล",
     speedSupportSub: "แจ้งเตือนผ่าน LINE",
-    homeStepsTag: "How It Works",
+    homeStepsTag: "ขั้นตอนการสั่งซื้อ",
     homeStepsTitle: "3 ขั้นตอนง่ายๆ สั่งของจีนถึงหน้าบ้านคุณ",
     homeStepsSub: "ไม่ต้องรู้ภาษาจีน ไม่ต้องมีบัญชีเถาเป่า แค่ส่งลิงก์มา ที่เหลือเราจัดการให้ครบ",
     homeStep1Title: "ก๊อปปี้ลิงก์สินค้าส่งให้เรา",

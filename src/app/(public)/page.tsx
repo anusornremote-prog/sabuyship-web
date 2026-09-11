@@ -25,7 +25,8 @@ import {
   Layers,
   Check,
   Clipboard,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { createClient } from "@/lib/supabase/client"
@@ -35,12 +36,9 @@ import { toast } from "sonner"
 export default function Home() {
   const router = useRouter()
   const { t, locale } = useTranslation()
-  const [exchangeRate, setExchangeRate] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("sabuy_exchange_rate") || "5.10"
-    }
-    return "5.10"
-  })
+  // Keep the first server/client render identical. The cached value is restored
+  // after hydration, then refreshed from Supabase below.
+  const [exchangeRate, setExchangeRate] = useState("5.10")
   const [activeTab, setActiveTab] = useState<"quote" | "track">("quote")
   const [quickUrl, setQuickUrl] = useState("")
   const [quickTrackId, setQuickTrackId] = useState("")
@@ -58,6 +56,9 @@ export default function Home() {
   }
 
   useEffect(() => {
+    const cachedRate = sessionStorage.getItem("sabuy_exchange_rate")
+    if (cachedRate) setExchangeRate(cachedRate)
+
     const fetchRate = async () => {
       try {
         const supabase = createClient()
@@ -105,7 +106,7 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-white">
       {/* 1. Hero Section (Mobile-First & Desktop Optimized) */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/90 via-indigo-50/30 to-white pt-6 pb-14 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-24 px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/90 via-indigo-50/30 to-white pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pt-14 lg:pb-16 px-4 sm:px-6 lg:px-8">
         {/* Subtle background ambient circles */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-gradient-to-tr from-blue-400/15 via-indigo-400/10 to-orange-400/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -166,7 +167,7 @@ export default function Home() {
                 )}
 
                 {/* Micro Badges */}
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs font-bold text-slate-600 max-w-full">
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-full border border-amber-200/80 shadow-2xs">
                     <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                     {locale === 'en' ? '0% Service Fee' : locale === 'zh' ? '0% 免费采购' : 'ฟรีค่ากดสั่ง 0%'}
@@ -184,9 +185,9 @@ export default function Home() {
                   <span className="inline-block">{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
                   <span className="inline-block text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
                   <br className="hidden sm:inline" />
-                  <span className="mt-1 inline-block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
-                    <span className="inline-block whitespace-nowrap">{t.heroTitleHighlight1 || "ก๊อปปี้ลิงก์ส่งมา..."}</span>{" "}
-                    <span className="inline-block whitespace-nowrap">{t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}</span>
+                  <span className="mt-1 block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
+                    <span className="block sm:inline-block sm:whitespace-nowrap">{t.heroTitleHighlight1 || "ก๊อปปี้ลิงก์ส่งมา..."}</span>{" "}
+                    <span className="block sm:inline-block sm:whitespace-nowrap">{t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}</span>
                   </span>
                 </h1>
                 
@@ -284,7 +285,7 @@ export default function Home() {
                   </form>
                 )}
 
-                <div className="flex items-center justify-between text-xs text-slate-500 px-1 pt-0.5">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 px-1 pt-0.5">
                   <span className="flex items-center gap-1 font-medium">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     ออกใบเสนอราคาฟรีใน 1-2 ชม.
@@ -447,6 +448,60 @@ export default function Home() {
               </Button>
             </Link>
           </div>
+
+          {/* Three-payment timeline: mirrors the real operational workflow. */}
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 sm:p-8">
+            <div className="max-w-2xl mx-auto text-center mb-6 sm:mb-8">
+              <span className="inline-flex items-center gap-2 text-xs font-black text-orange-700 bg-orange-100 px-3 py-1.5 rounded-full">
+                <CreditCard className="w-4 h-4" />
+                {locale === 'en' ? 'PAY ONLY WHEN EACH COST IS KNOWN' : locale === 'zh' ? '费用明确后再分阶段付款' : 'จ่ายตามจริงเมื่อทราบค่าใช้จ่ายแต่ละช่วง'}
+              </span>
+              <h3 className="mt-3 text-xl sm:text-2xl font-black text-slate-900">
+                {locale === 'en' ? 'The 3 payment rounds, made clear' : locale === 'zh' ? '三阶段付款，一目了然' : 'ชำระเงิน 3 รอบ แบบโปร่งใส'}
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {locale === 'en' ? 'You pay each actual cost when the order reaches that stage—no need to pay every shipping cost upfront.' : locale === 'zh' ? '订单到达各阶段后按实际费用付款，无需一次预付全部运费。' : 'จ่ายทีละรอบเมื่อออเดอร์เดินทางถึงขั้นนั้น ไม่ต้องสำรองค่าขนส่งทั้งหมดตั้งแต่วันแรก'}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-3 sm:gap-4">
+              {[
+                {
+                  round: '1',
+                  icon: ShoppingCart,
+                  tone: 'bg-blue-600 text-white',
+                  title: locale === 'en' ? 'Product cost' : locale === 'zh' ? '商品费用' : 'ค่าสินค้า',
+                  desc: locale === 'en' ? 'After you approve the item quotation.' : locale === 'zh' ? '确认商品报价后支付。' : 'ชำระหลังตรวจสอบและยืนยันใบเสนอราคา',
+                },
+                {
+                  round: '2',
+                  icon: Ship,
+                  tone: 'bg-orange-500 text-white',
+                  title: locale === 'en' ? 'China–Thailand freight' : locale === 'zh' ? '中泰跨境运费' : 'ค่าขนส่งจีน–ไทย',
+                  desc: locale === 'en' ? 'Calculated when goods reach the China warehouse.' : locale === 'zh' ? '货物到达中国仓库后计算。' : 'คำนวณเมื่อสินค้าถึงโกดังจีน',
+                },
+                {
+                  round: '3',
+                  icon: Truck,
+                  tone: 'bg-emerald-600 text-white',
+                  title: locale === 'en' ? 'Thailand delivery' : locale === 'zh' ? '泰国境内配送费' : 'ค่าจัดส่งในไทย',
+                  desc: locale === 'en' ? 'Choose delivery and pay when goods reach Thailand.' : locale === 'zh' ? '货物到达泰国后选择配送方式并付款。' : 'เลือกขนส่งและชำระเมื่อสินค้าถึงโกดังไทย',
+                },
+              ].map(({ round, icon: RoundIcon, tone, title, desc }, index) => (
+                <div key={round} className="relative flex md:block gap-4 rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 shadow-xs">
+                  {index < 2 && <span className="hidden md:block absolute top-9 -right-3.5 w-3 border-t-2 border-dashed border-slate-300" aria-hidden="true" />}
+                  <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-black shadow-sm ${tone}`}>
+                    <RoundIcon className="w-5 h-5" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0 md:mt-4">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{locale === 'en' ? `Round ${round}` : locale === 'zh' ? `第 ${round} 阶段` : `รอบที่ ${round}`}</p>
+                    <h4 className="mt-1 font-black text-slate-900">{title}</h4>
+                    <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -485,6 +540,48 @@ export default function Home() {
               </div>
               <h3 className="text-base sm:text-lg font-black text-slate-900">{t.cardTrackTitle || "เช็คสถานะสดได้ 24 ชั่วโมง"}</h3>
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{t.cardTrackDesc || "ติดตามพัสดุได้ทุกขั้นตอนผ่านระบบหน้าเว็บ และแจ้งเตือนข้อความตรงเข้า LINE"}</p>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-3xl border border-blue-200/80 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white shadow-xl shadow-blue-950/10">
+            <div className="grid lg:grid-cols-[1.05fr_1fr] gap-0">
+              <div className="p-6 sm:p-8 lg:p-10">
+                <span className="inline-flex items-center gap-2 text-xs font-black text-blue-100 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
+                  <ShieldCheck className="w-4 h-4" />
+                  {locale === 'en' ? 'VERIFIABLE IN YOUR ACCOUNT' : locale === 'zh' ? '账户内全程可查' : 'ตรวจสอบได้จริงในบัญชีของคุณ'}
+                </span>
+                <h3 className="mt-4 text-2xl sm:text-3xl font-black leading-tight">
+                  {locale === 'en' ? 'Every baht and every status has a record' : locale === 'zh' ? '每笔费用、每个状态都有记录' : 'ทุกยอด ทุกสถานะ มีหลักฐานในระบบ'}
+                </h3>
+                <p className="mt-3 text-sm text-slate-300 leading-relaxed max-w-xl">
+                  {locale === 'en' ? 'Review itemized quotations, separate payment rounds and shipment updates yourself—without waiting for a chat reply.' : locale === 'zh' ? '商品明细、分阶段付款和物流更新均可自行查看，无需等待客服回复。' : 'ดูใบเสนอราคาแยกรายการ ประวัติชำระเงินแต่ละรอบ และสถานะขนส่งได้ด้วยตัวเอง ไม่ต้องรอถามแอดมิน'}
+                </p>
+                <Link href="/track" className="inline-flex items-center gap-2 mt-6 text-sm font-black text-white hover:text-orange-300 transition-colors">
+                  <Search className="w-4 h-4" />
+                  {locale === 'en' ? 'Open shipment tracking' : locale === 'zh' ? '打开物流查询' : 'เปิดหน้าติดตามสถานะ'}
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              <div className="bg-white/7 border-t lg:border-t-0 lg:border-l border-white/10 p-5 sm:p-8">
+                <div className="space-y-3">
+                  {[
+                    { icon: FileText, title: locale === 'en' ? 'Itemized quotation' : locale === 'zh' ? '明细报价单' : 'ใบเสนอราคาแยกรายการ', desc: locale === 'en' ? 'See product price, quantity and service details.' : locale === 'zh' ? '查看商品价格、数量及服务明细。' : 'เห็นราคาสินค้า จำนวน และรายละเอียดบริการ' },
+                    { icon: Layers, title: locale === 'en' ? 'Three separate payment records' : locale === 'zh' ? '三阶段付款记录' : 'ประวัติชำระแยก 3 รอบ', desc: locale === 'en' ? 'Know exactly which cost is due at each stage.' : locale === 'zh' ? '清楚了解每阶段应付费用。' : 'รู้ชัดว่ากำลังชำระค่าอะไรในแต่ละช่วง' },
+                    { icon: MapPin, title: locale === 'en' ? 'Shipment timeline + LINE alerts' : locale === 'zh' ? '物流时间线 + LINE 提醒' : 'ไทม์ไลน์ขนส่ง + แจ้งเตือน LINE', desc: locale === 'en' ? 'Follow important movement without chasing updates.' : locale === 'zh' ? '重要进度自动通知，无需反复询问。' : 'ติดตามความเคลื่อนไหวสำคัญได้โดยไม่ต้องคอยทักถาม' },
+                  ].map(({ icon: ProofIcon, title, desc }) => (
+                    <div key={title} className="flex gap-3 rounded-2xl bg-white/8 border border-white/10 p-4">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-orange-500 text-white flex items-center justify-center">
+                        <ProofIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black">{title}</h4>
+                        <p className="mt-1 text-xs text-slate-300 leading-relaxed">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

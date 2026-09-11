@@ -27,6 +27,14 @@ const extractUrl = (text?: string) => {
   return text.startsWith("http") ? text : `https://${text}`
 }
 
+const quoteStatusLabels: Record<string, string> = {
+  DRAFT: "ฉบับร่าง",
+  SENT: "ส่งให้ลูกค้าแล้ว",
+  ACCEPTED: "ลูกค้ายอมรับแล้ว",
+  REJECTED: "ลูกค้าปฏิเสธ",
+  EXPIRED: "หมดอายุ",
+}
+
 interface InquiryListProps {
   initialInquiries: any[]
   totalCount?: number
@@ -1124,7 +1132,7 @@ export default function AdminInquiryList({
                       selectedQuote.status === 'SENT' ? 'bg-blue-100 text-blue-800' :
                       'bg-slate-200 text-slate-800'
                     }`}>
-                      {selectedQuote.status}
+                      {quoteStatusLabels[selectedQuote.status] || selectedQuote.status}
                     </span>
                 </div>
               </div>
