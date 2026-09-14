@@ -220,6 +220,7 @@ try {
       items: [{ url: "https://example.com/preview-product", quantity: 1 }],
       shipping_type: "CAR",
       service_type: "BUY_AND_IMPORT",
+      privacy_notice_acknowledged: true,
     },
   })
   assert(inquiryResponse.status === 201, `Preview creates inquiry through API (${inquiryResponse.status})`)
@@ -253,7 +254,7 @@ try {
   const orderResponse = previewRequest("/api/order", {
     method: "POST",
     cookie: customerCookie,
-    body: { quotation_id: quotation.id, shipping_address_id: address.id },
+    body: { quotation_id: quotation.id, shipping_address_id: address.id, terms_accepted: true },
   })
   assert(orderResponse.status === 201, `Preview creates order through API (${orderResponse.status})`)
   const order = orderResponse.json?.order
@@ -261,20 +262,26 @@ try {
   ids.order = order.id
 
   const png = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10])
-  const slipPath = `preview-smoke/${runId}.png`
+  const slipPath = `${customerUser.id}/${order.id}/preview-smoke-${runId}.png`
   must(
     await customerAuth.client.storage.from("payment_slips").upload(slipPath, png, { contentType: "image/png" }),
     "upload preview payment slip",
   )
   uploadedPaths.push(slipPath)
-  const { data: slipPublicUrl } = customerAuth.client.storage.from("payment_slips").getPublicUrl(slipPath)
-
   const round1 = previewRequest(`/api/order/${order.id}/payment`, {
     method: "POST",
     cookie: customerCookie,
-    body: { payment_round: 1, amount: 120, slip_url: slipPublicUrl.publicUrl },
+    body: { payment_round: 1, amount: 120, slip_path: slipPath },
   })
   assert(round1.status === 201, `Preview accepts payment round 1 (${round1.status})`)
+  const round1Payment = must(
+    await service.from("payments").select("id").eq("order_id", order.id).eq("payment_round", 1).single(),
+    "read preview payment round 1",
+  )
+  const signedSlip = previewRequest(`/api/admin/payment-slip?payment_id=${round1Payment.id}`, {
+    cookie: adminCookie,
+  })
+  assert(signedSlip.status === 200 && Boolean(signedSlip.json?.signed_url), "Preview admin receives a signed private slip URL")
   await approveRound(order.id, adminUser.id, 1, "ORDERED")
 
   const quote2 = previewRequest(`/api/order/${order.id}/quote-round-2`, {
@@ -286,7 +293,7 @@ try {
   const round2 = previewRequest(`/api/order/${order.id}/payment`, {
     method: "POST",
     cookie: customerCookie,
-    body: { payment_round: 2, amount: 50, slip_url: slipPublicUrl.publicUrl },
+    body: { payment_round: 2, amount: 50, slip_path: slipPath },
   })
   assert(round2.status === 201, `Preview accepts payment round 2 (${round2.status})`)
   await approveRound(order.id, adminUser.id, 2, "SHIPPING")
@@ -306,7 +313,7 @@ try {
   const round3 = previewRequest(`/api/order/${order.id}/payment`, {
     method: "POST",
     cookie: customerCookie,
-    body: { payment_round: 3, amount: 40, slip_url: slipPublicUrl.publicUrl },
+    body: { payment_round: 3, amount: 40, slip_path: slipPath },
   })
   assert(round3.status === 201, `Preview accepts payment round 3 (${round3.status})`)
   await approveRound(order.id, adminUser.id, 3, "OUT_FOR_DELIVERY")
