@@ -34,8 +34,8 @@ export default function PrivacyPolicyPage() {
               <p className="font-bold">ผู้ควบคุมข้อมูลส่วนบุคคล</p>
               <p>{publicBusinessConfig.brandName} ดำเนินงานโดยผู้ประกอบการบุคคลธรรมดา: {publicBusinessConfig.legalName || "ยังไม่ได้ระบุ"}</p>
               <p>ที่อยู่: {publicBusinessConfig.address || "ยังไม่ได้ระบุ"}</p>
-              <p>โทร: {publicBusinessConfig.phone || "ยังไม่ได้ระบุ"} · อีเมล: {publicBusinessConfig.email} · LINE: @sabuyship</p>
-              {!hasLegalIdentity && <p className="mt-2 font-bold">ต้องกรอกชื่อ ที่อยู่ และเบอร์โทรของผู้ประกอบการก่อนเปิดรับข้อมูลจากลูกค้าจริง</p>}
+              <p>{publicBusinessConfig.phone ? `โทร: ${publicBusinessConfig.phone} · ` : ""}อีเมล: {publicBusinessConfig.email} · LINE: @sabuyship</p>
+              {!hasLegalIdentity && <p className="mt-2 font-bold">ต้องกรอกชื่อ ที่อยู่ และช่องทางติดต่อของผู้ประกอบการก่อนเปิดรับข้อมูลจากลูกค้าจริง</p>}
             </div>
           </div>
         </div>

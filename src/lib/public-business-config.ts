@@ -37,7 +37,7 @@ export const publicBusinessConfig = {
 export const hasLegalIdentity = Boolean(
   publicBusinessConfig.legalName &&
   publicBusinessConfig.address &&
-  publicBusinessConfig.phone,
+  publicBusinessConfig.email,
 )
 
 const businessStart = parseBangkokDateStart(publicBusinessConfig.businessStartDate)

@@ -280,7 +280,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <p>เอกสารนี้เป็นใบสรุปรายการจากระบบ ไม่ใช่ใบกำกับภาษี</p>
           <p className="mt-1">
             {hasLegalIdentity
-              ? `โทร: ${publicBusinessConfig.phone} | อีเมล: ${publicBusinessConfig.email} | LINE: @sabuyship`
+              ? `${publicBusinessConfig.phone ? `โทร: ${publicBusinessConfig.phone} | ` : ""}อีเมล: ${publicBusinessConfig.email} | LINE: @sabuyship`
               : "ข้อมูลผู้ประกอบการยังไม่ครบ เอกสารนี้ยังไม่ควรใช้เป็นหลักฐานทางภาษีหรือรับชำระเงิน"}
           </p>
         </div>

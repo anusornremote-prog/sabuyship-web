@@ -96,7 +96,7 @@ export default function TermsOfServicePage() {
               <p className="font-bold">ผู้ให้บริการ: {publicBusinessConfig.brandName} (ผู้ประกอบการบุคคลธรรมดา)</p>
               <p>ชื่อผู้ประกอบการ: {publicBusinessConfig.legalName || 'ยังไม่ได้ระบุ'}</p>
               <p>ที่อยู่ติดต่อ: {publicBusinessConfig.address || 'ยังไม่ได้ระบุ'}</p>
-              <p>โทร: {publicBusinessConfig.phone || 'ยังไม่ได้ระบุ'} · อีเมล: {publicBusinessConfig.email}</p>
+              <p>{publicBusinessConfig.phone ? `โทร: ${publicBusinessConfig.phone} · ` : ''}อีเมล: {publicBusinessConfig.email} · LINE: @sabuyship</p>
               {publicBusinessConfig.commercialRegistrationNo && <p>เลขทะเบียนพาณิชย์: {publicBusinessConfig.commercialRegistrationNo}</p>}
               {isPreRegistrationPilotActive && !publicBusinessConfig.commercialRegistrationNo && (
                 <p>สถานะ: ช่วงเริ่มดำเนินกิจการก่อนยื่นทะเบียนพาณิชย์ · เริ่ม {publicBusinessConfig.businessStartDate} · ระบบหยุดรับงานใหม่หลัง {publicBusinessConfig.registrationCutoffDate}</p>
