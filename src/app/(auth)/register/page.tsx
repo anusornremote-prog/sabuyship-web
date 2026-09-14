@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { LineIcon } from "@/components/ui/icons"
+import { canAcceptBusiness } from "@/lib/public-business-config"
 
 export default function Register() {
   const [fullName, setFullName] = useState("")
@@ -19,9 +20,14 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false)
   const router = useRouter()
   const supabase = createClient()
   const googleButtonRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (privacyAcknowledged) initGoogleLogin()
+  }, [privacyAcknowledged])
 
   const initGoogleLogin = () => {
     if (typeof window !== "undefined" && (window as any).google && googleButtonRef.current) {
@@ -217,7 +223,12 @@ export default function Register() {
               placeholder="อย่างน้อย 6 ตัวอักษร"
             />
           </div>
-          <Button type="submit" className="w-full h-11" disabled={loading}>
+          <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+            <input type="checkbox" required checked={privacyAcknowledged} onChange={(event) => setPrivacyAcknowledged(event.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-600" />
+            <span>ฉันรับทราบ <Link href="/privacy" target="_blank" className="font-bold text-primary underline">ประกาศความเป็นส่วนตัว</Link> สำหรับการสร้างบัญชีและให้บริการ</span>
+          </label>
+          {!canAcceptBusiness && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950">ยังไม่เปิดสมัครสมาชิกจริงจนกว่าจะตั้งค่าข้อมูลผู้ประกอบการและช่วงดำเนินกิจการครบ</p>}
+          <Button type="submit" className="w-full h-11" disabled={loading || !privacyAcknowledged || !canAcceptBusiness}>
             {loading ? "กำลังสมัครสมาชิก..." : "สมัครสมาชิก"}
           </Button>
 
@@ -236,12 +247,16 @@ export default function Register() {
               variant="outline" 
               className="w-full h-[40px] bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
               onClick={handleLineRegister}
-              disabled={loading}
+              disabled={loading || !privacyAcknowledged || !canAcceptBusiness}
             >
               <LineIcon className="w-5 h-5 text-white" />
               <span>สมัครสมาชิกด้วย LINE</span>
             </Button>
-            <div className="w-full flex justify-center [&>div]:!w-full [&_iframe]:!w-full [&_iframe]:!h-[40px] [&_iframe]:!rounded-md min-h-[40px]" ref={googleButtonRef}></div>
+            {privacyAcknowledged && canAcceptBusiness ? (
+              <div className="w-full flex justify-center [&>div]:!w-full [&_iframe]:!w-full [&_iframe]:!h-[40px] [&_iframe]:!rounded-md min-h-[40px]" ref={googleButtonRef}></div>
+            ) : (
+              <div className="flex h-10 items-center justify-center rounded-md border bg-slate-100 text-sm font-semibold text-slate-400">กรุณารับทราบประกาศก่อนสมัครด้วย Google</div>
+            )}
           </div>
         </form>
       </CardContent>

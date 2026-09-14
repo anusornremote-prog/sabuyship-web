@@ -17,7 +17,7 @@ export default function AboutUs() {
     {
       icon: <ShieldCheck className="w-8 h-8 text-green-500" />,
       title: "ปลอดภัย มั่นใจได้",
-      description: "ระบบติดตามสถานะพัสดุแบบเรียลไทม์ พร้อมการรับประกันสินค้าตลอดการเดินทาง"
+      description: "ระบบติดตามสถานะพัสดุ พร้อมแจ้งขอบเขตการคุ้มครองและวิธีเรียกร้องอย่างชัดเจน"
     },
     {
       icon: <Clock className="w-8 h-8 text-orange-500" />,
@@ -43,7 +43,7 @@ export default function AboutUs() {
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">เกี่ยวกับ Sabuy Ship</h1>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              เราคือแพลตฟอร์มผู้ให้บริการด้านโลจิสติกส์และการจัดส่งพัสดุที่ครบวงจร 
+              Sabuy Ship เป็นชื่อทางการค้าของผู้ประกอบการบุคคลธรรมดา ให้บริการประสานงานสั่งซื้อและขนส่งสินค้าจากจีนมายังไทย
               มุ่งเน้นการให้บริการที่ <span className="font-semibold text-primary">"สะดวก รวดเร็ว และปลอดภัย"</span> เพื่อตอบโจทย์ทุกธุรกิจออนไลน์และผู้ใช้งานทั่วไป
             </p>
           </div>
@@ -52,7 +52,7 @@ export default function AboutUs() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-slate-800">วิสัยทัศน์ของเรา (Vision)</h2>
               <p className="text-slate-600 leading-relaxed">
-                ก้าวขึ้นเป็นผู้นำด้านเทคโนโลยีการขนส่งระดับประเทศ ที่เชื่อมโยงผู้คนและธุรกิจเข้าด้วยกันผ่านระบบที่ทันสมัย ใช้งานง่าย และมีประสิทธิภาพสูงสุด
+                พัฒนาบริการนำเข้าสินค้าที่ตรวจสอบค่าใช้จ่ายและสถานะได้ เข้าใจง่าย และเหมาะกับลูกค้ารายย่อย
               </p>
             </div>
             <div className="space-y-4">

@@ -10,6 +10,13 @@ import imageCompression from 'browser-image-compression'
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { vibrateTap, vibrateSuccess, vibrateWarning } from "@/lib/haptics"
+import {
+  hasBankTransfer,
+  hasPromptPay,
+  isPaymentConfigured,
+  paymentAccountMatchesOperator,
+  publicBusinessConfig,
+} from "@/lib/public-business-config"
 
 interface PaymentSectionProps {
   orderId: string
@@ -38,7 +45,7 @@ export function PaymentSection({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [copiedBank, setCopiedBank] = useState(false)
   const [copiedAmount, setCopiedAmount] = useState(false)
-  const [paymentMethodTab, setPaymentMethodTab] = useState<'promptpay' | 'bank'>('promptpay')
+  const [paymentMethodTab, setPaymentMethodTab] = useState<'promptpay' | 'bank'>(hasPromptPay ? 'promptpay' : 'bank')
   
   const router = useRouter()
   const supabase = createClient()
@@ -55,11 +62,10 @@ export function PaymentSection({
     return () => window.removeEventListener('open-payment-modal' as any, handleTrigger as any)
   }, [triggerId, orderId, paymentRound])
 
-  // Company bank details
-  const bankAccount = "123-4-56789-0"
-  const bankName = "ธนาคารกสิกรไทย (KBank)"
-  const accountName = "บจก. สบายชิป เอ็กซ์เพรส"
-  const promptpayId = "0105565000000" // Company Tax ID or Phone for PromptPay
+  const bankAccount = publicBusinessConfig.bankAccountNumber
+  const bankName = publicBusinessConfig.bankName
+  const accountName = publicBusinessConfig.bankAccountName
+  const promptpayId = publicBusinessConfig.promptPayId
 
   // Format current local datetime as YYYY-MM-DDTHH:mm
   const getCurrentLocalDateTime = () => {
@@ -74,6 +80,10 @@ export function PaymentSection({
 
   const handleOpenModal = () => {
     vibrateTap()
+    if (!isPaymentConfigured) {
+      toast.error("ช่องทางชำระเงินยังไม่พร้อม กรุณาติดต่อผู้ให้บริการก่อนโอนเงิน")
+      return
+    }
     if (defaultAmount && defaultAmount > 0) {
       setAmount(defaultAmount.toString())
     }
@@ -112,7 +122,9 @@ export function PaymentSection({
 
   // QR Code URL based on PromptPay
   const qrAmount = parseFloat(amount) || 0
-  const qrUrl = `https://promptpay.io/${promptpayId}/${qrAmount > 0 ? qrAmount.toFixed(2) : ''}.png`
+  const qrUrl = hasPromptPay
+    ? `https://promptpay.io/${encodeURIComponent(promptpayId)}/${qrAmount > 0 ? qrAmount.toFixed(2) : ''}.png`
+    : ""
 
   const handleDownloadQr = async () => {
     vibrateTap()
@@ -149,20 +161,17 @@ export function PaymentSection({
       }
       const compressedFile = await imageCompression(file, options)
 
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) throw new Error("กรุณาเข้าสู่ระบบใหม่ก่อนแนบสลิป")
+
       const fileExt = file.name.split('.').pop() || 'jpg'
-      const fileName = `slip-${orderId}-${Date.now()}.${fileExt}`
+      const fileName = `${authData.user.id}/${orderId}/slip-${Date.now()}.${fileExt}`
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('payment_slips')
         .upload(fileName, compressedFile)
 
       if (uploadError) throw uploadError
-
-      const { data: publicUrlData } = supabase.storage
-        .from('payment_slips')
-        .getPublicUrl(uploadData.path)
-
-      const slipUrl = publicUrlData.publicUrl
 
       const paymentResponse = await fetch(`/api/order/${orderId}/payment`, {
         method: 'POST',
@@ -171,7 +180,7 @@ export function PaymentSection({
           payment_round: paymentRound,
           amount: parseFloat(amount),
           payment_date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),
-          slip_url: slipUrl,
+          slip_path: uploadData.path,
         }),
       })
       const paymentResult = await paymentResponse.json()
@@ -207,8 +216,16 @@ export function PaymentSection({
 
   return (
     <>
+      {!isPaymentConfigured && (
+        <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
+          {!paymentAccountMatchesOperator && publicBusinessConfig.bankAccountName
+            ? "ชื่อบัญชีรับเงินไม่ตรงกับชื่อผู้ประกอบการ ระบบจึงปิดรับชำระ กรุณาอย่าโอนเงิน"
+            : "ยังไม่เปิดรับชำระผ่านหน้าเว็บ กรุณาติดต่อผู้ให้บริการและตรวจสอบชื่อผู้รับเงินก่อนโอนทุกครั้ง"}
+        </div>
+      )}
       <Button 
         onClick={handleOpenModal} 
+        disabled={!isPaymentConfigured}
         size="sm" 
         variant={isRejected ? "destructive" : "default"}
         className={buttonClassName || `w-full mt-2 font-bold cursor-pointer rounded-xl h-11 shadow-sm transition-all active:scale-[0.98] ${
@@ -277,6 +294,7 @@ export function PaymentSection({
               <button
                 type="button"
                 onClick={() => setPaymentMethodTab('promptpay')}
+                disabled={!hasPromptPay}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   paymentMethodTab === 'promptpay' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-slate-800'
                 }`}
@@ -287,6 +305,7 @@ export function PaymentSection({
               <button
                 type="button"
                 onClick={() => setPaymentMethodTab('bank')}
+                disabled={!hasBankTransfer}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   paymentMethodTab === 'bank' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-slate-800'
                 }`}
@@ -296,7 +315,7 @@ export function PaymentSection({
             </div>
 
             {/* Tab 1: Dynamic PromptPay QR Code with Download Button */}
-            {paymentMethodTab === 'promptpay' && (
+            {paymentMethodTab === 'promptpay' && hasPromptPay && (
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-3 animate-in fade-in duration-200">
                 <div className="bg-white p-3 rounded-2xl border border-slate-200 inline-block shadow-xs">
                   <img 
@@ -328,14 +347,14 @@ export function PaymentSection({
             )}
 
             {/* Tab 2: Bank Account Info Card */}
-            {paymentMethodTab === 'bank' && (
+            {paymentMethodTab === 'bank' && hasBankTransfer && (
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-2.5 animate-in fade-in duration-200">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">
                     บัญชีธนาคารสำหรับโอนเงิน
                   </span>
                   <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">
-                    บัญชีบริษัท
+                    บัญชีผู้ประกอบการบุคคลธรรมดา
                   </span>
                 </div>
 

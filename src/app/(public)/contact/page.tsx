@@ -8,6 +8,8 @@ import { Facebook, LineIcon } from "@/components/ui/icons"
 import { useTranslation } from "@/components/providers/language-provider"
 import { useState } from "react"
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react"
+import Link from "next/link"
+import { hasLegalIdentity } from "@/lib/public-business-config"
 
 export default function Contact() {
   const { t } = useTranslation()
@@ -15,6 +17,7 @@ export default function Contact() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,7 +31,7 @@ export default function Contact() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, privacy_notice_acknowledged: privacyAcknowledged })
       })
 
       const data = await res.json()
@@ -39,6 +42,7 @@ export default function Contact() {
 
       setSuccess(true)
       setFormData({ name: "", email: "", phone: "", message: "" })
+      setPrivacyAcknowledged(false)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -174,7 +178,12 @@ export default function Contact() {
                     disabled={loading}
                   ></textarea>
                 </div>
-                <Button type="submit" className="w-full h-12 text-lg cursor-pointer" disabled={loading}>
+                <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+                  <input type="checkbox" required checked={privacyAcknowledged} onChange={(event) => setPrivacyAcknowledged(event.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-600" />
+                  <span>ฉันรับทราบ <Link href="/privacy" target="_blank" className="font-bold text-primary underline">ประกาศความเป็นส่วนตัว</Link> และการส่งข้อความนี้ไปยังทีมบริการผ่าน LINE</span>
+                </label>
+                {!hasLegalIdentity && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950">แบบฟอร์มยังไม่เปิดรับข้อมูลจริง กรุณาติดต่อผ่าน LINE หรืออีเมลโดยตรง</p>}
+                <Button type="submit" className="w-full h-12 text-lg cursor-pointer" disabled={loading || !privacyAcknowledged || !hasLegalIdentity}>
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />

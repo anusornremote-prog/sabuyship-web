@@ -74,6 +74,8 @@ CREATE TABLE public.inquiries (
   remark TEXT,
   notes TEXT,
   status public.inquiry_status NOT NULL DEFAULT 'PENDING',
+  privacy_notice_version TEXT,
+  privacy_acknowledged_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -112,6 +114,8 @@ CREATE TABLE public.orders (
   shipping_address_id UUID REFERENCES public.addresses(id) ON DELETE SET NULL,
   consolidated_into_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
   delivered_at TIMESTAMPTZ,
+  terms_version TEXT,
+  terms_accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -395,7 +399,8 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.site_settings TO anon, authenticated;
 GRANT INSERT (
   inquiry_number, customer_id, customer_name, phone, line_id, product_url,
-  quantity, items, shipping_type, service_type, status
+  quantity, items, shipping_type, service_type, status,
+  privacy_notice_version, privacy_acknowledged_at
 ) ON public.inquiries TO anon;
 GRANT SELECT, INSERT ON public.inquiries TO authenticated;
 GRANT SELECT ON public.profiles, public.quotations, public.orders, public.payments,
@@ -416,7 +421,7 @@ GRANT UPDATE (full_name, phone, line_id, line_uid, updated_at) ON public.profile
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES
   ('inquiries', 'inquiries', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp']),
-  ('payment_slips', 'payment_slips', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp'])
+  ('payment_slips', 'payment_slips', false, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp'])
 ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
@@ -425,7 +430,12 @@ ON CONFLICT (id) DO UPDATE SET
 CREATE POLICY "Anyone can upload inquiry images" ON storage.objects
 FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'inquiries');
 CREATE POLICY "Authenticated users can upload payment slips" ON storage.objects
-FOR INSERT TO authenticated WITH CHECK (bucket_id = 'payment_slips');
+FOR INSERT TO authenticated WITH CHECK (
+  bucket_id = 'payment_slips'
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+CREATE POLICY "Admins can read payment slips" ON storage.objects
+FOR SELECT TO authenticated USING (bucket_id = 'payment_slips' AND public.is_admin());
 CREATE POLICY "Admins can delete Sabuyship uploads" ON storage.objects
 FOR DELETE TO authenticated USING (
   bucket_id IN ('inquiries', 'payment_slips') AND public.is_admin()

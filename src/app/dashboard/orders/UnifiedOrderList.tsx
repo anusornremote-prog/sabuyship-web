@@ -93,7 +93,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         body: JSON.stringify({
           customer_id: customerId,
           quotation_id: selectedQuotationId,
-          shipping_address_id: addressId
+          shipping_address_id: addressId,
+          terms_accepted: true,
         })
       })
 

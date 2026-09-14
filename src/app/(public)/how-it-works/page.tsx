@@ -303,13 +303,13 @@ export default function HowItWorks() {
       icon: ShieldCheck,
       iconBg: "bg-amber-100 text-amber-600",
       title: "Wooden Crate Packing",
-      description: "Reinforced wooden crating protection starting at only 200 THB to ensure fragile items arrive in perfect condition."
+      description: "Optional wooden crating starts at 200 THB and helps reduce transit risk; it does not guarantee damage-free delivery."
     },
     {
       icon: RefreshCw,
       iconBg: "bg-rose-100 text-rose-600",
-      title: "100% Out-of-Stock Refund",
-      description: "If the Chinese supplier runs out of stock, receive an immediate 100% refund without any deduction."
+      title: "Trackable Out-of-Stock Refund",
+      description: "If the seller cancels, we show the refund status and return the amount received from the seller within 7 business days."
     }
   ] : locale === 'zh' ? [
     {
@@ -333,8 +333,8 @@ export default function HowItWorks() {
     {
       icon: RefreshCw,
       iconBg: "bg-rose-100 text-rose-600",
-      title: "缺货 100% 极速退款",
-      description: "若中国商家缺货或无法发货，全额100%退款，不扣除任何手续费。"
+      title: "缺货退款进度可查",
+      description: "若商家取消订单，我们会显示退款进度，并在收到退款后 7 个工作日内退还实际收到的金额。"
     }
   ] : [
     {
@@ -353,13 +353,13 @@ export default function HowItWorks() {
       icon: ShieldCheck,
       iconBg: "bg-amber-100 text-amber-600",
       title: "บริการเสริมตีลังไม้กันกระแทก",
-      description: "มีบริการตีลังไม้สำหรับสินค้าแตกหักง่ายหรือเครื่องใช้ไฟฟ้า เริ่มต้นเพียง 200 บาท ช่วยปกป้องสินค้า 100%"
+      description: "มีบริการตีลังไม้สำหรับสินค้าแตกหักง่ายหรือเครื่องใช้ไฟฟ้า เริ่มต้น 200 บาท ช่วยลดความเสี่ยงแต่ไม่รับประกันว่าจะไม่เสียหาย"
     },
     {
       icon: RefreshCw,
       iconBg: "bg-rose-100 text-rose-600",
-      title: "สินค้าหมด คืนเงินเต็มจำนวน 100%",
-      description: "กรณีร้านค้าจีนแจ้งสินค้าหมดสต็อก ระบบจะทำการยกเลิกและคืนเงินค่าสินค้าให้ลูกค้าเต็มจำนวนทันที"
+      title: "สินค้าหมด ติดตามสถานะคืนเงินได้",
+      description: "กรณีร้านค้าจีนยกเลิก ระบบจะแสดงสถานะและคืนจำนวนที่ได้รับจากร้านค้าภายใน 7 วันทำการหลังได้รับเงิน"
     }
   ]
 

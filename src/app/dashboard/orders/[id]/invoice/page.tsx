@@ -2,10 +2,12 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { Printer, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { hasLegalIdentity, publicBusinessConfig } from "@/lib/public-business-config"
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { id } = await params
+  const taxId = process.env.BUSINESS_TAX_ID?.trim()
 
   // Check if uuid format or order number
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
@@ -14,6 +16,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     id,
     order_number,
     status,
+    payment_round_1_status,
+    payment_round_2_status,
+    payment_round_3_status,
     created_at,
     tracking_number,
     shipping_company,
@@ -71,9 +76,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  // Determine document type based on payment status
-  const isPaid = !['NEW', 'WAITING_PAYMENT'].includes(order.status)
-  const docTitle = isPaid ? "ใบเสร็จรับเงิน (Receipt)" : "ใบแจ้งหนี้ (Invoice)"
+  const paidRounds = [
+    order.payment_round_1_status,
+    order.payment_round_2_status,
+    order.payment_round_3_status,
+  ].filter((status) => status === "PAID").length
+  const docTitle = "ใบสรุปค่าใช้จ่าย (Order Summary)"
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
@@ -110,10 +118,15 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <h1 className="text-3xl font-bold text-primary mb-1">Sabuy Ship</h1>
             <p className="text-sm text-slate-500 font-medium tracking-wide uppercase">Import Service Provider</p>
             <div className="mt-4 text-sm text-slate-600 space-y-1">
-              <p>บริษัท สบายชิป นำเข้า จำกัด (สำนักงานใหญ่)</p>
-              <p>123/45 ถนนทดสอบ แขวงทดสอบ</p>
-              <p>เขตจำลอง กรุงเทพมหานคร 10000</p>
-              <p>เลขประจำตัวผู้เสียภาษี: 0105555555555</p>
+              <p>ชื่อทางการค้า: {publicBusinessConfig.brandName}</p>
+              <p>ผู้ประกอบการบุคคลธรรมดา: {publicBusinessConfig.legalName || "ยังไม่ได้ระบุ"}</p>
+              <p>{publicBusinessConfig.address || "ยังไม่ได้ระบุที่อยู่ผู้ประกอบการ"}</p>
+              {publicBusinessConfig.commercialRegistrationNo && (
+                <p>เลขทะเบียนพาณิชย์: {publicBusinessConfig.commercialRegistrationNo}</p>
+              )}
+              {taxId && (
+                <p>เลขประจำตัวผู้เสียภาษี: {taxId}</p>
+              )}
             </div>
           </div>
           <div className="text-right">
@@ -130,7 +143,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 </tr>
                 <tr>
                   <td className="font-semibold text-right">สถานะ:</td>
-                  <td className="text-right font-bold text-primary">{isPaid ? 'ชำระเงินแล้ว' : 'รอชำระเงิน'}</td>
+                  <td className="text-right font-bold text-primary">ชำระแล้ว {paidRounds} จาก 3 รอบ</td>
                 </tr>
               </tbody>
             </table>
@@ -264,15 +277,19 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
         {/* Footer Notes */}
         <div className="absolute bottom-12 left-12 right-12 text-center text-xs text-slate-500 border-t border-slate-200 pt-6">
-          <p>เอกสารฉบับนี้ออกโดยระบบอัตโนมัติ หากมีข้อสงสัยกรุณาติดต่อฝ่ายบริการลูกค้า</p>
-          <p className="mt-1">โทร: 02-xxx-xxxx | LINE: @sabuyship</p>
+          <p>เอกสารนี้เป็นใบสรุปรายการจากระบบ ไม่ใช่ใบกำกับภาษี</p>
+          <p className="mt-1">
+            {hasLegalIdentity
+              ? `โทร: ${publicBusinessConfig.phone} | อีเมล: ${publicBusinessConfig.email} | LINE: @sabuyship`
+              : "ข้อมูลผู้ประกอบการยังไม่ครบ เอกสารนี้ยังไม่ควรใช้เป็นหลักฐานทางภาษีหรือรับชำระเงิน"}
+          </p>
         </div>
 
         {/* Watermark for paid status */}
-        {isPaid && (
+        {paidRounds > 0 && (
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 pointer-events-none opacity-10">
             <div className="border-8 border-green-600 text-green-600 font-bold text-9xl p-8 rounded-lg tracking-widest uppercase">
-              PAID
+              PAID {paidRounds}/3
             </div>
           </div>
         )}

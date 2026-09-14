@@ -56,7 +56,7 @@ export default function FaqPage() {
     { id: "shipping", label: locale === 'en' ? "Shipping & Transit Times" : locale === 'zh' ? "物流时效与运费" : "การขนส่ง & ระยะเวลา", icon: Truck },
     { id: "consolidation", label: locale === 'en' ? "Consolidation & Ordering" : locale === 'zh' ? "合单与采购代购" : "การรวมบิล & สั่งซื้อ", icon: Layers },
     { id: "prohibited", label: locale === 'en' ? "Prohibited & Wooden Crate" : locale === 'zh' ? "禁运品与木架防护" : "สินค้าต้องห้าม & ตีลังไม้", icon: ShieldAlert },
-    { id: "guarantee", label: locale === 'en' ? "Refunds & Guarantee" : locale === 'zh' ? "退款与售后保障" : "นโยบายคืนเงิน & ประกัน", icon: RefreshCw },
+    { id: "guarantee", label: locale === 'en' ? "Refunds & Claims" : locale === 'zh' ? "退款与售后处理" : "การคืนเงิน & เรียกร้อง", icon: RefreshCw },
   ], [locale])
 
   // FAQ Database localized
@@ -130,14 +130,14 @@ export default function FaqPage() {
           id: "pro-2",
           category: "prohibited",
           question: "When should I choose wooden crate packing?",
-          answer: "We strongly recommend wooden crating (starting at only 200 THB/box) for fragile goods such as mirrors, ceramic tiles, glassware, audio equipment, electronics, and precision machinery to prevent transit impact.",
+          answer: "Wooden crating starts at 200 THB/box and can reduce transit risk for fragile goods. It does not guarantee damage-free delivery.",
           tags: ["crate", "wooden", "fragile", "protection", "packing"]
         },
         {
           id: "gua-1",
           category: "guarantee",
           question: "What happens if the Chinese supplier runs out of stock?",
-          answer: "If the Chinese seller informs us that items are out of stock or cannot be fulfilled, our system immediately notifies you and issues a 100% full refund with 0 deduction.",
+          answer: "If the seller cancels or cannot supply an item, we will show the refund status and return the amount actually received from the seller within 7 business days after receipt.",
           tags: ["refund", "out of stock", "cancel", "money back"]
         },
         {
@@ -224,7 +224,7 @@ export default function FaqPage() {
           id: "gua-1",
           category: "guarantee",
           question: "如果中国商家缺货无法发货怎么办？",
-          answer: "若中国商家告知缺货或无法交付，系统将立即通知您并办理 100% 全额退款，不扣除任何手续费。",
+          answer: "若商家取消或无法供货，我们会显示退款进度，并在收到商家退款后 7 个工作日内退还实际收到的金额。",
           tags: ["退款", "缺货", "取消", "保障"]
         },
         {
@@ -304,15 +304,15 @@ export default function FaqPage() {
           id: "pro-2",
           category: "prohibited",
           question: "สินค้าแบบไหนที่ควรเลือกบริการเสริม 'ตีลังไม้'?",
-          answer: "แนะนำเป็นพิเศษสำหรับสินค้าแตกหักง่าย เช่น กระจก เซรามิก โคมไฟ เครื่องเสียง อุปกรณ์ไอที หรือเครื่องจักรขนาดใหญ่ เริ่มต้นเพียง 200 บาท ช่วยป้องกันการกระแทกระหว่างขนส่งได้ 100%",
+          answer: "แนะนำสำหรับสินค้าแตกหักง่าย เช่น กระจก เซรามิก โคมไฟ เครื่องเสียง อุปกรณ์ไอที หรือเครื่องจักรขนาดใหญ่ ราคาเริ่มต้น 200 บาท การตีลังช่วยลดความเสี่ยงแต่ไม่ใช่การรับประกันว่าสินค้าจะไม่เสียหาย",
           tags: ["ตีลังไม้", "แตกง่าย", "ป้องกัน", "กล่องไม้"]
         },
         {
           id: "gua-1",
           category: "guarantee",
           question: "กรณีร้านค้าจีนแจ้งว่าสินค้าหมด จะได้รับเงินคืนอย่างไร?",
-          answer: "หากร้านค้าจีนแจ้งของหมดสต็อกหรือยกเลิกคำสั่งซื้อ ระบบจะทำการยกเลิกและคืนเงินค่าสินค้าให้ลูกค้าเต็มจำนวน 100% ทันทีโดยไม่มีการหักค่าธรรมเนียมใดๆ",
-          tags: ["คืนเงิน", "ของหมด", "ยกเลิก", "การันตี"]
+          answer: "หากร้านค้าจีนยกเลิกหรือไม่มีสินค้า ระบบจะแสดงสถานะเงินคืน และผู้ให้บริการจะคืนจำนวนที่ได้รับคืนจากร้านค้าภายใน 7 วันทำการหลังได้รับเงิน",
+          tags: ["คืนเงิน", "ของหมด", "ยกเลิก", "เรียกร้อง"]
         },
         {
           id: "gua-2",
@@ -351,7 +351,7 @@ export default function FaqPage() {
           </h1>
           <p className="text-base md:text-lg text-slate-600">
             {locale === 'en' 
-              ? "Find quick answers about our 3-Round purchasing system, cross-border freight, consolidation, and guarantees."
+              ? "Find quick answers about our 3-Round purchasing system, cross-border freight, consolidation, refunds, and claims."
               : locale === 'zh'
               ? "快速了解中泰3阶段代购收费、跨境国际物流时效、合单省运费及售后保障。"
               : "รวบรวมทุกข้อสงสัยเกี่ยวกับการสั่งซื้อ การคิดค่าบริการ 3 รอบ ระยะเวลาขนส่ง และการรวมบิลประหยัดค่าส่ง"}

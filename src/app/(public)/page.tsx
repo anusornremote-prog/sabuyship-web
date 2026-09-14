@@ -98,7 +98,7 @@ export default function Home() {
   const platforms = [
     { name: "1688", tag: locale === 'en' ? 'Wholesale' : locale === 'zh' ? '源头厂家' : 'ราคาส่งโรงงาน', bg: "bg-orange-50 text-orange-700 border-orange-200" },
     { name: "Taobao", tag: locale === 'en' ? 'Trending' : locale === 'zh' ? '海量正品' : 'ปลีก-ส่งครบ', bg: "bg-amber-50 text-amber-700 border-amber-200" },
-    { name: "Tmall", tag: locale === 'en' ? 'Authentic' : locale === 'zh' ? '官方旗舰' : 'แบรนด์แท้ 100%', bg: "bg-rose-50 text-rose-700 border-rose-200" },
+    { name: "Tmall", tag: locale === 'en' ? 'Brand stores' : locale === 'zh' ? '品牌店铺' : 'ร้านค้าแบรนด์', bg: "bg-rose-50 text-rose-700 border-rose-200" },
     { name: "Pinduoduo", tag: locale === 'en' ? 'Deals' : locale === 'zh' ? '超值拼团' : 'ดีลสุดคุ้ม', bg: "bg-red-50 text-red-700 border-red-200" },
     { name: "Poizon", tag: locale === 'en' ? 'Streetwear' : locale === 'zh' ? '得物潮牌' : 'สตรีทแวร์', bg: "bg-cyan-50 text-cyan-700 border-cyan-200" },
   ]

@@ -659,6 +659,13 @@ export default function Pricing() {
                 <p className="text-[11px] text-amber-700 leading-relaxed">
                   {t.calcNoteText || "ค่าบริการนี้เฉพาะค่าขนส่งจีน-ไทย (รอบที่ 2) ไม่รวมค่าสินค้า (รอบ 1) และค่าจัดส่งในไทย (รอบ 3) ซึ่งสามารถกดรวมบิลเพื่อประหยัดค่าส่งได้"}
                 </p>
+                <p className="mt-2 text-[11px] font-semibold text-amber-900 leading-relaxed">
+                  {locale === 'en'
+                    ? 'The estimate excludes import duty, tax, permits, customs examination, special-area delivery and other actual charges unless explicitly listed. We will disclose any additional charge before requesting payment.'
+                    : locale === 'zh'
+                    ? '除非报价中明确列出，否则估价不含关税、税费、许可证、查验、偏远地区派送及其他实际费用；任何新增费用将在付款前告知。'
+                    : 'ราคาประเมินยังไม่รวมอากร ภาษี ใบอนุญาต ค่าตรวจปล่อย ค่าพื้นที่พิเศษ และค่าใช้จ่ายตามจริงอื่น เว้นแต่ระบุไว้แล้ว โดยจะแจ้งค่าใช้จ่ายเพิ่มเติมก่อนเรียกเก็บเงิน'}
+                </p>
               </div>
             </div>
           </div>

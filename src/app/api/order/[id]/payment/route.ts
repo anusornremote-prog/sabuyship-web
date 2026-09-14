@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
+import { isPaymentConfigured } from "@/lib/public-business-config"
 
 type PaymentRound = 1 | 2 | 3
 
@@ -16,6 +17,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (!isPaymentConfigured) {
+      return NextResponse.json({ error: "Payment channel is not available" }, { status: 503 })
+    }
     const sessionClient = await createClient()
     const {
       data: { user },
@@ -31,22 +35,10 @@ export async function POST(
       return NextResponse.json({ error: "Invalid payment details" }, { status: 400 })
     }
 
-    const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const slipUrl = typeof body.slip_url === "string" ? body.slip_url : ""
-    if (!projectUrl) throw new Error("Supabase URL is not configured")
-
-    const expectedHost = new URL(projectUrl).host
-    let parsedSlipUrl: URL
-    try {
-      parsedSlipUrl = new URL(slipUrl)
-    } catch {
-      return NextResponse.json({ error: "Invalid payment slip URL" }, { status: 400 })
-    }
-    if (
-      parsedSlipUrl.host !== expectedHost ||
-      !parsedSlipUrl.pathname.startsWith("/storage/v1/object/public/payment_slips/")
-    ) {
-      return NextResponse.json({ error: "Invalid payment slip source" }, { status: 400 })
+    const slipPath = typeof body.slip_path === "string" ? body.slip_path : ""
+    const expectedPrefix = `${user.id}/${orderId}/`
+    if (!slipPath.startsWith(expectedPrefix) || slipPath.includes("..")) {
+      return NextResponse.json({ error: "Invalid payment slip path" }, { status: 400 })
     }
 
     const adminClient = createAdminClient()
@@ -119,7 +111,7 @@ export async function POST(
         payment_round: paymentRound,
         amount,
         payment_date: paymentDate.toISOString(),
-        slip_url: slipUrl,
+        slip_url: slipPath,
         status: "PENDING",
       })
       .select("id")

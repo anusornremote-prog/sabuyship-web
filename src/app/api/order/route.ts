@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { canAcceptBusiness } from "@/lib/public-business-config"
 
 import { hasValidApiKey } from "@/lib/api-auth"
 import { sendAdminNotification } from "@/lib/notify"
@@ -8,6 +9,9 @@ import { createClient } from "@/lib/supabase/server"
 // POST /api/order - Create an order from an accepted quotation.
 export async function POST(request: Request) {
   try {
+    if (!canAcceptBusiness) {
+      return NextResponse.json({ error: "Service is not accepting new orders" }, { status: 503 })
+    }
     const sessionClient = await createClient()
     const adminClient = createAdminClient()
     const apiKeyAuthorized = hasValidApiKey(request)
@@ -21,6 +25,10 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const targetCustomerId = apiKeyAuthorized ? body.customer_id : user?.id
+
+    if (!apiKeyAuthorized && body.terms_accepted !== true) {
+      return NextResponse.json({ error: "Terms acceptance is required" }, { status: 400 })
+    }
 
     if (!targetCustomerId || !body.quotation_id) {
       return NextResponse.json(
@@ -89,6 +97,8 @@ export async function POST(request: Request) {
         payment_round_1_status: "PENDING",
         admin_notes: body.admin_notes || null,
         shipping_address_id: body.shipping_address_id || null,
+        terms_version: apiKeyAuthorized ? null : "2026-09-14",
+        terms_accepted_at: apiKeyAuthorized ? null : new Date().toISOString(),
       })
       .select()
       .single()

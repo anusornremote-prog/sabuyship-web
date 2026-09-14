@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
 import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle, X, AlertTriangle, ZoomIn, ExternalLink } from "lucide-react"
@@ -25,7 +25,29 @@ export function PaymentApprovalModal({
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [isImageExpanded, setIsImageExpanded] = useState(false)
+  const [signedSlipUrl, setSignedSlipUrl] = useState("")
+  const [slipLoading, setSlipLoading] = useState(false)
   const supabase = createClient()
+
+  useEffect(() => {
+    if (!isOpen || !payment?.id) return
+    let cancelled = false
+    setSlipLoading(true)
+    setSignedSlipUrl("")
+    fetch(`/api/admin/payment-slip?payment_id=${encodeURIComponent(payment.id)}`)
+      .then(async (response) => {
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || "Unable to open slip")
+        if (!cancelled) setSignedSlipUrl(result.signed_url)
+      })
+      .catch(() => {
+        if (!cancelled) setSignedSlipUrl("")
+      })
+      .finally(() => {
+        if (!cancelled) setSlipLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [isOpen, payment?.id])
 
   if (!payment || !order) return null;
 
@@ -55,9 +77,9 @@ export function PaymentApprovalModal({
         .eq('id', payment.id)
       if (paymentError) throw paymentError
 
-      const roundToUpdate = order.payment_round_1_status === 'UPLOADED' ? 'payment_round_1_status' :
-                            order.payment_round_2_status === 'UPLOADED' ? 'payment_round_2_status' :
-                            order.payment_round_3_status === 'UPLOADED' ? 'payment_round_3_status' : null;
+      const roundToUpdate = payment.payment_round === 1 ? 'payment_round_1_status' :
+                            payment.payment_round === 2 ? 'payment_round_2_status' :
+                            payment.payment_round === 3 ? 'payment_round_3_status' : null;
 
       let updates: any = {};
       if (roundToUpdate) {
@@ -220,26 +242,26 @@ export function PaymentApprovalModal({
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                   สลิปหลักฐาน (แตะที่รูปเพื่อขยาย)
                 </p>
-                {payment.slip_url && (
-                  <a href={payment.slip_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                {signedSlipUrl && (
+                  <a href={signedSlipUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-bold hover:underline flex items-center gap-1">
                     <ExternalLink className="w-3 h-3" /> เปิดรูปเต็ม
                   </a>
                 )}
               </div>
 
               <div 
-                onClick={() => payment.slip_url && setIsImageExpanded(true)}
+                onClick={() => signedSlipUrl && setIsImageExpanded(true)}
                 className="border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden bg-slate-100/70 flex items-center justify-center min-h-[220px] max-h-[360px] relative cursor-pointer group"
               >
-                {payment.slip_url ? (
+                {signedSlipUrl ? (
                   <>
-                    <img src={payment.slip_url} alt="Payment Slip" className="max-w-full max-h-[350px] object-contain rounded-xl" />
+                    <img src={signedSlipUrl} alt="หลักฐานการชำระเงิน" className="max-w-full max-h-[350px] object-contain rounded-xl" />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold gap-1.5">
                       <ZoomIn className="w-5 h-5" /> แตะเพื่อขยายเต็มจอ
                     </div>
                   </>
                 ) : (
-                  <p className="text-slate-400 text-xs">ไม่มีรูปสลิป</p>
+                  <p className="text-slate-400 text-xs">{slipLoading ? "กำลังเปิดหลักฐาน..." : "ไม่สามารถเปิดหลักฐานได้"}</p>
                 )}
               </div>
             </div>
@@ -324,7 +346,7 @@ export function PaymentApprovalModal({
       </Dialog>
 
       {/* Full-Screen Slip Lightbox Modal */}
-      {isImageExpanded && payment.slip_url && (
+      {isImageExpanded && signedSlipUrl && (
         <div 
           onClick={() => setIsImageExpanded(false)}
           className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
@@ -338,7 +360,7 @@ export function PaymentApprovalModal({
             </button>
           </div>
           <img 
-            src={payment.slip_url} 
+            src={signedSlipUrl}
             alt="Payment Slip Full View" 
             className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" 
           />

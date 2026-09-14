@@ -16,9 +16,11 @@ export function AddressSelectionModal({ isOpen, onClose, onConfirm }: AddressSel
   const [addresses, setAddresses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string>("")
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
+    setTermsAccepted(false)
 
     const fetchAddresses = async () => {
       try {
@@ -107,7 +109,7 @@ export function AddressSelectionModal({ isOpen, onClose, onConfirm }: AddressSel
                   </div>
                   <p className="text-sm text-slate-600 mb-1">{address.phone}</p>
                   <p className="text-sm text-slate-500">
-                    {address.address_line} ต.{address.subdistrict} อ.{address.district} จ.{address.province} {address.postalCode}
+                    {address.address_line} ต.{address.subdistrict} อ.{address.district} จ.{address.province} {address.postal_code}
                   </p>
                 </div>
               ))}
@@ -116,12 +118,16 @@ export function AddressSelectionModal({ isOpen, onClose, onConfirm }: AddressSel
         </div>
 
         <DialogFooter className="pt-2 border-t mt-2">
+          <label className="mb-3 flex w-full items-start gap-2 text-left text-xs leading-relaxed text-slate-600 sm:mb-0 sm:mr-auto">
+            <input type="checkbox" checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-600" />
+            <span>ฉันตรวจสอบใบเสนอราคาและยอมรับ <Link href="/terms" target="_blank" className="font-bold text-primary underline">เงื่อนไขบริการ</Link> ฉบับวันที่ 14 กันยายน 2026</span>
+          </label>
           <Button variant="outline" onClick={onClose}>
             ยกเลิก
           </Button>
           <Button 
             onClick={() => onConfirm(selectedId)} 
-            disabled={!selectedId || addresses.length === 0}
+            disabled={!selectedId || addresses.length === 0 || !termsAccepted}
           >
             ยืนยันการสั่งซื้อ
           </Button>

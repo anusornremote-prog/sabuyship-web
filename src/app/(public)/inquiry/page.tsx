@@ -33,6 +33,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { vibrateTap, vibrateSuccess, readClipboardText } from "@/lib/haptics"
+import { canAcceptBusiness } from "@/lib/public-business-config"
 
 export default function InquiryForm() {
   const router = useRouter()
@@ -210,7 +211,8 @@ export default function InquiryForm() {
         line_id: formData.get("lineId"),
         shipping_type: formData.get("shippingType"),
         service_type: serviceType,
-        items: uploadedItems
+        items: uploadedItems,
+        privacy_notice_acknowledged: formData.get("privacyAcknowledged") === "on",
       }
 
       const response = await fetch("/api/inquiry", {
@@ -716,11 +718,24 @@ export default function InquiryForm() {
 
               {/* Submit CTA Button */}
               <div className="pt-4">
+                {!canAcceptBusiness && (
+                  <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950">
+                    แบบฟอร์มยังไม่เปิดรับคำขอจริง เนื่องจากข้อมูลผู้ประกอบการยังตั้งค่าไม่ครบ
+                  </div>
+                )}
+                <label className="mb-4 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+                  <input type="checkbox" name="privacyAcknowledged" required className="mt-0.5 h-4 w-4 accent-blue-600" />
+                  <span>
+                    ฉันรับทราบว่า Sabuy Ship จะใช้ข้อมูลของฉันเพื่อจัดทำใบเสนอราคา ติดต่อกลับ และให้บริการตาม
+                    {' '}<Link href="/privacy" target="_blank" className="font-bold text-primary underline">ประกาศความเป็นส่วนตัว</Link>
+                    {' '}การทำเครื่องหมายนี้เป็นการรับทราบประกาศ ไม่ใช่การยินยอมรับการตลาด
+                  </span>
+                </label>
                 <Button 
                   type="submit" 
                   size="lg" 
                   variant="orange" 
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !canAcceptBusiness}
                   className="w-full h-14 text-base sm:text-lg font-black rounded-2xl shadow-lg shadow-orange-500/25 cursor-pointer hover:shadow-orange-500/35 transition-all"
                 >
                   {isSubmitting ? (

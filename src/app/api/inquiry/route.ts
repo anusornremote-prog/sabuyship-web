@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { canAcceptBusiness } from "@/lib/public-business-config"
 import { createClient } from "@/lib/supabase/server"
 import { sendAdminNotification } from "@/lib/notify"
 import crypto from "crypto"
@@ -6,6 +7,9 @@ import crypto from "crypto"
 // POST /api/inquiry - Create a new inquiry (Support both Authenticated & Guest Users)
 export async function POST(request: Request) {
   try {
+    if (!canAcceptBusiness) {
+      return NextResponse.json({ error: "Service is not accepting new inquiries" }, { status: 503 })
+    }
     const supabase = await createClient()
     const body = await request.json()
 
@@ -15,6 +19,9 @@ export async function POST(request: Request) {
         { error: "Missing required fields: customer_name, phone, items" },
         { status: 400 }
       )
+    }
+    if (body.privacy_notice_acknowledged !== true) {
+      return NextResponse.json({ error: "Privacy notice acknowledgement is required" }, { status: 400 })
     }
 
     // Check optional authentication
@@ -52,7 +59,9 @@ export async function POST(request: Request) {
       product_url: body.items[0]?.url || "-", // Fallback to satisfy DB constraint
       quantity: body.items[0]?.quantity || 1, // Fallback to satisfy DB constraint
       status: "PENDING",
-      service_type: body.service_type || 'BUY_AND_IMPORT'
+      service_type: body.service_type || 'BUY_AND_IMPORT',
+      privacy_notice_version: "2026-09-14",
+      privacy_acknowledged_at: new Date().toISOString(),
     }
 
     const { error } = await supabase

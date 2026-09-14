@@ -1,126 +1,92 @@
-import React from 'react'
-import { Metadata } from 'next'
-import { ShieldCheck, UserCheck, Lock, FileText, Share2, Mail } from 'lucide-react'
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
+import { AlertTriangle, Database, FileText, Lock, Mail, Share2, ShieldCheck, UserCheck } from "lucide-react"
+import { hasLegalIdentity, publicBusinessConfig } from "@/lib/public-business-config"
 
 export const metadata: Metadata = {
-  title: 'นโยบายความเป็นส่วนตัว - Sabuy Ship Express',
-  description: 'นโยบายความเป็นส่วนตัวและการคุ้มครองข้อมูลส่วนบุคคล (Privacy Policy)',
+  title: "ประกาศความเป็นส่วนตัว - Sabuy Ship Express",
+  description: "ประกาศการเก็บ ใช้ เปิดเผย และคุ้มครองข้อมูลส่วนบุคคล",
 }
+
+const Section = ({ icon: Icon, title, children }: { icon: typeof ShieldCheck; title: string; children: ReactNode }) => (
+  <section className="space-y-4">
+    <div className="flex items-center gap-3">
+      <div className="rounded-lg bg-blue-50 p-2 text-blue-700"><Icon className="h-5 w-5" /></div>
+      <h2 className="text-xl font-bold text-slate-800">{title}</h2>
+    </div>
+    <div className="space-y-3 pl-0 leading-relaxed text-slate-600 md:pl-14">{children}</div>
+  </section>
+)
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto max-w-4xl px-4 py-12">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold text-slate-900 mb-4">นโยบายความเป็นส่วนตัว (Privacy Policy)</h1>
-        <p className="text-slate-500">ปรับปรุงข้อมูลล่าสุด: มกราคม 2026</p>
+        <h1 className="mb-4 text-3xl font-bold text-slate-900">ประกาศความเป็นส่วนตัว</h1>
+        <p className="text-slate-500">ฉบับปรับปรุงวันที่ 14 กันยายน 2026</p>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border space-y-8">
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-              <UserCheck className="h-5 w-5" />
+      <div className="space-y-8 rounded-2xl border bg-white p-6 shadow-sm md:p-10">
+        <div className={`rounded-xl border p-4 text-sm ${hasLegalIdentity ? "border-blue-200 bg-blue-50 text-blue-950" : "border-amber-300 bg-amber-50 text-amber-950"}`}>
+          <div className="flex gap-3">
+            {!hasLegalIdentity && <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />}
+            <div>
+              <p className="font-bold">ผู้ควบคุมข้อมูลส่วนบุคคล</p>
+              <p>{publicBusinessConfig.brandName} ดำเนินงานโดยผู้ประกอบการบุคคลธรรมดา: {publicBusinessConfig.legalName || "ยังไม่ได้ระบุ"}</p>
+              <p>ที่อยู่: {publicBusinessConfig.address || "ยังไม่ได้ระบุ"}</p>
+              <p>โทร: {publicBusinessConfig.phone || "ยังไม่ได้ระบุ"} · อีเมล: {publicBusinessConfig.email} · LINE: @sabuyship</p>
+              {!hasLegalIdentity && <p className="mt-2 font-bold">ต้องกรอกชื่อ ที่อยู่ และเบอร์โทรของผู้ประกอบการก่อนเปิดรับข้อมูลจากลูกค้าจริง</p>}
             </div>
-            <h2 className="text-xl font-bold text-slate-800">1. ข้อมูลส่วนบุคคลที่เราเก็บรวบรวม</h2>
           </div>
-          <div className="pl-14 text-slate-600 space-y-2">
-            <p>เมื่อท่านสมัครสมาชิกหรือใช้บริการ Sabuy Ship Express เราจะทำการเก็บรวบรวมข้อมูลต่อไปนี้:</p>
-            <ul className="list-disc pl-5 space-y-1 mt-2">
-              <li>ข้อมูลประจำตัว: ชื่อ-นามสกุล, เบอร์โทรศัพท์, อีเมล</li>
-              <li>ข้อมูลสำหรับการจัดส่ง: ที่อยู่สำหรับจัดส่งสินค้า, รหัสไปรษณีย์</li>
-              <li>ข้อมูลการทำธุรกรรม: ประวัติการสั่งซื้อ, สลิปการโอนเงิน, ข้อมูลบัญชีธนาคาร (สำหรับการคืนเงิน/ถอนเงิน)</li>
-              <li>ข้อมูลทางเทคนิค: หมายเลข IP, ชนิดของเบราว์เซอร์, และข้อมูลการใช้งานเว็บไซต์ผ่านคุกกี้ (Cookies)</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-              <FileText className="h-5 w-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">2. วัตถุประสงค์ในการเก็บข้อมูล</h2>
-          </div>
-          <div className="pl-14 text-slate-600 space-y-2">
-            <p>เรานำข้อมูลส่วนบุคคลของท่านไปใช้เพื่อวัตถุประสงค์ดังต่อไปนี้:</p>
-            <ul className="list-disc pl-5 space-y-1 mt-2">
-              <li>เพื่อใช้ในการสมัครสมาชิกและยืนยันตัวตน</li>
-              <li>เพื่อดำเนินการสั่งซื้อ ประสานงานร้านค้าจีน และจัดส่งสินค้าถึงมือท่าน</li>
-              <li>เพื่อแจ้งเตือนสถานะการขนส่ง (Tracking) และติดต่อสื่อสารกรณีมีปัญหาขัดข้อง</li>
-              <li>เพื่อปรับปรุงคุณภาพการให้บริการและพัฒนาเว็บไซต์ให้ดียิ่งขึ้น</li>
-              <li>เพื่อปฏิบัติตามกฎหมายและข้อบังคับที่เกี่ยวข้อง</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-              <Share2 className="h-5 w-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">3. การเปิดเผยข้อมูลแก่บุคคลที่สาม</h2>
-          </div>
-          <div className="pl-14 text-slate-600 space-y-2">
-            <p>เราไม่มีนโยบายขายข้อมูลส่วนบุคคลของท่านให้แก่บุคคลที่สามโดยเด็ดขาด อย่างไรก็ตาม เราอาจจำเป็นต้องแชร์ข้อมูลบางส่วนให้แก่:</p>
-            <ul className="list-disc pl-5 space-y-1 mt-2">
-              <li>**บริษัทขนส่งเอกชน (ในไทย):** เช่น Kerry, Flash, J&T เพื่อใช้ในการจัดส่งสินค้าถึงบ้านท่าน (แชร์เฉพาะชื่อ ที่อยู่ เบอร์โทร)</li>
-              <li>**พันธมิตรและร้านค้าจีน:** เฉพาะข้อมูลที่จำเป็นต่อการสั่งซื้อสินค้า</li>
-              <li>**หน่วยงานรัฐหรือเจ้าหน้าที่ตามกฎหมาย:** เมื่อมีการร้องขอตามหมายศาลหรือกระบวนการทางกฎหมาย</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-50 text-red-600 rounded-lg">
-              <Lock className="h-5 w-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">4. ความปลอดภัยของข้อมูล</h2>
-          </div>
-          <div className="pl-14 text-slate-600 space-y-2">
-            <p>เราให้ความสำคัญกับความปลอดภัยของข้อมูลท่าน โดยใช้ระบบฐานข้อมูลที่มีมาตรฐานความปลอดภัยระดับสูง (Secure Server) และมีการเข้ารหัสข้อมูล (Encryption) เพื่อป้องกันการเข้าถึงจากผู้ที่ไม่ได้รับอนุญาต</p>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-teal-50 text-teal-600 rounded-lg">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">5. สิทธิของเจ้าของข้อมูล (PDPA)</h2>
-          </div>
-          <div className="pl-14 text-slate-600 space-y-2">
-            <p>ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล (PDPA) ท่านมีสิทธิดังต่อไปนี้:</p>
-            <ul className="list-disc pl-5 space-y-1 mt-2">
-              <li>สิทธิในการขอเข้าถึงและขอรับสำเนาข้อมูลของตนเอง</li>
-              <li>สิทธิในการขอแก้ไขข้อมูลให้ถูกต้องและเป็นปัจจุบัน</li>
-              <li>สิทธิในการขอให้ลบ หรือทำลายข้อมูลส่วนบุคคล (หากไม่มีความจำเป็นต้องใช้)</li>
-              <li>สิทธิในการขอระงับการใช้ หรือคัดค้านการประมวลผลข้อมูล</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
-              <Mail className="h-5 w-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">6. การติดต่อเรา</h2>
-          </div>
-          <div className="pl-14 text-slate-600 space-y-2">
-            <p>หากท่านมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัว หรือต้องการใช้สิทธิตามกฎหมาย โปรดติดต่อเราได้ที่:</p>
-            <ul className="list-disc pl-5 space-y-1 mt-2">
-              <li>**อีเมล:** sabuyship.express@gmail.com</li>
-              <li>**LINE OA:** @sabuyship</li>
-            </ul>
-          </div>
-        </section>
-
-        <div className="pt-6 mt-6 border-t border-slate-200">
-          <p className="text-sm text-slate-500 text-center">
-            บริษัทขอสงวนสิทธิ์ในการแก้ไขหรือเปลี่ยนแปลงนโยบายความเป็นส่วนตัวนี้ตามความเหมาะสม โดยจะมีการแจ้งให้ทราบผ่านทางเว็บไซต์ล่วงหน้า
-          </p>
         </div>
+
+        <Section icon={UserCheck} title="1. ข้อมูลที่เก็บรวบรวม">
+          <ul className="list-disc space-y-1 pl-5">
+            <li>ข้อมูลบัญชีและติดต่อ เช่น ชื่อ อีเมล เบอร์โทร LINE ID และข้อมูลจากผู้ให้บริการเข้าสู่ระบบที่ท่านเลือก</li>
+            <li>ข้อมูลคำขอและคำสั่งซื้อ เช่น ลิงก์สินค้า รายละเอียดสินค้า เลขพัสดุ และข้อความติดต่อ</li>
+            <li>ข้อมูลจัดส่ง เช่น ชื่อผู้รับ เบอร์โทร และที่อยู่</li>
+            <li>ข้อมูลธุรกรรม เช่น ยอดชำระ วันเวลา สถานะ และภาพหลักฐานการโอน</li>
+            <li>ข้อมูลทางเทคนิคที่จำเป็นต่อความปลอดภัยและการทำงาน เช่น IP, บันทึกการเข้าใช้, คุกกี้เข้าสู่ระบบ และคุกกี้ภาษา</li>
+          </ul>
+        </Section>
+
+        <Section icon={FileText} title="2. วัตถุประสงค์และฐานกฎหมาย">
+          <ul className="list-disc space-y-1 pl-5">
+            <li><strong>ดำเนินการตามคำขอหรือสัญญา:</strong> ออกใบเสนอราคา สั่งซื้อ ขนส่ง รับชำระ คืนเงิน และบริการลูกค้า</li>
+            <li><strong>ปฏิบัติตามกฎหมาย:</strong> ภาษี บัญชี ศุลกากร การตรวจสอบธุรกรรม และคำสั่งของหน่วยงานที่มีอำนาจ</li>
+            <li><strong>ประโยชน์โดยชอบด้วยกฎหมาย:</strong> ป้องกันทุจริต รักษาความปลอดภัย แก้ข้อพิพาท และปรับปรุงบริการ โดยคำนึงถึงสิทธิของท่าน</li>
+            <li><strong>ความยินยอม:</strong> ใช้เฉพาะกิจกรรมที่กฎหมายกำหนดให้ต้องขอ เช่น การตลาดที่ไม่เกี่ยวกับบริการ โดยท่านถอนความยินยอมได้</li>
+          </ul>
+        </Section>
+
+        <Section icon={Share2} title="3. ผู้รับข้อมูลและการส่งข้อมูลต่างประเทศ">
+          <p>เราเปิดเผยข้อมูลเท่าที่จำเป็นแก่ร้านค้าและโกดังในจีน ผู้ให้บริการขนส่ง ธนาคาร ผู้ให้บริการระบบคลาวด์/ฐานข้อมูล ระบบยืนยันตัวตน LINE และผู้ให้บริการติดตามพัสดุ รวมถึงหน่วยงานรัฐเมื่อมีกฎหมายหรือคำสั่งรองรับ</p>
+          <p>การสั่งซื้อและขนส่งจากจีนอาจต้องส่งข้อมูลบางส่วนไปต่างประเทศ เราจะส่งเฉพาะข้อมูลที่จำเป็นต่อบริการและจัดให้มีมาตรการคุ้มครองที่เหมาะสมตามกฎหมาย</p>
+          <p>เราไม่ขายข้อมูลส่วนบุคคลให้บุคคลภายนอก</p>
+        </Section>
+
+        <Section icon={Database} title="4. ระยะเวลาเก็บรักษา">
+          <ul className="list-disc space-y-1 pl-5">
+            <li>คำขอใบเสนอราคาที่ไม่เกิดคำสั่งซื้อ: ไม่เกิน 2 ปีหลังการติดต่อครั้งสุดท้าย</li>
+            <li>คำสั่งซื้อ การชำระ และเอกสารที่เกี่ยวข้อง: ตามระยะเวลาที่กฎหมายภาษี บัญชี ศุลกากร หรืออายุความกำหนด โดยทั่วไปไม่เกิน 10 ปี</li>
+            <li>บัญชีผู้ใช้และที่อยู่: ตลอดเวลาที่ใช้บัญชี และช่วงเวลาที่จำเป็นหลังปิดบัญชีเพื่อปฏิบัติตามกฎหมายหรือจัดการข้อพิพาท</li>
+            <li>บันทึกความปลอดภัย: เท่าที่จำเป็นต่อการตรวจสอบและป้องกันเหตุ</li>
+          </ul>
+          <p>เมื่อพ้นความจำเป็น เราจะลบ ทำลาย หรือทำให้ข้อมูลไม่สามารถระบุตัวบุคคลได้อย่างเหมาะสม</p>
+        </Section>
+
+        <Section icon={Lock} title="5. การรักษาความมั่นคงปลอดภัย">
+          <p>เราใช้การกำหนดสิทธิ์ตามบทบาท การตรวจสอบตัวตน การเชื่อมต่อแบบเข้ารหัส การสำรองข้อมูล และการจำกัดอายุลิงก์สำหรับเอกสารสำคัญตามความเหมาะสม อย่างไรก็ดีไม่มีระบบใดปลอดความเสี่ยงทั้งหมด หากเกิดเหตุละเมิดข้อมูล เราจะประเมินและแจ้งตามหน้าที่ที่กฎหมายกำหนด</p>
+        </Section>
+
+        <Section icon={ShieldCheck} title="6. สิทธิของเจ้าของข้อมูล">
+          <p>ภายใต้เงื่อนไขของกฎหมาย ท่านอาจขอเข้าถึงหรือรับสำเนา ขอแก้ไข ขอให้ลบ ขอจำกัดการใช้ ขอคัดค้าน ขอรับหรือโอนข้อมูล ถอนความยินยอม และร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคลได้ การถอนความยินยอมไม่กระทบการประมวลผลที่ชอบด้วยกฎหมายก่อนถอน</p>
+        </Section>
+
+        <Section icon={Mail} title="7. การใช้สิทธิและการติดต่อ">
+          <p>ติดต่อที่ <a className="font-semibold text-primary underline" href={`mailto:${publicBusinessConfig.email}`}>{publicBusinessConfig.email}</a> หรือ LINE @sabuyship โปรดระบุสิทธิที่ต้องการใช้และข้อมูลสำหรับยืนยันตัวตน เราจะตอบภายในระยะเวลาที่กฎหมายกำหนด</p>
+          <p>หากมีการเปลี่ยนแปลงสาระสำคัญ เราจะแสดงวันที่ปรับปรุงและแจ้งผ่านช่องทางที่เหมาะสมก่อนมีผล</p>
+        </Section>
       </div>
     </div>
   )
