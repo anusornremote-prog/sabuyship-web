@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 
 export async function sendAdminNotification(message: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   const lineUserId = process.env.LINE_ADMIN_USER_ID;
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
@@ -90,6 +91,7 @@ export async function sendAdminNotification(message: string) {
 }
 
 export async function sendCustomerNotification(profileId: string, message: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!lineToken) return false;
 

@@ -25,6 +25,7 @@ export const publicBusinessConfig = {
   email: clean(process.env.NEXT_PUBLIC_BUSINESS_EMAIL) || "sabuyship.express@gmail.com",
   commercialRegistrationNo: clean(process.env.NEXT_PUBLIC_BUSINESS_REGISTRATION_NO),
   vatRegistered: process.env.NEXT_PUBLIC_BUSINESS_VAT_REGISTERED === "true",
+  demoMode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
   preRegistrationPilot: process.env.NEXT_PUBLIC_PRE_REGISTRATION_PILOT === "true",
   businessStartDate: clean(process.env.NEXT_PUBLIC_BUSINESS_START_DATE),
   registrationCutoffDate: clean(process.env.NEXT_PUBLIC_REGISTRATION_CUTOFF_DATE),

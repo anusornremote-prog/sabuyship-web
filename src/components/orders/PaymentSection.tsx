@@ -223,6 +223,11 @@ export function PaymentSection({
             : "ยังไม่เปิดรับชำระผ่านหน้าเว็บ กรุณาติดต่อผู้ให้บริการและตรวจสอบชื่อผู้รับเงินก่อนโอนทุกครั้ง"}
         </div>
       )}
+      {publicBusinessConfig.demoMode && (
+        <div className="mt-2 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-black text-red-800">
+          DEMO PAYMENT — ใช้สลิปตัวอย่างเท่านั้น ห้ามโอนเงินจริงเข้าบัญชีใด ๆ
+        </div>
+      )}
       <Button 
         onClick={handleOpenModal} 
         disabled={!isPaymentConfigured}

@@ -7,6 +7,14 @@ import {
 } from "@/lib/public-business-config"
 
 export function BusinessPilotBanner() {
+  if (publicBusinessConfig.demoMode) {
+    return (
+      <div className="border-b border-red-300 bg-red-50 px-4 py-2 text-center text-xs font-black leading-relaxed text-red-800">
+        ระบบทดลองบน Staging/Preview เท่านั้น · ข้อมูลและบัญชีเป็นตัวอย่าง · ห้ามโอนเงินจริง
+      </div>
+    )
+  }
+
   if (publicBusinessConfig.commercialRegistrationNo) return null
 
   if (isPreRegistrationPilotActive && hasLegalIdentity) {

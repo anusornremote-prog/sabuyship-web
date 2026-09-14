@@ -20,6 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'ข้อมูลไม่ถูกต้องหรือยาวเกินกำหนด' }, { status: 400 })
     }
 
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      return NextResponse.json({ success: true, demo: true })
+    }
+
     const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
     const adminUserId = process.env.LINE_ADMIN_USER_ID
 
