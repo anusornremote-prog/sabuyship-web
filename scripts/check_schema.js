@@ -33,14 +33,19 @@ const adminClient = createClient(url, secretKey, {
 const schemaContract = {
   profiles: 'id,role,customer_code,full_name,phone,line_id,line_uid,wallet_balance,is_active,created_at,updated_at',
   addresses: 'id,customer_id,full_name,phone,address_line,subdistrict,district,province,postal_code,is_default,created_at,updated_at',
-  inquiries: 'id,inquiry_number,customer_id,customer_name,phone,line_id,product_url,product_name,image_url,quantity,items,shipping_type,service_type,shipping_address_id,remark,notes,status,created_at,updated_at',
+  inquiries: 'id,inquiry_number,customer_id,customer_name,phone,line_id,product_url,product_name,image_url,quantity,items,shipping_type,service_type,shipping_address_id,remark,notes,status,archived_at,archived_by,archive_reason,created_at,updated_at',
   quotations: 'id,inquiry_id,customer_id,product_cost,service_fee,shipping_cost_cn_cn,shipping_cost_cn_th,shipping_cost_th_th,wooden_crate_cost,other_fee,total_price,admin_notes,valid_until,status,created_at,updated_at',
   orders: 'id,order_number,customer_id,quotation_id,status,payment_round_1_status,payment_round_2_status,payment_round_3_status,admin_notes,tracking_number,shipping_company,shipping_address_id,consolidated_into_id,delivered_at,created_at,updated_at',
-  payments: 'id,order_id,payment_round,amount,payment_date,payment_method,transfer_date,transfer_time,slip_url,rejection_reason,status,created_at,updated_at',
+  payments: 'id,order_id,payment_round,amount,payment_date,payment_method,payment_reference,transfer_date,transfer_time,slip_url,rejection_reason,status,approved_by,approved_at,rejected_by,rejected_at,created_at,updated_at',
   tracking_logs: 'id,order_id,status,notes,description,created_by,created_at',
   wallet_transactions: 'id,customer_id,amount,type,status,reference_image,description,admin_note,created_at,updated_at',
-  shipments: 'id,order_id,customer_id,customer_code,transport_type,tracking_number,thailand_tracking_number,status,product_type,product_name,container_date,quantity,weight,arrival_date,shipping_cost,width,length,height,created_at,updated_at',
+  shipments: 'id,order_id,customer_id,customer_code,transport_type,tracking_number,thailand_tracking_number,status,product_type,product_name,container_date,quantity,weight,arrival_date,shipping_cost,shipping_cost_amount,payment_status,paid_at,paid_by,payment_reference,width,length,height,created_at,updated_at',
   site_settings: 'key,value,updated_at',
+  refunds: 'id,order_id,payment_id,customer_id,amount,reason,status,refund_method,payment_reference,proof_path,requested_by,approved_by,paid_by,approved_at,paid_at,created_at,updated_at',
+  admin_audit_logs: 'id,actor_id,action,entity_type,entity_id,old_data,new_data,reason,created_at',
+  exchange_rate_history: 'id,old_rate,new_rate,reason,changed_by,created_at',
+  shipment_import_batches: 'id,file_name,total_rows,imported_rows,failed_rows,result,created_by,created_at',
+  notification_logs: 'id,recipient_type,recipient_profile_id,channel,status,error_code,created_at',
 }
 
 async function run() {
@@ -60,11 +65,11 @@ async function run() {
     .from('profiles')
     .select('id')
     .limit(1)
-  if (publicProfilesError || (publicProfiles && publicProfiles.length > 0)) {
+  if (!publicProfilesError && publicProfiles && publicProfiles.length > 0) {
     failed = true
-    console.error('FAIL profiles RLS: anonymous access was not denied')
+    console.error('FAIL profiles RLS: anonymous request returned profile rows')
   } else {
-    console.log('PASS profiles RLS (anonymous sees no rows)')
+    console.log(`PASS profiles RLS (${publicProfilesError ? 'anonymous select denied' : 'anonymous sees no rows'})`)
   }
 
   const { error: authAdminError } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1 })
