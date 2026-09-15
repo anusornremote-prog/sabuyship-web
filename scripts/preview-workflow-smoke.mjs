@@ -130,24 +130,17 @@ function previewRequest(path, { method = "GET", body, cookie } = {}) {
   return { status, json, body: responseBody }
 }
 
-async function approveRound(orderId, adminUserId, round, nextStatus) {
-  must(
-    await service.from("payments").update({ status: "APPROVED" }).eq("order_id", orderId).eq("payment_round", round),
-    `approve payment round ${round}`,
+async function approveRound(orderId, adminCookie, round) {
+  const payment = must(
+    await service.from("payments").select("id").eq("order_id", orderId).eq("payment_round", round).single(),
+    `read payment round ${round}`,
   )
-  must(
-    await service.from("orders").update({ [`payment_round_${round}_status`]: "PAID", status: nextStatus }).eq("id", orderId),
-    `advance order round ${round}`,
-  )
-  must(
-    await service.from("tracking_logs").insert({
-      order_id: orderId,
-      status: `PAID_ROUND_${round}`,
-      notes: `Preview smoke approved round ${round}`,
-      created_by: adminUserId,
-    }),
-    `log payment round ${round}`,
-  )
+  const approval = previewRequest(`/api/admin/payments/${payment.id}/review`, {
+    method: "POST",
+    cookie: adminCookie,
+    body: { decision: "APPROVE" },
+  })
+  assert(approval.status === 200, `Preview admin approves payment round ${round} (${approval.status})`)
 }
 
 async function cleanup() {
@@ -161,6 +154,11 @@ async function cleanup() {
     must(await service.from("tracking_logs").delete().eq("order_id", ids.order), "remove preview logs")
     must(await service.from("payments").delete().eq("order_id", ids.order), "remove preview payments")
     must(await service.from("orders").delete().eq("id", ids.order), "remove preview order")
+  }
+  if (ids.adminUser || ids.customerUser) {
+    const actorIds = [ids.adminUser, ids.customerUser].filter(Boolean)
+    await service.from("admin_audit_logs").delete().in("actor_id", actorIds)
+    await service.from("notification_logs").delete().in("recipient_profile_id", actorIds)
   }
   if (ids.quotation) must(await service.from("quotations").delete().eq("id", ids.quotation), "remove preview quotation")
   if (ids.inquiry) must(await service.from("inquiries").delete().eq("id", ids.inquiry), "remove preview inquiry")
@@ -190,6 +188,14 @@ try {
   )
   const adminDashboard = previewRequest("/admin", { cookie: adminCookie })
   assert(adminDashboard.status === 200, `Preview admin opens admin dashboard (${adminDashboard.status})`)
+  for (const adminPath of ["/admin/refunds", "/admin/audit", "/admin/notifications", "/admin/imports", "/admin/security", "/admin/settings", "/admin/tracking"]) {
+    const response = previewRequest(adminPath, { cookie: adminCookie })
+    assert(response.status === 200, `Preview admin opens ${adminPath} (${response.status})`)
+  }
+  const unauthenticatedBadges = previewRequest("/api/admin/badge-counts")
+  assert(unauthenticatedBadges.status === 401, `Preview protects admin badge API (${unauthenticatedBadges.status})`)
+  const directNotification = previewRequest("/api/notify", { method: "POST", cookie: customerCookie, body: {} })
+  assert(directNotification.status === 410, `Preview blocks direct notification spoofing (${directNotification.status})`)
   const invalidCallback = previewRequest("/api/auth/callback?code=invalid&next=/dashboard")
   assert(
     [302, 303, 307, 308].includes(invalidCallback.status),
@@ -246,7 +252,8 @@ try {
     body: { inquiry_id: inquiry.id, product_cost: 100, shipping_cost_cn_cn: 20 },
   })
   assert(quotationResponse.status === 201, `Preview admin creates quotation through API (${quotationResponse.status})`)
-  const quotation = quotationResponse.json?.data
+  const quotationResult = quotationResponse.json?.data
+  const quotation = quotationResult ? { ...quotationResult, id: quotationResult.quotation_id } : null
   assert(Boolean(quotation?.id), "Preview quotation response contains quotation id")
   assert(quotation.customer_id === customerUser.id, "Preview quotation belongs to customer")
   ids.quotation = quotation.id
@@ -282,7 +289,7 @@ try {
     cookie: adminCookie,
   })
   assert(signedSlip.status === 200 && Boolean(signedSlip.json?.signed_url), "Preview admin receives a signed private slip URL")
-  await approveRound(order.id, adminUser.id, 1, "ORDERED")
+  await approveRound(order.id, adminCookie, 1)
 
   const quote2 = previewRequest(`/api/order/${order.id}/quote-round-2`, {
     method: "POST",
@@ -296,7 +303,7 @@ try {
     body: { payment_round: 2, amount: 50, slip_path: slipPath },
   })
   assert(round2.status === 201, `Preview accepts payment round 2 (${round2.status})`)
-  await approveRound(order.id, adminUser.id, 2, "SHIPPING")
+  await approveRound(order.id, adminCookie, 2)
 
   const quote3 = previewRequest(`/api/order/${order.id}/quote-round-3`, {
     method: "POST",
@@ -316,7 +323,7 @@ try {
     body: { payment_round: 3, amount: 40, slip_path: slipPath },
   })
   assert(round3.status === 201, `Preview accepts payment round 3 (${round3.status})`)
-  await approveRound(order.id, adminUser.id, 3, "OUT_FOR_DELIVERY")
+  await approveRound(order.id, adminCookie, 3)
 
   const delivered = previewRequest(`/api/order/${order.id}/confirm-receipt`, {
     method: "POST",
