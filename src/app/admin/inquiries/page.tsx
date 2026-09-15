@@ -4,18 +4,26 @@ import AdminInquiryList from "./AdminInquiryList"
 export default async function AdminInquiries({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; q?: string; status?: string }>
 }) {
   const resolvedSearchParams = await searchParams
   const page = parseInt(resolvedSearchParams.page || "1")
+  const search = resolvedSearchParams.q?.trim() || ""
+  const status = resolvedSearchParams.status || "ALL"
   const ITEMS_PER_PAGE = 20
   
   const supabase = await createClient()
-  const { data: inquiries, count } = await supabase
+  let query = supabase
     .from("inquiries")
     .select("*, quotations(*, orders(*)), customer:customer_id(customer_code)", { count: 'exact' })
+    .is("archived_at", null)
     .order("created_at", { ascending: false })
-    .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
+  if (status !== "ALL") query = query.eq("status", status)
+  if (search) {
+    const safeSearch = search.replace(/[,%()]/g, " ").trim()
+    query = query.or(`inquiry_number.ilike.%${safeSearch}%,customer_name.ilike.%${safeSearch}%,phone.ilike.%${safeSearch}%,product_url.ilike.%${safeSearch}%`)
+  }
+  const { data: inquiries, count } = await query.range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
 
   if (inquiries && inquiries.length > 0) {
     const missingPhones = inquiries.filter(i => !i.customer && i.phone).map(i => i.phone);
@@ -50,6 +58,8 @@ export default async function AdminInquiries({
         totalCount={count || 0}
         currentPage={page}
         itemsPerPage={ITEMS_PER_PAGE}
+        initialSearch={search}
+        initialStatus={status}
       />
     </div>
   )

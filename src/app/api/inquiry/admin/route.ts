@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 // POST /api/inquiry/admin - Create a new inquiry as an admin for a customer
 export async function POST(request: Request) {
@@ -65,7 +64,7 @@ export async function DELETE(request: Request) {
     const supabase = await createClient()
     const body = await request.json()
 
-    if (!body.ids || !Array.isArray(body.ids) || body.ids.length === 0) {
+    if (!body.ids || !Array.isArray(body.ids) || body.ids.length === 0 || !body.reason?.trim()) {
       return NextResponse.json({ error: "No inquiry IDs provided" }, { status: 400 })
     }
 
@@ -81,46 +80,13 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 })
     }
 
-    // Try to use service role key to bypass RLS, fallback to normal client
-    const adminSupabase = process.env.SUPABASE_SERVICE_ROLE_KEY
-      ? createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
-      : supabase
-
-    // Find all quotations related to these inquiries
-    const { data: quotations } = await adminSupabase
-      .from("quotations")
-      .select("id")
-      .in("inquiry_id", body.ids)
-
-    if (quotations && quotations.length > 0) {
-      const quotationIds = quotations.map((q: any) => q.id)
-
-      // 1. Delete associated orders first to avoid foreign key constraint violations
-      const { error: orderError } = await adminSupabase
-        .from("orders")
-        .delete()
-        .in("quotation_id", quotationIds)
-
-      if (orderError) throw orderError
-
-      // 2. Delete quotations
-      const { error: quotationError } = await adminSupabase
-        .from("quotations")
-        .delete()
-        .in("id", quotationIds)
-        
-      if (quotationError) throw quotationError
-    }
-
-    // 3. Finally delete inquiries
-    const { error } = await adminSupabase
-      .from("inquiries")
-      .delete()
-      .in("id", body.ids)
-
+    const { data: archivedCount, error } = await supabase.rpc("admin_archive_inquiries", {
+      p_ids: body.ids,
+      p_reason: body.reason.trim(),
+    })
     if (error) throw error
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    return NextResponse.json({ success: true, archived_count: archivedCount }, { status: 200 })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

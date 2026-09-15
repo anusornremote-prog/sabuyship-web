@@ -2,10 +2,10 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, Home, ArrowLeft } from "lucide-react"
+import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, Home, CircleDollarSign, ShieldCheck, Bell, KeyRound, FileSpreadsheet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export default function AdminLayout({
   children,
@@ -14,7 +14,8 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   
   const [badgeCounts, setBadgeCounts] = useState({
     inquiriesCount: 0,
@@ -42,6 +43,23 @@ export default function AdminLayout({
     fetchCounts()
   }, [pathname])
 
+  useEffect(() => {
+    const resetIdleTimer = () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current)
+      idleTimer.current = setTimeout(async () => {
+        await supabase.auth.signOut()
+        router.push("/login?reason=admin-session-expired")
+      }, 30 * 60 * 1000)
+    }
+    const events: Array<keyof WindowEventMap> = ["mousedown", "keydown", "touchstart", "scroll"]
+    events.forEach((event) => window.addEventListener(event, resetIdleTimer, { passive: true }))
+    resetIdleTimer()
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current)
+      events.forEach((event) => window.removeEventListener(event, resetIdleTimer))
+    }
+  }, [router, supabase])
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push("/login")
@@ -52,7 +70,12 @@ export default function AdminLayout({
     { href: "/admin/inquiries", icon: FileQuestion, label: "คำขอราคา", badge: badgeCounts.inquiriesCount },
     { href: "/admin/orders", icon: Package, label: "คำสั่งซื้อ", badge: badgeCounts.ordersCount },
     { href: "/admin/tracking", icon: Truck, label: "Tracking", badge: badgeCounts.trackingCount },
+    { href: "/admin/imports", icon: FileSpreadsheet, label: "ประวัติ Excel" },
+    { href: "/admin/refunds", icon: CircleDollarSign, label: "เงินคืน" },
     { href: "/admin/customers", icon: Users, label: "ลูกค้า" },
+    { href: "/admin/audit", icon: ShieldCheck, label: "Audit Log" },
+    { href: "/admin/notifications", icon: Bell, label: "การแจ้งเตือน" },
+    { href: "/admin/security", icon: KeyRound, label: "ความปลอดภัย" },
     { href: "/admin/settings", icon: Settings, label: "ตั้งค่า" },
   ]
 
@@ -65,7 +88,7 @@ export default function AdminLayout({
             <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-16 w-auto max-h-[64px] max-w-[220px] object-contain hover:scale-105 transition-transform" />
           </Link>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin')
             return (

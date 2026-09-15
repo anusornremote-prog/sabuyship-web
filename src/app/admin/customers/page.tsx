@@ -15,14 +15,16 @@ export default function AdminCustomers() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateInquiryModalOpen, setIsCreateInquiryModalOpen] = useState(false)
   const [selectedCustomerForInquiry, setSelectedCustomerForInquiry] = useState<any | null>(null)
+  const [loadError, setLoadError] = useState("")
 
   const ITEMS_PER_PAGE = 20
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (page = currentPage, search = searchQuery) => {
     try {
       setLoading(true)
+      setLoadError("")
       
       let query = supabase
         .from("profiles")
@@ -37,13 +39,14 @@ export default function AdminCustomers() {
         `, { count: 'exact' })
         .eq('role', 'CUSTOMER')
 
-      if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,customer_code.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%,line_id.ilike.%${searchQuery}%`)
+      if (search) {
+        const safeSearch = search.replace(/[,%()]/g, " ").trim()
+        query = query.or(`full_name.ilike.%${safeSearch}%,customer_code.ilike.%${safeSearch}%,phone.ilike.%${safeSearch}%,line_id.ilike.%${safeSearch}%`)
       }
 
       const { data, count, error } = await query
         .order("created_at", { ascending: false })
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
+        .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
 
       if (error) throw error
 
@@ -51,6 +54,7 @@ export default function AdminCustomers() {
       setTotalCount(count || 0)
     } catch (error) {
       console.error("Error fetching customers:", error)
+      setLoadError("โหลดข้อมูลลูกค้าไม่สำเร็จ กรุณาลองใหม่")
     } finally {
       setLoading(false)
     }
@@ -63,7 +67,7 @@ export default function AdminCustomers() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setCurrentPage(1)
-    fetchCustomers()
+    fetchCustomers(1, searchQuery)
   }
 
   const filteredCustomers = customers
@@ -95,6 +99,11 @@ export default function AdminCustomers() {
       </Card>
 
       <Card className="shadow-sm overflow-hidden">
+        {loadError && (
+          <div className="m-4 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            <span>{loadError}</span><Button size="sm" variant="outline" onClick={() => fetchCustomers()}>ลองใหม่</Button>
+          </div>
+        )}
         <CardContent className="p-0">
           {loading ? (
             <div className="flex flex-col items-center justify-center p-12 text-slate-400">
@@ -102,7 +111,8 @@ export default function AdminCustomers() {
               <p>กำลังโหลดข้อมูล...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                   <tr>
@@ -164,6 +174,20 @@ export default function AdminCustomers() {
                 </tbody>
               </table>
           </div>
+          <div className="divide-y md:hidden">
+            {filteredCustomers.map((customer) => (
+              <div key={customer.id} className="space-y-3 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div><div className="font-mono font-bold text-primary">{customer.customer_code || "-"}</div><div className="font-bold text-slate-900">{customer.full_name || "ไม่มีชื่อ"}</div></div>
+                  <div className="text-right text-xs text-slate-500">{new Date(customer.created_at).toLocaleDateString("th-TH")}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm"><a className="rounded-lg border p-2 text-center" href={`tel:${customer.phone || ""}`}>โทร {customer.phone || "-"}</a><div className="rounded-lg border p-2 text-center">LINE {customer.line_id || "-"}</div></div>
+                <Button className="w-full" variant="outline" onClick={() => { setSelectedCustomerForInquiry(customer); setIsCreateInquiryModalOpen(true) }}><PlusCircle className="mr-1 h-4 w-4" />สร้างคำขอประเมินราคา</Button>
+              </div>
+            ))}
+            {filteredCustomers.length === 0 && <div className="p-10 text-center text-slate-500">ไม่พบข้อมูลลูกค้า</div>}
+          </div>
+            </>
           )}
 
           {/* Pagination Controls */}

@@ -5,8 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle, X, AlertTriangle, ZoomIn, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
-import { createClient } from "@/lib/supabase/client"
-import { sendCustomerNotification } from "@/lib/notify"
 
 export function PaymentApprovalModal({ 
   payment, 
@@ -27,7 +25,6 @@ export function PaymentApprovalModal({
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [signedSlipUrl, setSignedSlipUrl] = useState("")
   const [slipLoading, setSlipLoading] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     if (!isOpen || !payment?.id) return
@@ -71,66 +68,13 @@ export function PaymentApprovalModal({
   const handleApprove = async () => {
     try {
       setLoading(true)
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .update({ status: 'APPROVED' })
-        .eq('id', payment.id)
-      if (paymentError) throw paymentError
-
-      const roundToUpdate = payment.payment_round === 1 ? 'payment_round_1_status' :
-                            payment.payment_round === 2 ? 'payment_round_2_status' :
-                            payment.payment_round === 3 ? 'payment_round_3_status' : null;
-
-      let updates: any = {};
-      if (roundToUpdate) {
-        updates[roundToUpdate] = 'PAID';
-        if (roundToUpdate === 'payment_round_1_status') updates.status = 'ORDERED';
-        else if (roundToUpdate === 'payment_round_2_status') updates.status = 'SHIPPING';
-        else if (roundToUpdate === 'payment_round_3_status') updates.status = 'OUT_FOR_DELIVERY';
-      } else {
-        updates.status = 'PAID';
-      }
-
-      const { error: orderError } = await supabase.from('orders').update(updates).eq('id', order.id)
-      if (orderError) throw orderError
-
-      // Handle child orders for Round 3 consolidation
-      if (roundToUpdate === 'payment_round_3_status') {
-        const { data: childOrders } = await supabase
-          .from('orders')
-          .select('id, order_number, customer_id')
-          .eq('consolidated_into_id', order.id)
-
-        if (childOrders && childOrders.length > 0) {
-          const childIds = childOrders.map(o => o.id)
-          await supabase.from('orders').update({ status: 'OUT_FOR_DELIVERY', payment_round_3_status: 'PAID' }).in('id', childIds)
-          await supabase.from('tracking_logs').insert(childIds.map(cid => ({
-            order_id: cid,
-            status: 'PAID_ROUND_3',
-            notes: `ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (รวมบิลกับออเดอร์หลัก ${order.order_number})`
-          })))
-          for (const co of childOrders) {
-            if (co.customer_id) {
-              await sendCustomerNotification(co.customer_id, `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว (รวมบิลกับ ${order.order_number})\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`)
-            }
-          }
-        }
-      }
-
-      let logStatus = 'PAID'
-      let logNotes = 'ยืนยันการชำระเงินเรียบร้อยแล้ว'
-      if (roundToUpdate === 'payment_round_1_status') { logStatus = 'PAID_ROUND_1'; logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว (ค่าสินค้า)' }
-      else if (roundToUpdate === 'payment_round_2_status') { logStatus = 'PAID_ROUND_2'; logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว (ค่าขนส่งจีน-ไทย)' }
-      else if (roundToUpdate === 'payment_round_3_status') { logStatus = 'PAID_ROUND_3'; logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว (ค่าจัดส่งในไทย)' }
-      await supabase.from('tracking_logs').insert({ order_id: order.id, status: logStatus, notes: logNotes })
-
-      let message = "ยอดชำระเงินของคุณได้รับการตรวจสอบและอนุมัติเรียบร้อยแล้วค่ะ";
-      if (roundToUpdate === 'payment_round_1_status') message = `✅ ยอดชำระเงินรอบที่ 1 ได้รับการอนุมัติแล้ว\nระบบกำลังดำเนินการสั่งซื้อสินค้าให้คุณค่ะ`;
-      else if (roundToUpdate === 'payment_round_2_status') message = `✅ ยอดชำระเงินรอบที่ 2 ได้รับการอนุมัติแล้ว\nสินค้าจะถูกจัดส่งมายังโกดังไทยในขั้นตอนต่อไปค่ะ`;
-      else if (roundToUpdate === 'payment_round_3_status') message = `✅ ยอดชำระเงินรอบที่ 3 ได้รับการอนุมัติแล้ว\nสินค้ากำลังเตรียมนำจ่ายถึงมือคุณค่ะ`;
-      
-      const targetUserId = order.customer_id || order.user_id;
-      if (targetUserId) await sendCustomerNotification(targetUserId, message);
+      const response = await fetch(`/api/admin/payments/${payment.id}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision: 'APPROVE' }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'ไม่สามารถอนุมัติการชำระเงินได้')
 
       toast.success('อนุมัติการชำระเงินเรียบร้อยแล้ว')
       handleClose()
@@ -150,46 +94,13 @@ export function PaymentApprovalModal({
 
     try {
       setLoading(true)
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .update({
-          status: 'REJECTED',
-          rejection_reason: rejectionReason.trim()
-        })
-        .eq('id', payment.id)
-
-      if (paymentError) throw paymentError
-
-      const roundToUpdate = order.payment_round_1_status === 'UPLOADED' ? 'payment_round_1_status' :
-                            order.payment_round_2_status === 'UPLOADED' ? 'payment_round_2_status' :
-                            order.payment_round_3_status === 'UPLOADED' ? 'payment_round_3_status' : null;
-
-      if (roundToUpdate) {
-        await supabase
-          .from('orders')
-          .update({
-            [roundToUpdate]: 'REJECTED',
-            status: 'PAYMENT_REJECTED'
-          })
-          .eq('id', order.id)
-
-        await supabase.from('tracking_logs').insert({
-          order_id: order.id,
-          status: 'PAYMENT_REJECTED',
-          notes: `สลิปชำระเงินถูกปฏิเสธ: ${rejectionReason.trim()}`
-        })
-      }
-
-      const targetUserId = order.customer_id || order.user_id;
-      if (targetUserId) {
-        const roundName = roundToUpdate === 'payment_round_1_status' ? 'รอบที่ 1' :
-                          roundToUpdate === 'payment_round_2_status' ? 'รอบที่ 2' :
-                          roundToUpdate === 'payment_round_3_status' ? 'รอบที่ 3' : '';
-        await sendCustomerNotification(
-          targetUserId,
-          `⚠️ สลิปชำระเงิน ${roundName} สำหรับออเดอร์ ${order.order_number} ไม่ผ่านการตรวจสอบ\n\n📌 เหตุผล: ${rejectionReason.trim()}\n\n👉 กรุณาเข้าสู่ระบบเพื่อแนบสลิปใหม่อีกครั้งค่ะ`
-        )
-      }
+      const response = await fetch(`/api/admin/payments/${payment.id}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision: 'REJECT', rejection_reason: rejectionReason.trim() }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'ไม่สามารถปฏิเสธการชำระเงินได้')
 
       toast.success('ปฏิเสธการชำระเงินแล้ว')
       handleClose()

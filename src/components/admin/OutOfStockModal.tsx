@@ -43,7 +43,7 @@ export function OutOfStockModal({ isOpen, onClose, order, onSuccess }: OutOfStoc
         return {
           ...item,
           totalQty,
-          pricePerUnit: Math.round(pricePerUnit),
+          pricePerUnit: Math.round(pricePerUnit * 100) / 100,
           isOutOfStock: !!item.is_out_of_stock,
           outOfStockQty: item.out_of_stock_qty !== undefined ? item.out_of_stock_qty : (item.is_out_of_stock ? totalQty : 0),
           outOfStockNote: item.out_of_stock_note || ""
@@ -100,14 +100,6 @@ export function OutOfStockModal({ isOpen, onClose, order, onSuccess }: OutOfStoc
       setLoading(true)
       setError("")
 
-      const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
-      const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
-      const inquiryId = inquiry?.id
-
-      if (!inquiryId) {
-        throw new Error("ไม่พบ Inquiry ID ที่ผูกกับออเดอร์นี้")
-      }
-
       // Format items to save
       const updatedItemsToSave = items.map((item) => {
         const itemRefund = item.isOutOfStock && item.outOfStockQty > 0 ? (item.outOfStockQty * item.pricePerUnit) : 0
@@ -131,8 +123,6 @@ export function OutOfStockModal({ isOpen, onClose, order, onSuccess }: OutOfStoc
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: updatedItemsToSave,
-          inquiry_id: inquiryId,
-          total_refund_amount: totalRefundAmount,
           cancel_entire_order: cancelEntireOrder,
           admin_note: generalNote
         })

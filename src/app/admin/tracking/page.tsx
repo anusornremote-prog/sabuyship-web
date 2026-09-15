@@ -12,7 +12,9 @@ import { FileSpreadsheet } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string, color: string, icon: any }> = {
   SHIPPING: { label: "กำลังจัดส่งมาไทย", color: "bg-blue-100 text-blue-700 border-blue-200", icon: Truck },
-  ARRIVED: { label: "ถึงโกดังไทยแล้ว", color: "bg-purple-100 text-purple-700 border-purple-200", icon: Package },
+  CHINA_WAREHOUSE: { label: "ถึงโกดังจีน", color: "bg-violet-100 text-violet-700 border-violet-200", icon: Package },
+  THAILAND_WAREHOUSE: { label: "ถึงโกดังไทยแล้ว", color: "bg-purple-100 text-purple-700 border-purple-200", icon: Package },
+  OUT_FOR_DELIVERY: { label: "กำลังนำส่งลูกค้า", color: "bg-orange-100 text-orange-700 border-orange-200", icon: Truck },
   DELIVERED: { label: "จัดส่งแล้ว", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: CheckCircle }
 }
 
@@ -27,10 +29,12 @@ export default function AdminTrackingPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [loadError, setLoadError] = useState("")
 
   const fetchOrders = async () => {
     try {
       setLoading(true)
+      setLoadError("")
       const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -46,6 +50,7 @@ export default function AdminTrackingPage() {
       setOrders(data || [])
     } catch (error) {
       console.error("Error fetching tracking orders:", error)
+      setLoadError("โหลดข้อมูล Tracking ไม่สำเร็จ กรุณาลองใหม่")
     } finally {
       setLoading(false)
     }
@@ -64,6 +69,7 @@ export default function AdminTrackingPage() {
       setShipments(data || [])
     } catch (error) {
       console.error("Error fetching shipments:", error)
+      setLoadError("โหลดข้อมูลพัสดุ Excel ไม่สำเร็จ กรุณาลองใหม่")
     } finally {
       setLoadingShipments(false)
     }
@@ -104,16 +110,14 @@ export default function AdminTrackingPage() {
     try {
       setLoadingShipments(true)
       
-      // We append (จ่ายแล้ว) to shipping_cost to visually indicate payment
-      const currentCost = shipment.shipping_cost || "0"
-      const newCost = currentCost.includes("(จ่ายแล้ว)") ? currentCost : `${currentCost} (จ่ายแล้ว)`
-
-      const { error } = await supabase
-        .from("shipments")
-        .update({ shipping_cost: newCost })
-        .eq("id", shipment.id)
-
-      if (error) throw error
+      const reference = prompt("เลขอ้างอิงการรับเงิน (ถ้ามี)")?.trim() || ""
+      const response = await fetch(`/api/admin/shipments/${shipment.id}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_reference: reference }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถบันทึกการรับเงินได้")
 
       alert("บันทึกการรับชำระเงินค่าขนส่งสำเร็จ!")
       fetchShipments()
@@ -172,6 +176,11 @@ export default function AdminTrackingPage() {
       </Card>
 
       <Card className="shadow-sm overflow-hidden">
+        {loadError && (
+          <div className="m-4 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            <span>{loadError}</span><Button size="sm" variant="outline" onClick={() => activeTab === "orders" ? fetchOrders() : fetchShipments()}>ลองใหม่</Button>
+          </div>
+        )}
         <CardContent className="p-0">
           {activeTab === 'orders' ? (
             loading ? (
@@ -294,7 +303,14 @@ export default function AdminTrackingPage() {
                           </td>
                           <td className="px-6 py-4 text-slate-600">
                             <div className="text-sm">{shipment.product_name || "ไม่ระบุ"}</div>
-                            <div className="text-xs text-green-600 font-semibold mt-1">ค่าส่ง: {shipment.shipping_cost || "-"}</div>
+                            <div className="text-xs text-green-600 font-semibold mt-1">
+                              ค่าส่ง: {shipment.shipping_cost_amount != null
+                                ? `฿${Number(shipment.shipping_cost_amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}`
+                                : shipment.shipping_cost || "-"}
+                            </div>
+                            <div className={`text-[11px] mt-1 font-bold ${shipment.payment_status === "PAID" ? "text-emerald-700" : "text-amber-700"}`}>
+                              {shipment.payment_status === "PAID" ? "รับชำระแล้ว" : "รอรับชำระ"}
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-slate-500">
                             {new Date(shipment.created_at).toLocaleDateString('th-TH')}
@@ -302,7 +318,7 @@ export default function AdminTrackingPage() {
                           <td className="px-6 py-4 text-center">
                             {shipment.profiles?.id && (
                               <div className="flex flex-col gap-2">
-                                {!String(shipment.shipping_cost).includes("(จ่ายแล้ว)") && (
+                                {shipment.payment_status !== "PAID" && (
                                   <Button 
                                     size="sm" 
                                     variant="outline"

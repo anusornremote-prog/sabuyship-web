@@ -13,63 +13,42 @@ export default async function AdminOverview() {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
 
-  // Fetch Pending Inquiries
-  const { count: pendingInquiriesCount } = await supabase
-    .from("inquiries")
-    .select("*", { count: 'exact', head: true })
-    .eq("status", "PENDING")
+  const [pendingResult, waitingResult, shippingResult, activeResult, customersResult,
+    recentInquiriesResult, recentTrackingResult, chartInquiriesResult, chartOrdersResult] = await Promise.all([
+    supabase.from("inquiries").select("*", { count: 'exact', head: true }).eq("status", "PENDING").is("archived_at", null),
+    supabase.from("orders").select("id, quotation:quotation_id(total_price)").eq("status", "WAITING_PAYMENT"),
+    supabase.from("orders").select("*", { count: 'exact', head: true }).in("status", ["CHINA_WAREHOUSE", "SHIPPING", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY"]),
+    supabase.from("orders").select("status, payment_round_1_status, payment_round_2_status, payment_round_3_status").neq("status", "DELIVERED").neq("status", "CANCELED"),
+    supabase.from("profiles").select("*", { count: 'exact', head: true }).eq("role", "CUSTOMER"),
+    supabase.from("inquiries").select(`id, product_url, status, created_at, customer:customer_id(full_name)`).is("archived_at", null).order("created_at", { ascending: false }).limit(5),
+    supabase.from("tracking_logs").select(`id, status, notes, created_at, order:order_id(order_number)`).order("created_at", { ascending: false }).limit(5),
+    supabase.from("inquiries").select("created_at").is("archived_at", null).gte("created_at", thirtyDaysAgoStr),
+    supabase.from("orders").select("created_at, quotation:quotation_id(total_price)").gte("created_at", thirtyDaysAgoStr),
+  ])
+  const results = [pendingResult, waitingResult, shippingResult, activeResult, customersResult,
+    recentInquiriesResult, recentTrackingResult, chartInquiriesResult, chartOrdersResult]
+  const firstError = results.find((result) => result.error)?.error
+  if (firstError) throw firstError
+  const pendingInquiriesCount = pendingResult.count
+  const waitingPaymentOrders = waitingResult.data
+  const shippingOrdersCount = shippingResult.count
+  const activeOrders = activeResult.data
+  const customersCount = customersResult.count
+  const recentInquiries = recentInquiriesResult.data
+  const recentTracking = recentTrackingResult.data
+  const chartInquiries = chartInquiriesResult.data
+  const chartOrders = chartOrdersResult.data
 
-  // Fetch Waiting Payment Orders and calculate total value
-  const { data: waitingPaymentOrders } = await supabase
-    .from("orders")
-    .select("id, quotation:quotation_id(total_price)")
-    .eq("status", "WAITING_PAYMENT")
-
-  // Fetch Active Shipping Orders
-  const { count: shippingOrdersCount } = await supabase
-    .from("orders")
-    .select("*", { count: 'exact', head: true })
-    .in("status", ["CHINA_WAREHOUSE", "SHIPPING", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY"])
-
-  // A compact operational dataset for the workflow pipeline. This keeps the
-  // dashboard actionable without loading customer or quotation details.
-  const { data: activeOrders } = await supabase
-    .from("orders")
-    .select("status, payment_round_1_status, payment_round_2_status, payment_round_3_status")
-    .neq("status", "DELIVERED")
-    .neq("status", "CANCELED")
-
-  // Fetch Total Customers
-  const { count: customersCount } = await supabase
-    .from("profiles")
-    .select("*", { count: 'exact', head: true })
-    .eq("role", "CUSTOMER")
-
-  // Fetch Recent Inquiries for list
-  const { data: recentInquiries } = await supabase
-    .from("inquiries")
-    .select(`id, product_url, status, created_at, customer:customer_id(full_name)`)
-    .order("created_at", { ascending: false })
-    .limit(5)
-
-  // Fetch Recent Tracking Updates for list
-  const { data: recentTracking } = await supabase
-    .from("tracking_logs")
-    .select(`id, status, notes, created_at, order:order_id(order_number)`)
-    .order("created_at", { ascending: false })
-    .limit(5)
-
-  // 1. Fetch Inquiries created in the last 30 days
-  const { data: chartInquiries } = await supabase
-    .from("inquiries")
-    .select("created_at")
-    .gte("created_at", thirtyDaysAgoStr)
-
-  // 2. Fetch Orders created in the last 30 days (for volume)
-  const { data: chartOrders } = await supabase
-    .from("orders")
-    .select("created_at, quotation:quotation_id(total_price)")
-    .gte("created_at", thirtyDaysAgoStr)
+  const bangkokDateParts = (date: Date) => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Bangkok",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date)
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+    return { key: `${values.year}-${values.month}-${values.day}`, label: `${Number(values.day)}/${Number(values.month)}` }
+  }
 
   const waitingPaymentCount = waitingPaymentOrders?.length || 0
   const waitingPaymentTotal = waitingPaymentOrders?.reduce((sum: number, order: any) => {
@@ -142,6 +121,7 @@ export default async function AdminOverview() {
       icon: Clock3,
       count: activeOrders?.filter((order) => order.status === 'WAITING_PAYMENT' && order.payment_round_1_status !== 'PAID').length || 0,
       tone: 'bg-amber-50 text-amber-700 border-amber-200',
+      href: '/admin/orders?status=WAITING_PAYMENT',
     },
     {
       label: 'รอประเมินรอบ 2',
@@ -149,6 +129,7 @@ export default async function AdminOverview() {
       icon: Warehouse,
       count: activeOrders?.filter((order) => order.status === 'CHINA_WAREHOUSE' && order.payment_round_2_status !== 'PAID').length || 0,
       tone: 'bg-violet-50 text-violet-700 border-violet-200',
+      href: '/admin/orders?status=CHINA_WAREHOUSE',
     },
     {
       label: 'ขนส่งมาไทย',
@@ -156,6 +137,7 @@ export default async function AdminOverview() {
       icon: Ship,
       count: activeOrders?.filter((order) => order.status === 'SHIPPING').length || 0,
       tone: 'bg-sky-50 text-sky-700 border-sky-200',
+      href: '/admin/orders?status=SHIPPING',
     },
     {
       label: 'รอประเมินรอบ 3',
@@ -163,6 +145,7 @@ export default async function AdminOverview() {
       icon: Package,
       count: activeOrders?.filter((order) => order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID').length || 0,
       tone: 'bg-teal-50 text-teal-700 border-teal-200',
+      href: '/admin/orders?status=THAILAND_WAREHOUSE',
     },
     {
       label: 'กำลังนำส่ง',
@@ -170,6 +153,7 @@ export default async function AdminOverview() {
       icon: Truck,
       count: activeOrders?.filter((order) => order.status === 'OUT_FOR_DELIVERY').length || 0,
       tone: 'bg-orange-50 text-orange-700 border-orange-200',
+      href: '/admin/orders?status=OUT_FOR_DELIVERY',
     },
   ]
 
@@ -180,9 +164,9 @@ export default async function AdminOverview() {
   for (let i = 29; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    const dateStr = d.toISOString().split('T')[0] // YYYY-MM-DD
+    const { key: dateStr, label } = bangkokDateParts(d)
     aggregatedData[dateStr] = {
-      date: `${d.getDate()}/${d.getMonth() + 1}`,
+      date: label,
       fullDate: dateStr,
       inquiries: 0,
       orders: 0,
@@ -193,8 +177,7 @@ export default async function AdminOverview() {
   // Populate Inquiries
   if (chartInquiries) {
     chartInquiries.forEach((inq) => {
-      // Need to handle timezone if the time is close to midnight, but simple string splitting is fine for overview
-      const dateStr = inq.created_at.split('T')[0]
+      const dateStr = bangkokDateParts(new Date(inq.created_at)).key
       if (aggregatedData[dateStr]) {
         aggregatedData[dateStr].inquiries += 1
       }
@@ -204,7 +187,7 @@ export default async function AdminOverview() {
   // Populate Orders and Revenue
   if (chartOrders) {
     chartOrders.forEach((order) => {
-      const dateStr = order.created_at.split('T')[0]
+      const dateStr = bangkokDateParts(new Date(order.created_at)).key
       if (aggregatedData[dateStr]) {
         aggregatedData[dateStr].orders += 1
         const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
@@ -292,8 +275,8 @@ export default async function AdminOverview() {
         </CardHeader>
         <CardContent className="p-4 sm:p-5">
           <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
-            {pipeline.map(({ label, hint, icon: StageIcon, count, tone }, index) => (
-              <div key={label} className={`relative rounded-2xl border p-4 ${tone}`}>
+            {pipeline.map(({ label, hint, icon: StageIcon, count, tone, href }, index) => (
+              <Link href={href} key={label} className={`relative rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md ${tone}`}>
                 {index < pipeline.length - 1 && (
                   <ArrowRight className="hidden xl:block absolute -right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 z-10" aria-hidden="true" />
                 )}
@@ -305,7 +288,7 @@ export default async function AdminOverview() {
                 </div>
                 <p className="mt-3 text-sm font-black">{label}</p>
                 <p className="mt-0.5 text-xs opacity-75">{hint}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </CardContent>
@@ -394,12 +377,7 @@ export default async function AdminOverview() {
     return (
       <div className="p-8 text-red-500 bg-red-50 rounded-lg">
         <h1 className="text-2xl font-bold mb-4">🚨 เกิดข้อผิดพลาดในหน้า Admin (Production Error)</h1>
-        <p>กรุณาส่งภาพหน้าจอนี้ให้ทีมพัฒนา:</p>
-        <pre className="mt-4 bg-white p-4 rounded text-sm overflow-auto shadow-inner border border-red-200">
-          {err?.message || String(err)}
-          {"\n"}
-          {err?.stack}
-        </pre>
+        <p>ระบบยังไม่ได้แก้ไขข้อมูลใด ๆ กรุณากดลองใหม่หรือกลับเข้าหน้านี้อีกครั้ง</p>
       </div>
     )
   }

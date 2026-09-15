@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { requireAdmin } from "@/lib/require-admin"
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const auth = await requireAdmin()
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+    const supabase = auth.supabase
 
     // 1. Get Pending Inquiries Count
     const { count: inquiriesCount, error: inquiriesError } = await supabase
@@ -13,11 +15,11 @@ export async function GET() {
 
     if (inquiriesError) throw inquiriesError
 
-    // 2. Get Paid Orders Count (Waiting to be ordered)
-    const { count: ordersCount, error: ordersError } = await supabase
-      .from("orders")
+    // 2. Payments that need an administrator review.
+    const { count: paymentsCount, error: ordersError } = await supabase
+      .from("payments")
       .select("*", { count: 'exact', head: true })
-      .eq("status", "PAID")
+      .eq("status", "PENDING")
 
     if (ordersError) throw ordersError
 
@@ -31,7 +33,7 @@ export async function GET() {
 
     return NextResponse.json({
       inquiriesCount: inquiriesCount || 0,
-      ordersCount: ordersCount || 0,
+      ordersCount: paymentsCount || 0,
       trackingCount: trackingCount || 0
     }, { status: 200 })
 

@@ -1,6 +1,21 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+
+async function recordNotification(recipientType: 'ADMIN' | 'CUSTOMER', status: 'SENT' | 'FAILED' | 'SKIPPED', recipientProfileId?: string, errorCode?: string, channel = 'LINE') {
+  try {
+    await createAdminClient().from('notification_logs').insert({
+      recipient_type: recipientType,
+      recipient_profile_id: recipientProfileId || null,
+      channel,
+      status,
+      error_code: errorCode || null,
+    })
+  } catch {
+    // Notifications must remain best-effort even if the logging table is unavailable.
+  }
+}
 
 export async function sendAdminNotification(message: string) {
   if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;
@@ -87,19 +102,26 @@ export async function sendAdminNotification(message: string) {
     }
   }
 
+  await recordNotification('ADMIN', success ? 'SENT' : 'FAILED', undefined, undefined, 'MULTI');
   return success;
 }
 
 export async function sendCustomerNotification(profileId: string, message: string) {
   if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-  if (!lineToken) return false;
+  if (!lineToken) {
+    await recordNotification('CUSTOMER', 'SKIPPED', profileId, 'LINE_NOT_CONFIGURED');
+    return false;
+  }
 
   try {
     const supabase = await createClient();
     const { data: profile } = await supabase.from('profiles').select('line_uid').eq('id', profileId).single();
 
-    if (!profile || !profile.line_uid) return false;
+    if (!profile || !profile.line_uid) {
+      await recordNotification('CUSTOMER', 'SKIPPED', profileId, 'LINE_UID_MISSING');
+      return false;
+    }
 
     const response = await fetch('https://api.line.me/v2/bot/message/push', {
       method: 'POST',
@@ -112,9 +134,11 @@ export async function sendCustomerNotification(profileId: string, message: strin
         messages: [{ type: 'text', text: message }]
       })
     });
+    await recordNotification('CUSTOMER', response.ok ? 'SENT' : 'FAILED', profileId, response.ok ? undefined : `HTTP_${response.status}`);
     return response.ok;
   } catch (err) {
     console.error("Failed to send customer LINE notification", err);
+    await recordNotification('CUSTOMER', 'FAILED', profileId, 'REQUEST_FAILED');
     return false;
   }
 }

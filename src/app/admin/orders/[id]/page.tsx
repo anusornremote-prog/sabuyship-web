@@ -76,7 +76,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
 
   if (error) {
     console.error("ORDER FETCH ERROR:", error)
-    return <div className="p-8 text-red-500 font-mono">SUPABASE ERROR: {JSON.stringify(error)}</div>
+    return <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-rose-700">โหลดรายละเอียดออเดอร์ไม่สำเร็จ กรุณากลับไปหน้ารายการแล้วลองใหม่</div>
   }
 
   if (!order) {

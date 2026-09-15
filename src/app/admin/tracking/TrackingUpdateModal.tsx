@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, Package, Truck, AlertCircle } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
+import { Loader2, Truck, AlertCircle } from "lucide-react"
 
 interface TrackingUpdateModalProps {
   isOpen: boolean
@@ -19,17 +18,12 @@ const ORDER_STATUSES = [
 ]
 
 export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: TrackingUpdateModalProps) {
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
 
   const [status, setStatus] = useState("")
   const [shippingCompany, setShippingCompany] = useState("")
   const [trackingNumber, setTrackingNumber] = useState("")
-  const [shippingCostCnTh, setShippingCostCnTh] = useState("")
-  const [shippingCostThTh, setShippingCostThTh] = useState("")
-  const [paymentRound2Status, setPaymentRound2Status] = useState("PENDING")
-  const [paymentRound3Status, setPaymentRound3Status] = useState("PENDING")
   const [notes, setNotes] = useState("")
 
   useEffect(() => {
@@ -37,10 +31,6 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
       setStatus(order.status || "SHIPPING")
       setShippingCompany(order.shipping_company || "")
       setTrackingNumber(order.tracking_number || "")
-      setShippingCostCnTh(order.quotations?.shipping_cost_cn_th?.toString() || "")
-      setShippingCostThTh(order.quotations?.shipping_cost_th_th?.toString() || "")
-      setPaymentRound2Status(order.payment_round_2_status || "PENDING")
-      setPaymentRound3Status(order.payment_round_3_status || "PENDING")
       setNotes("")
     }
     setErrorMsg("")
@@ -49,8 +39,8 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!status) {
-      setErrorMsg("กรุณาเลือกสถานะการจัดส่ง")
+    if (!status || !notes.trim()) {
+      setErrorMsg("กรุณาเลือกสถานะและระบุรายละเอียดการอัปเดต")
       return
     }
 
@@ -58,42 +48,18 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
       setLoading(true)
       setErrorMsg("")
 
-      // Update Order
-      const { error: orderError } = await supabase
-        .from("orders")
-        .update({
-          status: status,
-          shipping_company: shippingCompany || null,
-          tracking_number: trackingNumber || null,
-          payment_round_2_status: paymentRound2Status,
-          payment_round_3_status: paymentRound3Status
-        })
-        .eq("id", order.id)
-
-      if (orderError) throw orderError
-
-      if (order.quotations?.id) {
-        const { error: quoteError } = await supabase
-          .from("quotations")
-          .update({
-            shipping_cost_cn_th: parseFloat(shippingCostCnTh) || 0,
-            shipping_cost_th_th: parseFloat(shippingCostThTh) || 0
-          })
-          .eq("id", order.quotations.id)
-
-        if (quoteError) throw quoteError
-      }
-
-      // Insert Tracking Log
-      const { error: logError } = await supabase
-        .from("tracking_logs")
-        .insert({
-          order_id: order.id,
-          status: status,
-          notes: notes || `อัปเดตสถานะเป็น ${ORDER_STATUSES.find(s => s.value === status)?.label}`
-        })
-
-      if (logError) throw logError
+      const response = await fetch(`/api/admin/orders/${order.id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          shipping_company: shippingCompany,
+          tracking_number: trackingNumber,
+          reason: notes.trim(),
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถอัปเดตข้อมูลได้")
 
       onSuccess()
       onClose()
@@ -171,55 +137,13 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="space-y-1.5 p-3 border rounded-lg bg-slate-50">
-              <label className="text-sm font-semibold text-slate-700">ค่าขนส่ง จีน-ไทย (รอบ 2)</label>
-              <Input
-                type="number"
-                placeholder="ระบุจำนวนเงิน"
-                value={shippingCostCnTh}
-                onChange={(e) => setShippingCostCnTh(e.target.value)}
-                className="mb-2"
-              />
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id="paid_round2"
-                  checked={paymentRound2Status === 'PAID'}
-                  onChange={(e) => setPaymentRound2Status(e.target.checked ? 'PAID' : 'PENDING')}
-                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
-                />
-                <label htmlFor="paid_round2" className="text-sm text-slate-700 cursor-pointer">ลูกค้าชำระเงินแล้ว</label>
-              </div>
-            </div>
-            <div className="space-y-1.5 p-3 border rounded-lg bg-slate-50">
-              <label className="text-sm font-semibold text-slate-700">ค่าขนส่ง ไทย-ไทย (รอบ 3)</label>
-              <Input
-                type="number"
-                placeholder="ระบุจำนวนเงิน"
-                value={shippingCostThTh}
-                onChange={(e) => setShippingCostThTh(e.target.value)}
-                className="mb-2"
-              />
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id="paid_round3"
-                  checked={paymentRound3Status === 'PAID'}
-                  onChange={(e) => setPaymentRound3Status(e.target.checked ? 'PAID' : 'PENDING')}
-                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
-                />
-                <label htmlFor="paid_round3" className="text-sm text-slate-700 cursor-pointer">ลูกค้าชำระเงินแล้ว</label>
-              </div>
-            </div>
-          </div>
-
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700">บันทึกเพิ่มเติม (บันทึกลงใน Timeline ของลูกค้า)</label>
             <Input
               placeholder="ตัวอย่าง: สินค้าถึงโกดังไทย กำลังเตรียมจัดส่งให้ลูกค้า"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              required
             />
           </div>
 

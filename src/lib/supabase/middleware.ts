@@ -33,12 +33,13 @@ export async function updateSession(request: NextRequest) {
 
   let role = 'CUSTOMER'
   let hasPhone = false
+  let isActive = true
   
   // Only query the profile role if we need to make a routing decision based on it
   if (user && (pathname.startsWith('/admin') || pathname.startsWith('/dashboard') || pathname === '/login' || pathname === '/register')) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, phone')
+      .select('role, phone, is_active')
       .eq('id', user.id)
       .maybeSingle()
     
@@ -49,6 +50,7 @@ export async function updateSession(request: NextRequest) {
     
     role = profile?.role || 'CUSTOMER'
     hasPhone = !!profile?.phone
+    isActive = profile?.is_active !== false
   }
 
   // Route Guards
@@ -65,11 +67,17 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    if (role !== 'ADMIN') {
+    if (role !== 'ADMIN' || !isActive) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     if (!hasPhone) {
       return NextResponse.redirect(new URL('/complete-profile', request.url))
+    }
+    if (process.env.ADMIN_MFA_REQUIRED === 'true' && pathname !== '/admin/security') {
+      const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (assurance?.currentLevel !== 'aal2') {
+        return NextResponse.redirect(new URL('/admin/security', request.url))
+      }
     }
   }
 

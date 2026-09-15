@@ -12,7 +12,6 @@ import { PaymentApprovalModal } from "@/components/admin/PaymentApprovalModal"
 import { QuoteModal } from "@/components/admin/QuoteModal"
 import { OutOfStockModal } from "@/components/admin/OutOfStockModal"
 import { PackageX } from "lucide-react"
-import { sendCustomerNotification } from "@/lib/notify"
 
 export default function AdminOrders() {
   const supabase = createClient()
@@ -29,6 +28,7 @@ export default function AdminOrders() {
   const [updating, setUpdating] = useState(false)
   const [successMsg, setSuccessMsg] = useState("")
   const [errorMsg, setErrorMsg] = useState("")
+  const [loadError, setLoadError] = useState("")
 
   // Payment Modal states
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -49,9 +49,10 @@ export default function AdminOrders() {
   
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = currentPage, search = searchQuery) => {
     try {
       setLoading(true)
+      setLoadError("")
       
       let query = supabase
         .from("orders")
@@ -92,8 +93,9 @@ export default function AdminOrders() {
             id,
             amount,
             payment_date,
-            slip_url,
-            status
+             slip_url,
+             payment_round,
+             status
           )
         `, { count: 'exact' })
 
@@ -101,19 +103,20 @@ export default function AdminOrders() {
         query = query.eq("status", statusFilter)
       }
 
-      if (searchQuery) {
-        query = query.ilike("order_number", `%${searchQuery}%`)
+      if (search) {
+        query = query.ilike("order_number", `%${search}%`)
       }
 
       const { data, count, error } = await query
         .order("created_at", { ascending: false })
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
+        .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
 
       if (error) throw error
       setOrders(data || [])
       setTotalCount(count || 0)
     } catch (err: any) {
       console.error("Error fetching orders:", err.message)
+      setLoadError("โหลดรายการออเดอร์ไม่สำเร็จ กรุณาลองใหม่")
     } finally {
       setLoading(false)
     }
@@ -124,6 +127,14 @@ export default function AdminOrders() {
     fetchOrders()
   }, [currentPage, statusFilter]) // We don't auto-fetch on searchQuery to avoid spam, we rely on a submit or debounce if needed. Wait, we should fetch on search. 
   // Let's add a debounced search later, or just fetch on Enter/Search button. For now, fetch when search is applied.
+
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get("status")
+    if (status) {
+      setStatusFilter(status)
+      setCurrentPage(1)
+    }
+  }, [])
 
   const handleExport = async () => {
     if (selectedOrderIds.length === 0) {
@@ -225,10 +236,6 @@ export default function AdminOrders() {
         });
         if (!res.ok) throw new Error("Failed to update status");
         
-        if (order.customer_id) {
-          await sendCustomerNotification(order.customer_id, `📦 อัปเดตสถานะออเดอร์ ${order.order_number}: พัสดุถึงโกดังไทยเรียบร้อยแล้วค่ะ`);
-        }
-        
         alert("อัปเดตสถานะสำเร็จ");
         fetchOrders();
       } catch (err: any) {
@@ -277,36 +284,20 @@ export default function AdminOrders() {
       setErrorMsg("")
       setSuccessMsg("")
 
-      // 1. Update order status and tracking number
-      const { error: orderError } = await supabase
-        .from("orders")
-        .update({ 
+      const reason = trackingNotes.trim()
+      if (!reason) throw new Error("กรุณาระบุเหตุผลในการแก้สถานะแมนนวล")
+      const response = await fetch(`/api/admin/orders/${editingOrder.id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           status: newStatus,
-          tracking_number: trackingNumber || null 
-        })
-        .eq("id", editingOrder.id)
-
-      if (orderError) throw orderError
-
-      // 2. Insert tracking log
-      const { error: logError } = await supabase
-        .from("tracking_logs")
-        .insert({
-          order_id: editingOrder.id,
-          status: newStatus,
-          notes: trackingNotes || `อัปเดตสถานะเป็น: ${getStatusText(newStatus, editingOrder)}`
-        })
-
-      if (logError) throw logError
-
-      // Send customer notification
-      if (editingOrder.customer_id) {
-        let message = `📦 อัปเดตสถานะออเดอร์ ${editingOrder.order_number}: พัสดุอยู่ในสถานะ "${getStatusText(newStatus, editingOrder)}" ค่ะ`;
-        if (trackingNumber && trackingNumber !== editingOrder.tracking_number) {
-          message = `🎉 พัสดุของคุณถูกจัดส่งแล้ว!\nเลขออเดอร์: ${editingOrder.order_number}\nเลขพัสดุ (Tracking): ${trackingNumber}\nสามารถนำเลขพัสดุไปเช็คสถานะได้เลยค่ะ`;
-        }
-        await sendCustomerNotification(editingOrder.customer_id, message);
-      }
+          tracking_number: trackingNumber,
+          shipping_company: editingOrder.shipping_company || "",
+          reason,
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถอัปเดตสถานะได้")
 
       setSuccessMsg("อัปเดตสถานะสำเร็จเรียบร้อยแล้ว!")
       
@@ -329,57 +320,16 @@ export default function AdminOrders() {
 
     try {
       setLoading(true)
-
-      let roundToUpdate = null;
-      if (order.status === 'WAITING_PAYMENT' || order.status === 'NEW' || (order.payment_round_1_status !== 'PAID' && order.payment_round_1_status !== 'NOT_APPLICABLE')) {
-        roundToUpdate = 'payment_round_1_status';
-      } else if ((order.status === 'CHINA_WAREHOUSE' || order.status === 'ORDERED') && order.payment_round_2_status !== 'PAID') {
-        roundToUpdate = 'payment_round_2_status';
-      } else if ((order.status === 'THAILAND_WAREHOUSE' || order.status === 'SHIPPING') && order.payment_round_3_status !== 'PAID') {
-        roundToUpdate = 'payment_round_3_status';
-      }
-
-      let updates: any = {};
-      let logStatus = 'PAID';
-      let logNotes = 'ยืนยันรับชำระเงินแล้ว';
-
-      if (roundToUpdate) {
-        updates[roundToUpdate] = 'PAID';
-        if (roundToUpdate === 'payment_round_1_status') {
-          updates.status = 'ORDERED';
-          logStatus = 'PAID_ROUND_1';
-          logNotes = 'ชำระเงินรอบที่ 1 เรียบร้อยแล้ว';
-        } else if (roundToUpdate === 'payment_round_2_status') {
-          updates.status = 'SHIPPING';
-          logStatus = 'PAID_ROUND_2';
-          logNotes = 'ชำระเงินรอบที่ 2 เรียบร้อยแล้ว';
-        } else if (roundToUpdate === 'payment_round_3_status') {
-          updates.status = 'OUT_FOR_DELIVERY';
-          logStatus = 'PAID_ROUND_3';
-          logNotes = 'ชำระเงินรอบที่ 3 เรียบร้อยแล้ว';
-        }
-      } else {
-        setLoading(false);
-        alert("ออเดอร์นี้ชำระเงินในรอบปัจจุบันไปแล้ว หากต้องการเปลี่ยนสถานะให้ใช้ 'แก้แมนนวล' แทนครับ");
-        return;
-      }
-      
-      const { error: orderError } = await supabase
-        .from("orders")
-        .update(updates)
-        .eq("id", order.id)
-
-      if (orderError) throw orderError
-
-      const { error: logError } = await supabase
-        .from("tracking_logs")
-        .insert({
-          order_id: order.id,
-          status: logStatus,
-          notes: logNotes
-        })
-
-      if (logError) throw logError
+      const reason = prompt("ระบุช่องทางหรือเหตุผลที่ยืนยันรับเงิน เช่น ตรวจ Statement ธนาคารแล้ว")?.trim()
+      if (!reason) return
+      const reference = prompt("เลขอ้างอิงการรับเงิน (ถ้ามี)")?.trim() || ""
+      const response = await fetch(`/api/admin/orders/${order.id}/manual-payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason, payment_reference: reference }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถยืนยันรับเงินได้")
 
       alert("อัปเดตสถานะการชำระเงินสำเร็จ!")
       fetchOrders()
@@ -460,7 +410,7 @@ export default function AdminOrders() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setCurrentPage(1)
-    fetchOrders()
+    fetchOrders(1, searchQuery)
   }
 
   const handleFilterChange = (val: string) => {
@@ -538,6 +488,11 @@ export default function AdminOrders() {
             <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
           </select>
         </CardContent>
+        {loadError && (
+          <div className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            <span>{loadError}</span><Button size="sm" variant="outline" onClick={() => fetchOrders()}>ลองใหม่</Button>
+          </div>
+        )}
         <CardContent className="p-0">
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm text-left">

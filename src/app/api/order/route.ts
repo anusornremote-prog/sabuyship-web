@@ -1,148 +1,52 @@
 import { NextResponse } from "next/server"
-import { canAcceptBusiness } from "@/lib/public-business-config"
 
 import { hasValidApiKey } from "@/lib/api-auth"
 import { sendAdminNotification } from "@/lib/notify"
+import { canAcceptBusiness } from "@/lib/public-business-config"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 
-// POST /api/order - Create an order from an accepted quotation.
 export async function POST(request: Request) {
   try {
-    if (!canAcceptBusiness) {
-      return NextResponse.json({ error: "Service is not accepting new orders" }, { status: 503 })
-    }
-    const sessionClient = await createClient()
-    const adminClient = createAdminClient()
-    const apiKeyAuthorized = hasValidApiKey(request)
-    const {
-      data: { user },
-    } = await sessionClient.auth.getUser()
+    if (!canAcceptBusiness) return NextResponse.json({ error: "Service is not accepting new orders" }, { status: 503 })
 
-    if (!apiKeyAuthorized && !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const sessionClient = await createClient()
+    const apiKeyAuthorized = hasValidApiKey(request)
+    const { data: { user } } = await sessionClient.auth.getUser()
+    if (!apiKeyAuthorized && !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const body = await request.json()
     const targetCustomerId = apiKeyAuthorized ? body.customer_id : user?.id
-
     if (!apiKeyAuthorized && body.terms_accepted !== true) {
       return NextResponse.json({ error: "Terms acceptance is required" }, { status: 400 })
     }
-
-    if (!targetCustomerId || !body.quotation_id) {
-      return NextResponse.json(
-        { error: "Missing required fields: customer_id, quotation_id" },
-        { status: 400 },
-      )
+    if (typeof targetCustomerId !== "string" || typeof body.quotation_id !== "string") {
+      return NextResponse.json({ error: "Missing customer_id or quotation_id" }, { status: 400 })
     }
 
-    const { data: quotation, error: quotationError } = await adminClient
-      .from("quotations")
-      .select("id, inquiry_id, status, inquiries!inner(customer_id, inquiry_number)")
-      .eq("id", body.quotation_id)
-      .maybeSingle()
-
-    const inquiry = quotation?.inquiries as unknown as {
-      customer_id: string | null
-      inquiry_number: string
-    } | null
-
-    if (quotationError || !quotation || !inquiry) {
-      return NextResponse.json({ error: "Quotation not found" }, { status: 404 })
-    }
-
-    if (inquiry.customer_id !== targetCustomerId) {
-      return NextResponse.json({ error: "Invalid quotation or unauthorized" }, { status: 403 })
-    }
-
-    if (body.shipping_address_id) {
-      const { data: address } = await adminClient
-        .from("addresses")
-        .select("id")
-        .eq("id", body.shipping_address_id)
-        .eq("customer_id", targetCustomerId)
-        .maybeSingle()
-
-      if (!address) {
-        return NextResponse.json({ error: "Invalid shipping address" }, { status: 400 })
-      }
-    }
-
-    const orderNumber = inquiry.inquiry_number
-    const { data: existingOrder, error: existingOrderError } = await adminClient
-      .from("orders")
-      .select("*")
-      .eq("order_number", orderNumber)
-      .maybeSingle()
-
-    if (existingOrderError) throw existingOrderError
-    if (existingOrder) {
-      if (existingOrder.customer_id !== targetCustomerId) {
-        return NextResponse.json({ error: "Order number conflict" }, { status: 409 })
-      }
-      return NextResponse.json(
-        { success: true, data: existingOrder, order: existingOrder, existing: true },
-        { status: 200 },
-      )
-    }
-
-    const { data: order, error: orderError } = await adminClient
-      .from("orders")
-      .insert({
-        order_number: orderNumber,
-        customer_id: targetCustomerId,
-        quotation_id: quotation.id,
-        status: "WAITING_PAYMENT",
-        payment_round_1_status: "PENDING",
-        admin_notes: body.admin_notes || null,
-        shipping_address_id: body.shipping_address_id || null,
-        terms_version: apiKeyAuthorized ? null : "2026-09-14",
-        terms_accepted_at: apiKeyAuthorized ? null : new Date().toISOString(),
-      })
-      .select()
-      .single()
-
-    if (orderError) throw orderError
-
-    const { error: trackingError } = await adminClient.from("tracking_logs").insert({
-      order_id: order.id,
-      status: "WAITING_PAYMENT",
-      notes: "สร้างคำสั่งซื้อและรอชำระเงินรอบที่ 1",
-      created_by: user?.id || null,
+    const rpcClient = apiKeyAuthorized ? createAdminClient() : sessionClient
+    const { data, error } = await rpcClient.rpc("accept_quotation_as_order", {
+      p_quotation_id: body.quotation_id,
+      p_customer_id: targetCustomerId,
+      p_shipping_address_id: typeof body.shipping_address_id === "string" ? body.shipping_address_id : null,
+      p_admin_notes: typeof body.admin_notes === "string" ? body.admin_notes : null,
+      p_terms_version: apiKeyAuthorized ? null : "2026-09-14",
     })
-
-    if (trackingError) {
-      await adminClient.from("orders").delete().eq("id", order.id)
-      throw trackingError
+    if (error) {
+      const status = /not found/i.test(error.message) ? 404 : /forbidden/i.test(error.message) ? 403 : 409
+      return NextResponse.json({ error: error.message }, { status })
     }
 
-    const { error: quotationUpdateError } = await adminClient
-      .from("quotations")
-      .update({ status: "ACCEPTED" })
-      .eq("id", quotation.id)
-    if (quotationUpdateError) throw quotationUpdateError
-
-    const { error: inquiryUpdateError } = await adminClient
-      .from("inquiries")
-      .update({ status: "ORDERED" })
-      .eq("id", quotation.inquiry_id)
-    if (inquiryUpdateError) throw inquiryUpdateError
-
-    try {
-      await sendAdminNotification(
-        `✅ ลูกค้ายอมรับใบเสนอราคาแล้ว!\nออเดอร์ถูกสร้าง: ${orderNumber}\nตรวจสอบในระบบด่วน: https://www.sabuyship.com/admin/orders`,
-      )
-    } catch (notificationError) {
-      console.error("Order notification failed:", notificationError)
+    const result = data as { existing: boolean; order: { id: string; order_number: string } }
+    if (!result.existing) {
+      await sendAdminNotification(`✅ ลูกค้ายอมรับใบเสนอราคาแล้ว\nออเดอร์: ${result.order.order_number}`)
     }
-
     return NextResponse.json(
-      { success: true, data: order, order },
-      { status: 201 },
+      { success: true, data: result.order, order: result.order, existing: result.existing },
+      { status: result.existing ? 200 : 201 },
     )
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error"
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error("Order creation failed", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

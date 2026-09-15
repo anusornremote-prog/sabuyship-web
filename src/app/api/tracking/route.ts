@@ -4,11 +4,6 @@ import { hasValidApiKey } from "@/lib/api-auth"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 const validStatuses = new Set([
-  "NEW",
-  "QUOTED",
-  "WAITING_PAYMENT",
-  "PAYMENT_REJECTED",
-  "PAID",
   "ORDERED",
   "CHINA_WAREHOUSE",
   "SHIPPING",
@@ -31,39 +26,16 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createAdminClient()
-    const { data: order, error: orderError } = await adminClient
-      .from("orders")
-      .select("id, status")
-      .eq("id", body.order_id)
-      .maybeSingle()
-    if (orderError) throw orderError
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
-
-    const { error: updateError } = await adminClient
-      .from("orders")
-      .update({
-        status: body.status,
-        delivered_at: body.status === "DELIVERED" ? new Date().toISOString() : undefined,
-      })
-      .eq("id", order.id)
-    if (updateError) throw updateError
-
-    const { data: log, error: logError } = await adminClient
-      .from("tracking_logs")
-      .insert({
-        order_id: order.id,
-        status: body.status,
-        notes: body.notes || null,
-      })
-      .select()
-      .single()
-
-    if (logError) {
-      await adminClient.from("orders").update({ status: order.status }).eq("id", order.id)
-      throw logError
+    const { data, error } = await adminClient.rpc("integration_update_tracking", {
+      p_order_id: body.order_id,
+      p_status: body.status,
+      p_notes: typeof body.notes === "string" ? body.notes : null,
+    })
+    if (error) {
+      const status = /not found/i.test(error.message) ? 404 : 409
+      return NextResponse.json({ error: error.message }, { status })
     }
-
-    return NextResponse.json({ success: true, data: log }, { status: 201 })
+    return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error"
     return NextResponse.json({ error: message }, { status: 500 })

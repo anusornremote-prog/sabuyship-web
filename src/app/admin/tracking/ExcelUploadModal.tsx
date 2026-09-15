@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload, Loader2, AlertTriangle, FileSpreadsheet, CheckCircle2 } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 import * as XLSX from "xlsx"
 
 export function ExcelUploadModal({ 
@@ -63,73 +62,49 @@ export function ExcelUploadModal({
     let uploadedCount = 0
 
     try {
-      const supabase = createClient()
-
-      for (const row of parsedData) {
-        const customerCode = row['รหัสลูกค้า']?.toString().trim()
-        if (!customerCode) continue
-
-        // 1. Find customer ID
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("customer_code", customerCode)
-          .single()
-
-        // Prepare shipment payload mapping Excel columns to database fields
+      const rows = parsedData.map((row, index) => {
         const shipmentData = {
-          customer_code: customerCode,
-          customer_id: profile?.id || null, // Can be null if customer not registered yet
+          customer_code: row['รหัสลูกค้า']?.toString().trim() || "",
           transport_type: row['ขนส่ง']?.toString(),
-          tracking_number: row['เลขแทรค']?.toString(),
+          tracking_number: row['เลขแทรค']?.toString().trim() || "",
           product_type: row['ประเภทสินค้า']?.toString(),
           product_name: row['ชื่อสินค้า']?.toString(),
           container_date: row['วันที่ขึ้นตู้']?.toString(),
-          quantity: row['จำนวนชิ้น'] ? parseInt(row['จำนวนชิ้น']) : null,
-          weight: row['น้ำหนัก'] ? parseFloat(row['น้ำหนัก']) : null,
+          quantity: row['จำนวนชิ้น']?.toString() || "",
+          weight: row['น้ำหนัก']?.toString() || "",
           arrival_date: row['วันที่ถึงไทย']?.toString(),
           shipping_cost: row['ราคาค่าส่ง']?.toString(),
-          width: row['กว้าง'] ? parseFloat(row['กว้าง']) : null,
-          length: row['ยาว'] ? parseFloat(row['ยาว']) : null,
-          height: row['สูง'] ? parseFloat(row['สูง']) : null,
+          shipping_cost_amount: row['ราคาค่าส่ง']?.toString().replace(/[^0-9.]/g, '') || "",
+          width: row['กว้าง']?.toString() || "",
+          length: row['ยาว']?.toString() || "",
+          height: row['สูง']?.toString() || "",
         }
-
-        // 2. Insert or Update into shipments table
-        if (shipmentData.tracking_number) {
-          // Check if tracking number already exists
-          const { data: existing } = await supabase
-            .from("shipments")
-            .select("id")
-            .eq("tracking_number", shipmentData.tracking_number)
-            .maybeSingle()
-
-          if (existing) {
-            // Update existing record to avoid duplicates
-            const { error: updateError } = await supabase
-              .from("shipments")
-              .update(shipmentData)
-              .eq("id", existing.id)
-
-            if (updateError) {
-              console.error("Error updating row:", row, updateError)
-            } else {
-              uploadedCount++
-            }
-            continue // Skip to next row
+        if (!shipmentData.customer_code || !shipmentData.tracking_number) {
+          throw new Error(`แถวที่ ${index + 2} ไม่มีรหัสลูกค้าหรือเลขแทรค`)
+        }
+        for (const [field, value] of Object.entries({
+          quantity: shipmentData.quantity,
+          weight: shipmentData.weight,
+          shipping_cost_amount: shipmentData.shipping_cost_amount,
+          width: shipmentData.width,
+          length: shipmentData.length,
+          height: shipmentData.height,
+        })) {
+          if (value && (!Number.isFinite(Number(value)) || Number(value) < 0 || (field === "quantity" && !Number.isInteger(Number(value))))) {
+            throw new Error(`แถวที่ ${index + 2} ช่อง ${field} ไม่ใช่ตัวเลขที่ถูกต้อง`)
           }
         }
+        return shipmentData
+      })
 
-        // Insert new record
-        const { error: insertError } = await supabase
-          .from("shipments")
-          .insert(shipmentData)
-
-        if (insertError) {
-          console.error("Error inserting row:", row, insertError)
-        } else {
-          uploadedCount++
-        }
-      }
+      const response = await fetch("/api/admin/shipments/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file_name: file?.name || "shipments.xlsx", rows }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถนำเข้าข้อมูลได้")
+      uploadedCount = Number(result.data?.imported_rows || 0)
 
       setSuccessCount(uploadedCount)
       if (onSuccess) onSuccess()

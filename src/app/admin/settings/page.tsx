@@ -14,6 +14,8 @@ export default function SettingsPage() {
   const [errorMsg, setErrorMsg] = useState("")
   
   const [exchangeRate, setExchangeRate] = useState("5.20")
+  const [reason, setReason] = useState("")
+  const [history, setHistory] = useState<any[]>([])
 
   useEffect(() => {
     fetchSettings()
@@ -22,15 +24,26 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       const supabase = createClient()
-      const { data, error } = await supabase
+      const [{ data, error }, { data: historyData, error: historyError }] = await Promise.all([
+        supabase
         .from("site_settings")
         .select("value")
         .eq("key", "exchange_rate")
-        .single()
+        .maybeSingle(),
+        supabase
+          .from("exchange_rate_history")
+          .select("id, old_rate, new_rate, reason, created_at, changed_by")
+          .order("created_at", { ascending: false })
+          .limit(10),
+      ])
+
+      if (error) throw error
+      if (historyError) throw historyError
 
       if (data && data.value) {
         setExchangeRate(data.value.toString())
       }
+      setHistory(historyData || [])
     } catch (error) {
       console.error("Error fetching settings:", error)
     } finally {
@@ -50,19 +63,17 @@ export default function SettingsPage() {
         throw new Error("กรุณาระบุเรทเงินให้ถูกต้อง")
       }
 
-      const supabase = createClient()
-      
-      const { error } = await supabase
-        .from("site_settings")
-        .update({
-          value: rate,
-          updated_at: new Date().toISOString()
-        })
-        .eq("key", "exchange_rate")
-
-      if (error) throw error
+      const response = await fetch("/api/admin/settings/exchange-rate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rate, reason }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถบันทึกเรทเงินได้")
 
       setSuccess(true)
+      setReason("")
+      await fetchSettings()
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: any) {
       console.error(err)
@@ -129,6 +140,16 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700">เหตุผลการเปลี่ยนเรท</label>
+              <Input
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                placeholder="เช่น ปรับตามเรทรับซื้อประจำวันที่..."
+                maxLength={200}
+              />
+            </div>
+
             <div className="pt-4 border-t flex justify-end">
               <Button type="submit" className="px-8 cursor-pointer font-bold">
                 {saving ? (
@@ -142,6 +163,20 @@ export default function SettingsPage() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm border-slate-200">
+        <CardHeader><CardTitle className="text-lg">ประวัติการเปลี่ยนเรทล่าสุด</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          {history.length === 0 ? (
+            <p className="text-sm text-slate-500">ยังไม่มีประวัติการเปลี่ยนเรท</p>
+          ) : history.map((item) => (
+            <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b pb-3 text-sm">
+              <div><span className="font-bold">{Number(item.old_rate || 0).toFixed(2)}</span> → <span className="font-bold text-primary">{Number(item.new_rate).toFixed(2)}</span></div>
+              <div className="text-slate-500 sm:text-right"><div>{item.reason || "ไม่ระบุเหตุผล"}</div><div className="text-xs">{new Date(item.created_at).toLocaleString("th-TH")}</div></div>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>

@@ -40,18 +40,22 @@ interface InquiryListProps {
   totalCount?: number
   currentPage?: number
   itemsPerPage?: number
+  initialSearch?: string
+  initialStatus?: string
 }
 
 export default function AdminInquiryList({ 
   initialInquiries, 
   totalCount = 0,
   currentPage = 1,
-  itemsPerPage = 20
+  itemsPerPage = 20,
+  initialSearch = "",
+  initialStatus = "ALL",
 }: InquiryListProps) {
   const router = useRouter()
   const [inquiries, setInquiries] = useState(initialInquiries)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("ALL")
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [statusFilter, setStatusFilter] = useState(initialStatus)
   const [isCleaning, setIsCleaning] = useState(false)
 
   const [exchangeRate, setExchangeRate] = useState<number>(5.1)
@@ -87,10 +91,10 @@ export default function AdminInquiryList({
   const [errorMsg, setErrorMsg] = useState("")
   const [selectedQuoteForEdit, setSelectedQuoteForEdit] = useState<string | null>(null)
 
-  // Delete states
+  // Archive states
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [deletePin, setDeletePin] = useState("")
+  const [archiveReason, setArchiveReason] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Form input fields
@@ -289,9 +293,14 @@ export default function AdminInquiryList({
     if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำขอประเมินราคานี้?")) return
 
     try {
-      // Direct supabase client implementation if needed or update via API (using REST update logic)
-
-
+      const response = await fetch("/api/inquiry/admin", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [inquiryId], reason: "ยกเลิกคำขอโดยแอดมิน" }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "ไม่สามารถยกเลิกคำขอได้")
+      setInquiries((current) => current.filter((inquiry) => inquiry.id !== inquiryId))
       router.refresh()
     } catch (err) {
       console.error(err)
@@ -360,8 +369,8 @@ export default function AdminInquiryList({
   }
 
   const handleDeleteSelected = async () => {
-    if (deletePin !== "1234") {
-      alert("รหัส PIN ไม่ถูกต้อง")
+    if (!archiveReason.trim()) {
+      alert("กรุณาระบุเหตุผลที่เก็บรายการ")
       return
     }
 
@@ -370,7 +379,7 @@ export default function AdminInquiryList({
       const res = await fetch("/api/inquiry/admin", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds }),
+        body: JSON.stringify({ ids: selectedIds, reason: archiveReason.trim() }),
       })
 
       if (!res.ok) {
@@ -381,9 +390,9 @@ export default function AdminInquiryList({
       setInquiries(prev => prev.filter((inq: any) => !selectedIds.includes(inq.id)))
       setSelectedIds([])
       setIsDeleteModalOpen(false)
-      setDeletePin("")
+      setArchiveReason("")
       router.refresh()
-      alert("ลบรายการที่เลือกเรียบร้อยแล้ว")
+      alert("เก็บรายการที่เลือกออกจากงานปัจจุบันเรียบร้อยแล้ว โดยประวัติเดิมยังอยู่ครบ")
     } catch (error: any) {
       alert("เกิดข้อผิดพลาด: " + error.message)
     } finally {
@@ -424,25 +433,27 @@ export default function AdminInquiryList({
     }
   }
 
-  // Filter logic
-  const filtered = inquiries.filter((inq: any) => {
-    const matchesSearch =
-      inq.inquiry_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inq.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (inq.phone && inq.phone.includes(searchQuery)) ||
-      (inq.items && inq.items.some((item: any) => item.url.toLowerCase().includes(searchQuery.toLowerCase()))) ||
-      (inq.product_url && inq.product_url.toLowerCase().includes(searchQuery.toLowerCase()))
-    
-    const matchesStatus = statusFilter === "ALL" || inq.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const filtered = inquiries
+  const applyFilters = (nextStatus = statusFilter) => {
+    const params = new URLSearchParams()
+    if (searchQuery.trim()) params.set("q", searchQuery.trim())
+    if (nextStatus !== "ALL") params.set("status", nextStatus)
+    router.push(`/admin/inquiries${params.size ? `?${params.toString()}` : ""}`)
+  }
+  const changePage = (page: number) => {
+    const params = new URLSearchParams()
+    params.set("page", String(page))
+    if (searchQuery.trim()) params.set("q", searchQuery.trim())
+    if (statusFilter !== "ALL") params.set("status", statusFilter)
+    router.push(`/admin/inquiries?${params.toString()}`)
+  }
 
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
       <Card className="shadow-sm">
         <CardContent className="p-4 bg-white flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+          <form className="relative flex-1" onSubmit={(event) => { event.preventDefault(); applyFilters() }}>
             <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
             <Input
               placeholder="ค้นหา รหัสคำขอ, ชื่อลูกค้า, เบอร์โทร..."
@@ -450,11 +461,11 @@ export default function AdminInquiryList({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+          </form>
           <select
             className="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { const value = e.target.value; setStatusFilter(value); applyFilters(value) }}
           >
             <option value="ALL">สถานะทั้งหมด</option>
             <option value="PENDING">PENDING (รอประเมิน)</option>
@@ -484,11 +495,11 @@ export default function AdminInquiryList({
               variant="destructive"
               className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-700 font-bold"
               onClick={() => {
-                setDeletePin("")
+                setArchiveReason("")
                 setIsDeleteModalOpen(true)
               }}
             >
-              ลบรายการที่เลือก ({selectedIds.length})
+              เก็บรายการที่เลือก ({selectedIds.length})
             </Button>
           )}
         </CardContent>
@@ -781,7 +792,7 @@ export default function AdminInquiryList({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => router.push(`?page=${currentPage - 1}`)}
+                  onClick={() => changePage(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
                   ก่อนหน้า
@@ -789,7 +800,7 @@ export default function AdminInquiryList({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => router.push(`?page=${currentPage + 1}`)}
+                  onClick={() => changePage(currentPage + 1)}
                   disabled={currentPage * itemsPerPage >= totalCount}
                 >
                   ถัดไป
@@ -1197,26 +1208,24 @@ export default function AdminInquiryList({
         </Dialog>
       )}
       
-      {/* Delete Modal */}
+      {/* Archive Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-rose-600 flex items-center gap-2">
+            <DialogTitle className="text-amber-700 flex items-center gap-2">
               <XCircle className="h-5 w-5" />
-              ยืนยันการลบรายการ
+              เก็บรายการออกจากงานปัจจุบัน
             </DialogTitle>
             <DialogDescription>
-              คุณกำลังจะลบรายการคำขอประเมินราคาจำนวน {selectedIds.length} รายการ การกระทำนี้ไม่สามารถย้อนกลับได้ กรุณาใส่รหัส PIN 4 หลักเพื่อยืนยัน
+              รายการจำนวน {selectedIds.length} รายการจะไม่แสดงในคิวงาน แต่ใบเสนอราคา ออเดอร์ การชำระเงิน และประวัติเดิมจะไม่ถูกลบ กรุณาระบุเหตุผลเพื่อบันทึกใน Audit Log
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Input
-              type="password"
-              placeholder="รหัส PIN (1234)"
-              value={deletePin}
-              onChange={(e) => setDeletePin(e.target.value)}
-              className="text-center text-xl tracking-widest font-bold"
-              maxLength={4}
+              placeholder="เหตุผล เช่น ลูกค้ายกเลิก / รายการซ้ำ"
+              value={archiveReason}
+              onChange={(e) => setArchiveReason(e.target.value)}
+              maxLength={200}
             />
           </div>
           <DialogFooter>
@@ -1224,12 +1233,11 @@ export default function AdminInquiryList({
               ยกเลิก
             </Button>
             <Button 
-              variant="destructive" 
-              className="bg-red-600 text-white hover:bg-red-700" 
+              className="bg-amber-600 text-white hover:bg-amber-700"
               onClick={handleDeleteSelected}
-              disabled={isDeleting || deletePin.length !== 4}
+              disabled={isDeleting || !archiveReason.trim()}
             >
-              {isDeleting ? "กำลังลบ..." : "ยืนยันการลบ"}
+              {isDeleting ? "กำลังเก็บรายการ..." : "ยืนยันเก็บรายการ"}
             </Button>
           </DialogFooter>
         </DialogContent>
