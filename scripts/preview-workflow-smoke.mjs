@@ -188,7 +188,7 @@ try {
   )
   const adminDashboard = previewRequest("/admin", { cookie: adminCookie })
   assert(adminDashboard.status === 200, `Preview admin opens admin dashboard (${adminDashboard.status})`)
-  for (const adminPath of ["/admin/refunds", "/admin/audit", "/admin/notifications", "/admin/imports", "/admin/security", "/admin/settings", "/admin/tracking"]) {
+  for (const adminPath of ["/admin/refunds", "/admin/audit", "/admin/notifications", "/admin/imports", "/admin/settings", "/admin/tracking"]) {
     const response = previewRequest(adminPath, { cookie: adminCookie })
     assert(response.status === 200, `Preview admin opens ${adminPath} (${response.status})`)
   }

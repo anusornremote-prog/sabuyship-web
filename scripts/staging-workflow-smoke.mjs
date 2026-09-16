@@ -207,7 +207,7 @@ try {
   uploadedPaths.push({ bucket: "inquiries", path: inquiryImagePath })
   pass("guest inquiry image storage policy")
 
-  const slipPath = `smoke/${runId}.png`
+  const slipPath = `${customerUser.id}/smoke/${runId}.png`
   must(await customer.storage.from("payment_slips").upload(slipPath, png, { contentType: "image/png" }), "customer slip upload")
   uploadedPaths.push({ bucket: "payment_slips", path: slipPath })
   pass("customer payment slip storage policy")

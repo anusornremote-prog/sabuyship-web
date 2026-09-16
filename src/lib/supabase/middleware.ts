@@ -73,12 +73,6 @@ export async function updateSession(request: NextRequest) {
     if (!hasPhone) {
       return NextResponse.redirect(new URL('/complete-profile', request.url))
     }
-    if (process.env.ADMIN_MFA_REQUIRED === 'true' && pathname !== '/admin/security') {
-      const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-      if (assurance?.currentLevel !== 'aal2') {
-        return NextResponse.redirect(new URL('/admin/security', request.url))
-      }
-    }
   }
 
   if (pathname === '/login' || pathname === '/register') {

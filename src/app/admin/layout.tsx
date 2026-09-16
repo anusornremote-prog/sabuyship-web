@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, Home, CircleDollarSign, ShieldCheck, Bell, KeyRound, FileSpreadsheet } from "lucide-react"
+import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, Home, CircleDollarSign, ShieldCheck, Bell, FileSpreadsheet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useEffect, useRef, useState } from "react"
@@ -75,7 +75,6 @@ export default function AdminLayout({
     { href: "/admin/customers", icon: Users, label: "ลูกค้า" },
     { href: "/admin/audit", icon: ShieldCheck, label: "Audit Log" },
     { href: "/admin/notifications", icon: Bell, label: "การแจ้งเตือน" },
-    { href: "/admin/security", icon: KeyRound, label: "ความปลอดภัย" },
     { href: "/admin/settings", icon: Settings, label: "ตั้งค่า" },
   ]
 

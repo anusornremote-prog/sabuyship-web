@@ -1,8 +1,9 @@
 import fs from "node:fs"
 import dotenv from "dotenv"
 
-const env = fs.existsSync(".env.local")
-  ? { ...process.env, ...dotenv.parse(fs.readFileSync(".env.local")) }
+const envFile = process.argv[2] || ".env.local"
+const env = fs.existsSync(envFile)
+  ? { ...process.env, ...dotenv.parse(fs.readFileSync(envFile)) }
   : process.env
 const value = (key) => String(env[key] || "").trim()
 const failures = []
