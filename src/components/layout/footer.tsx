@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Ship, Phone, Mail, MapPin } from "lucide-react"
 import { Facebook } from "@/components/ui/icons"
 import { useTranslation } from "@/components/providers/language-provider"
-import { isPreRegistrationPilotActive, publicBusinessConfig } from "@/lib/public-business-config"
+import { publicBusinessConfig } from "@/lib/public-business-config"
 
 export function Footer() {
   const { t } = useTranslation()
@@ -24,7 +24,6 @@ export function Footer() {
             <p className="text-xs font-medium text-muted-foreground">
               ดำเนินงานโดยผู้ประกอบการบุคคลธรรมดา
               {publicBusinessConfig.commercialRegistrationNo ? ` · ทะเบียนพาณิชย์ ${publicBusinessConfig.commercialRegistrationNo}` : ""}
-              {isPreRegistrationPilotActive && !publicBusinessConfig.commercialRegistrationNo ? ` · เริ่มดำเนินกิจการ ${publicBusinessConfig.businessStartDate}` : ""}
             </p>
           </div>
           

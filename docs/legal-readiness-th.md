@@ -25,9 +25,6 @@ NEXT_PUBLIC_BUSINESS_PHONE=เบอร์โทรจริง
 NEXT_PUBLIC_BUSINESS_EMAIL=sabuyship.express@gmail.com
 NEXT_PUBLIC_BUSINESS_REGISTRATION_NO=เลขทะเบียนพาณิชย์ (หลังจดแล้ว)
 NEXT_PUBLIC_BUSINESS_VAT_REGISTERED=false
-NEXT_PUBLIC_PRE_REGISTRATION_PILOT=true
-NEXT_PUBLIC_BUSINESS_START_DATE=วันที่เริ่มรับออเดอร์จริง รูปแบบ YYYY-MM-DD
-NEXT_PUBLIC_REGISTRATION_CUTOFF_DATE=วันหยุดรับงานใหม่หากยังไม่เพิ่มเลขทะเบียน รูปแบบ YYYY-MM-DD
 BUSINESS_TAX_ID=เลขประจำตัวผู้เสียภาษี (server-only)
 
 NEXT_PUBLIC_PAYMENT_BANK_NAME=ชื่อธนาคาร
@@ -36,7 +33,7 @@ NEXT_PUBLIC_PAYMENT_ACCOUNT_NUMBER=เลขบัญชี
 NEXT_PUBLIC_PAYMENT_PROMPTPAY_ID=เบอร์โทรติดต่อธุรกิจ 10 หลัก (ห้ามใส่เลขบัตรประชาชน/เลขผู้เสียภาษี 13 หลัก)
 ```
 
-ในช่วงก่อนจดทะเบียน ชื่อบัญชีรับเงินต้องตรงกับชื่อผู้ประกอบการบุคคลธรรมดา ระบบจะไม่เปิดช่องทางชำระหากเป็นชื่อญาติหรือบุคคลอื่น เมื่อพ้นวัน cutoff ระบบจะปิดรับคำขอและคำสั่งซื้อใหม่ แต่ออเดอร์เดิมยังต้องได้รับบริการต่อจนเสร็จสิ้น
+ชื่อบัญชีรับเงินต้องตรงกับชื่อผู้ประกอบการบุคคลธรรมดา ระบบจะไม่เปิดช่องทางชำระหากเป็นชื่อญาติหรือบุคคลอื่น
 
 หากข้อมูลผู้ประกอบการหรือช่องทางรับเงินไม่ครบ ระบบจะปิดสมัครสมาชิก ส่งคำขอ และรับชำระเงินจริงโดยอัตโนมัติ
 

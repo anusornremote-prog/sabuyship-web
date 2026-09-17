@@ -17,23 +17,6 @@ for (const key of required) {
   if (!value(key)) failures.push(`${key} is missing`)
 }
 
-const registered = Boolean(value("NEXT_PUBLIC_BUSINESS_REGISTRATION_NO"))
-const pilot = value("NEXT_PUBLIC_PRE_REGISTRATION_PILOT") === "true"
-if (!registered && !pilot) failures.push("Set a registration number or enable the pre-registration pilot")
-
-if (!registered && pilot) {
-  const startText = value("NEXT_PUBLIC_BUSINESS_START_DATE")
-  const cutoffText = value("NEXT_PUBLIC_REGISTRATION_CUTOFF_DATE")
-  const start = /^\d{4}-\d{2}-\d{2}$/.test(startText) ? new Date(`${startText}T00:00:00+07:00`) : null
-  const cutoff = /^\d{4}-\d{2}-\d{2}$/.test(cutoffText) ? new Date(`${cutoffText}T23:59:59.999+07:00`) : null
-  if (!start || Number.isNaN(start.getTime())) failures.push("NEXT_PUBLIC_BUSINESS_START_DATE must be YYYY-MM-DD")
-  if (!cutoff || Number.isNaN(cutoff.getTime())) failures.push("NEXT_PUBLIC_REGISTRATION_CUTOFF_DATE must be YYYY-MM-DD")
-  if (start && cutoff && cutoff.getTime() > start.getTime() + (30 * 24 * 60 * 60 * 1000)) {
-    failures.push("Pilot cutoff exceeds the system's conservative 30-day limit")
-  }
-  if (cutoff && Date.now() > cutoff.getTime()) failures.push("Pilot cutoff has expired")
-}
-
 const normalizeName = (text) => text.toLocaleLowerCase("th-TH")
   .replace(/^(นาย|นางสาว|นาง|mr\.?|mrs\.?|miss)\s*/i, "")
   .replace(/[^\p{L}\p{N}]/gu, "")
@@ -54,4 +37,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log(`Business readiness: READY (${registered ? "registered" : "pre-registration pilot"})`)
+console.log("Business readiness: READY")

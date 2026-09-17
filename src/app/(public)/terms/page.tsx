@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { FileText, ShieldCheck, Scale, Clock, CreditCard, Box, AlertTriangle, CheckCircle, Info } from 'lucide-react'
-import { hasLegalIdentity, isPreRegistrationPilotActive, publicBusinessConfig } from '@/lib/public-business-config'
+import { hasLegalIdentity, publicBusinessConfig } from '@/lib/public-business-config'
 
 export default function TermsOfServicePage() {
   const [activeSection, setActiveSection] = useState("section-1")
@@ -98,9 +98,6 @@ export default function TermsOfServicePage() {
               <p>ที่อยู่ติดต่อ: {publicBusinessConfig.address || 'ยังไม่ได้ระบุ'}</p>
               <p>{publicBusinessConfig.phone ? `โทร: ${publicBusinessConfig.phone} · ` : ''}อีเมล: {publicBusinessConfig.email} · LINE: @sabuyship</p>
               {publicBusinessConfig.commercialRegistrationNo && <p>เลขทะเบียนพาณิชย์: {publicBusinessConfig.commercialRegistrationNo}</p>}
-              {isPreRegistrationPilotActive && !publicBusinessConfig.commercialRegistrationNo && (
-                <p>สถานะ: ช่วงเริ่มดำเนินกิจการก่อนยื่นทะเบียนพาณิชย์ · เริ่ม {publicBusinessConfig.businessStartDate} · ระบบหยุดรับงานใหม่หลัง {publicBusinessConfig.registrationCutoffDate}</p>
-              )}
               {!hasLegalIdentity && <p className="mt-2 font-bold">เว็บไซต์ยังไม่พร้อมเปิดรับคำสั่งซื้อจริงจนกว่าจะระบุตัวผู้ให้บริการครบถ้วน</p>}
             </div>
             
