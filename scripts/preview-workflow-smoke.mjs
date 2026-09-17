@@ -2,6 +2,7 @@ import crypto from "node:crypto"
 import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 
+import { createServerClient } from "@supabase/ssr"
 import { createClient } from "@supabase/supabase-js"
 
 function loadEnv(filename) {
@@ -23,7 +24,11 @@ if (!deployment) {
   throw new Error("Usage: node scripts/preview-workflow-smoke.mjs <vercel-deployment-id-or-url>")
 }
 
-const env = loadEnv(".env.local")
+const envFile = process.env.TEST_ENV_FILE || ".env.local"
+const env = {
+  ...(fs.existsSync(envFile) ? loadEnv(envFile) : {}),
+  ...process.env,
+}
 const url = env.NEXT_PUBLIC_SUPABASE_URL
 const publishableKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const secretKey = env.SUPABASE_SERVICE_ROLE_KEY
@@ -69,27 +74,32 @@ async function createConfirmedUser(email, fullName) {
 }
 
 async function signedInClient(email) {
-  const client = createClient(url, publishableKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
+  const cookieJar = new Map()
+  const client = createServerClient(url, publishableKey, {
+    cookies: {
+      getAll() {
+        return [...cookieJar].map(([name, value]) => ({ name, value }))
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => cookieJar.set(name, value))
+      },
+    },
   })
   const data = must(await client.auth.signInWithPassword({ email, password }), `sign in ${email}`)
-  return { client, session: data.session }
-}
-
-function sessionCookie(session) {
-  const key = `sb-${projectRef}-auth-token`
-  const encoded = `base64-${Buffer.from(JSON.stringify(session), "utf8").toString("base64url")}`
-  const chunks = []
-  for (let offset = 0; offset < encoded.length; offset += 3180) {
-    chunks.push(encoded.slice(offset, offset + 3180))
-  }
-  if (chunks.length === 1) return `${key}=${chunks[0]}`
-  return chunks.map((chunk, index) => `${key}.${index}=${chunk}`).join("; ")
+  const cookie = [...cookieJar].map(([name, value]) => `${name}=${value}`).join("; ")
+  assert(
+    cookie.length > 0,
+    `create SSR session cookie (${[...cookieJar].map(([name, value]) => `${name}:${value.length}`).join(", ")})`,
+  )
+  return { client, session: data.session, cookie }
 }
 
 function previewRequest(path, { method = "GET", body, cookie } = {}) {
-  const vercelEntry = "node_modules/vercel/dist/index.js"
-  const args = [vercelEntry, "curl", path, "--deployment", deployment, "--", "--silent", "--show-error"]
+  const directHttp = process.env.DIRECT_HTTP === "1"
+  const command = directHttp ? "curl.exe" : process.execPath
+  const args = directHttp
+    ? ["--silent", "--show-error", new URL(path, deployment).toString()]
+    : ["node_modules/vercel/dist/index.js", "curl", path, "--deployment", deployment, "--", "--silent", "--show-error"]
   if (cookie) args.push("--header", `Cookie: ${cookie}`)
   if (body !== undefined) {
     args.push(
@@ -103,9 +113,9 @@ function previewRequest(path, { method = "GET", body, cookie } = {}) {
   } else if (method !== "GET") {
     args.push("--request", method)
   }
-  args.push("--write-out", "\n__STATUS__:%{http_code}")
+  args.push("--write-out", "\n__REDIRECT__:%{redirect_url}\n__STATUS__:%{http_code}")
 
-  const result = spawnSync(process.execPath, args, {
+  const result = spawnSync(command, args, {
     cwd: process.cwd(),
     encoding: "utf8",
     env: { ...process.env, NO_UPDATE_NOTIFIER: "1" },
@@ -117,8 +127,16 @@ function previewRequest(path, { method = "GET", body, cookie } = {}) {
   const marker = "\n__STATUS__:"
   const markerIndex = result.stdout.lastIndexOf(marker)
   if (markerIndex === -1) throw new Error(`Missing status marker for ${method} ${path}`)
-  const responseBody = result.stdout.slice(0, markerIndex)
+  const responseBodyWithRedirect = result.stdout.slice(0, markerIndex)
   const status = Number(result.stdout.slice(markerIndex + marker.length).trim())
+  const redirectMarker = "\n__REDIRECT__:"
+  const redirectIndex = responseBodyWithRedirect.lastIndexOf(redirectMarker)
+  const responseBody = redirectIndex === -1
+    ? responseBodyWithRedirect
+    : responseBodyWithRedirect.slice(0, redirectIndex)
+  const redirectUrl = redirectIndex === -1
+    ? ""
+    : responseBodyWithRedirect.slice(redirectIndex + redirectMarker.length).trim()
   let json = null
   if (responseBody.trim()) {
     try {
@@ -127,7 +145,7 @@ function previewRequest(path, { method = "GET", body, cookie } = {}) {
       json = null
     }
   }
-  return { status, json, body: responseBody }
+  return { status, json, body: responseBody, redirectUrl }
 }
 
 async function approveRound(orderId, adminCookie, round) {
@@ -176,11 +194,14 @@ try {
 
   const customerAuth = await signedInClient(customerEmail)
   const adminAuth = await signedInClient(adminEmail)
-  const customerCookie = sessionCookie(customerAuth.session)
-  const adminCookie = sessionCookie(adminAuth.session)
+  const customerCookie = customerAuth.cookie
+  const adminCookie = adminAuth.cookie
 
   const customerDashboard = previewRequest("/dashboard", { cookie: customerCookie })
-  assert(customerDashboard.status === 200, `Preview customer opens dashboard (${customerDashboard.status})`)
+  assert(
+    customerDashboard.status === 200,
+    `Preview customer opens dashboard (${customerDashboard.status}${customerDashboard.redirectUrl ? ` -> ${customerDashboard.redirectUrl}` : ""})`,
+  )
   const customerAdmin = previewRequest("/admin", { cookie: customerCookie })
   assert(
     [307, 308].includes(customerAdmin.status),

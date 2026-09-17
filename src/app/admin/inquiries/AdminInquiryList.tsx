@@ -4,10 +4,10 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import * as XLSX from "xlsx"
 import { Input } from "@/components/ui/input"
 import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Phone, MessageCircle, Calculator, Sparkles, RefreshCw } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { exportSpreadsheet } from "@/lib/spreadsheet"
 import {
   Dialog,
   DialogContent,
@@ -400,7 +400,7 @@ export default function AdminInquiryList({
     }
   }
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
       const exportData = filtered.map((inq: any) => {
         const totalItems = inq.items?.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 0), 0) || 0;
@@ -420,12 +420,8 @@ export default function AdminInquiryList({
         }
       })
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Inquiries")
-      
       const fileName = `sabuyship-inquiries-${new Date().toISOString().split('T')[0]}.xlsx`
-      XLSX.writeFile(workbook, fileName)
+      await exportSpreadsheet(exportData, "Inquiries", fileName)
       
     } catch (err) {
       console.error("Export error:", err)

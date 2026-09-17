@@ -7,7 +7,7 @@ import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus } from "lucide-r
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
-import * as XLSX from "xlsx"
+import { exportSpreadsheet } from "@/lib/spreadsheet"
 import { PaymentApprovalModal } from "@/components/admin/PaymentApprovalModal"
 import { QuoteModal } from "@/components/admin/QuoteModal"
 import { OutOfStockModal } from "@/components/admin/OutOfStockModal"
@@ -194,12 +194,8 @@ export default function AdminOrders() {
         }
       })
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Orders")
-      
       const fileName = `sabuyship-orders-${new Date().toISOString().split('T')[0]}.xlsx`
-      XLSX.writeFile(workbook, fileName)
+      await exportSpreadsheet(exportData, "Orders", fileName)
       
     } catch (err: any) {
       console.error("Export error:", err.message)

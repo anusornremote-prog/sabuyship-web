@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload, Loader2, AlertTriangle, FileSpreadsheet, CheckCircle2 } from "lucide-react"
-import * as XLSX from "xlsx"
+import { readSpreadsheetRecords } from "@/lib/spreadsheet"
 
 export function ExcelUploadModal({ 
   isOpen, 
@@ -36,10 +36,7 @@ export function ExcelUploadModal({
   const parseExcel = async (file: File) => {
     setLoading(true)
     try {
-      const data = await file.arrayBuffer()
-      const workbook = XLSX.read(data)
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-      const jsonData = XLSX.utils.sheet_to_json(worksheet)
+      const jsonData = await readSpreadsheetRecords(file)
       
       if (jsonData.length === 0) {
         throw new Error("ไม่พบข้อมูลในไฟล์ Excel")
