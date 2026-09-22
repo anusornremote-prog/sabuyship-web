@@ -29,9 +29,10 @@ import {
   FileText
 } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
-import { createClient } from "@/lib/supabase/client"
 import { vibrateTap, vibrateSuccess, readClipboardText } from "@/lib/haptics"
 import { toast } from "sonner"
+import { extractProductUrl } from "@/lib/product-link"
+import { fetchExchangeRate } from "@/lib/exchange-rate"
 
 export default function Home() {
   const router = useRouter()
@@ -47,7 +48,7 @@ export default function Home() {
     vibrateTap()
     const text = await readClipboardText()
     if (text) {
-      setQuickUrl(text)
+      setQuickUrl(extractProductUrl(text) || text)
       vibrateSuccess()
       toast.success(locale === 'zh' ? "链接已粘贴" : locale === 'en' ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
     } else {
@@ -61,10 +62,9 @@ export default function Home() {
 
     const fetchRate = async () => {
       try {
-        const supabase = createClient()
-        const { data } = await supabase.from('site_settings').select('value').eq('key', 'exchange_rate').single()
-        if (data?.value) {
-          const valStr = data.value.toString()
+        const rate = await fetchExchangeRate()
+        if (rate) {
+          const valStr = rate.toString()
           setExchangeRate(valStr)
           if (typeof window !== "undefined") {
             sessionStorage.setItem("sabuy_exchange_rate", valStr)
@@ -79,11 +79,20 @@ export default function Home() {
 
   const handleQuickQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!quickUrl.trim()) {
+    const productUrl = extractProductUrl(quickUrl)
+    if (!productUrl) {
       router.push("/inquiry")
       return
     }
-    router.push(`/inquiry?url=${encodeURIComponent(quickUrl.trim())}`)
+    router.push(`/inquiry?url=${encodeURIComponent(productUrl)}`)
+  }
+
+  const handleQuickUrlPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    const productUrl = extractProductUrl(event.clipboardData.getData("text"))
+    if (!productUrl) return
+
+    event.preventDefault()
+    setQuickUrl(productUrl)
   }
 
   const handleQuickTrackSubmit = (e: React.FormEvent) => {
@@ -241,6 +250,8 @@ export default function Home() {
                         placeholder="วางลิงก์ 1688, Taobao, Tmall ที่นี่..."
                         value={quickUrl}
                         onChange={(e) => setQuickUrl(e.target.value)}
+                        onPaste={handleQuickUrlPaste}
+                        onBlur={() => setQuickUrl(extractProductUrl(quickUrl) || quickUrl)}
                         className="h-13 sm:h-14 rounded-2xl bg-slate-50 border-slate-300/80 font-mono text-xs sm:text-sm pl-4 pr-24 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
                       />
                       <button

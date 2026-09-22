@@ -1,16 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Prompt } from "next/font/google";
-import { cookies } from "next/headers";
-import dynamic from "next/dynamic";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { DeferredQuickRmbCalculator } from "@/components/calculator/DeferredQuickRmbCalculator";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-// Code-split floating calculator chunk for optimal initial page load
-const QuickRmbCalculator = dynamic(
-  () => import("@/components/calculator/QuickRmbCalculator").then((mod) => mod.QuickRmbCalculator)
-);
 
 const promptFont = Prompt({
   weight: ["300", "400", "500", "600", "700"],
@@ -41,17 +35,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const lang = cookieStore.get("lang")?.value || "th";
-
   return (
     <html
-      lang={lang}
+      lang="th"
       className={`${promptFont.variable} font-sans h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
@@ -59,7 +50,7 @@ export default async function RootLayout({
           <div className="flex-1 flex flex-col pb-18 md:pb-0">
             {children}
           </div>
-          <QuickRmbCalculator />
+          <DeferredQuickRmbCalculator />
           <MobileBottomNav />
         </LanguageProvider>
         <Toaster richColors position="top-right" />

@@ -15,7 +15,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Sabuy Ship Logo" className="h-9 w-auto object-contain" />
+              <img src="/logo.webp" alt="Sabuy Ship Logo" className="h-9 w-auto object-contain" loading="lazy" />
               <span className="font-bold text-lg text-primary">Sabuy Ship</span>
             </Link>
             <p className="text-sm text-muted-foreground">

@@ -3,6 +3,7 @@ import { canAcceptBusiness } from "@/lib/public-business-config"
 import { createClient } from "@/lib/supabase/server"
 import { sendAdminNotification } from "@/lib/notify"
 import crypto from "crypto"
+import { extractProductUrl } from "@/lib/product-link"
 
 // POST /api/inquiry - Create a new inquiry (Support both Authenticated & Guest Users)
 export async function POST(request: Request) {
@@ -22,6 +23,16 @@ export async function POST(request: Request) {
     }
     if (body.privacy_notice_acknowledged !== true) {
       return NextResponse.json({ error: "Privacy notice acknowledgement is required" }, { status: 400 })
+    }
+
+    const serviceType = body.service_type || 'BUY_AND_IMPORT'
+    const normalizedItems = body.items.map((item: Record<string, unknown>) => {
+      const rawUrl = typeof item?.url === "string" ? item.url : ""
+      return { ...item, url: extractProductUrl(rawUrl) || rawUrl.trim() }
+    })
+
+    if (serviceType === 'BUY_AND_IMPORT' && normalizedItems.some((item: { url?: string }) => !extractProductUrl(item.url || ""))) {
+      return NextResponse.json({ error: "A valid product URL is required for every item" }, { status: 400 })
     }
 
     // Check optional authentication
@@ -55,11 +66,11 @@ export async function POST(request: Request) {
       phone: body.phone.trim(),
       line_id: body.line_id ? body.line_id.trim() : null,
       shipping_type: body.shipping_type || "CAR",
-      items: body.items,
-      product_url: body.items[0]?.url || "-", // Fallback to satisfy DB constraint
-      quantity: body.items[0]?.quantity || 1, // Fallback to satisfy DB constraint
+      items: normalizedItems,
+      product_url: normalizedItems[0]?.url || "-", // Fallback to satisfy DB constraint
+      quantity: normalizedItems[0]?.quantity || 1, // Fallback to satisfy DB constraint
       status: "PENDING",
-      service_type: body.service_type || 'BUY_AND_IMPORT',
+      service_type: serviceType,
       privacy_notice_version: "2026-09-14",
       privacy_acknowledged_at: new Date().toISOString(),
     }

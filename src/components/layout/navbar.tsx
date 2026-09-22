@@ -7,8 +7,8 @@ import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuesti
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { NotificationBell } from "./NotificationBell"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 
 export function Navbar() {
   const { t, locale, setLanguage } = useTranslation()
@@ -16,31 +16,32 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchUser = async () => {
       try {
+        if (!hasSupabaseSessionCookie()) return
+        const { createClient } = await import("@/lib/supabase/client")
         const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          setUser(user)
-          const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-          setProfile(data)
-        }
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!cancelled) setUser(session?.user || null)
       } catch (err) {
         console.error("Error fetching user in navbar:", err)
       }
     }
-    fetchUser()
+
+    const timeoutId = window.setTimeout(fetchUser, 250)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
   }, [])
 
   const getDashboardLabel = () => {
-    // 1. Try to get name from profile
-    let name = profile?.full_name
-    
-    // 2. Try user metadata
-    if (!name && user?.user_metadata?.full_name) {
+    let name
+    if (user?.user_metadata?.full_name) {
       name = user.user_metadata.full_name
     }
     
@@ -77,6 +78,7 @@ export function Navbar() {
 
   const handleLogout = async () => {
     setIsDropdownOpen(false)
+    const { createClient } = await import("@/lib/supabase/client")
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push("/login")
@@ -237,7 +239,7 @@ export function Navbar() {
                   )}
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-slate-900 line-clamp-1">
-                      {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.phone || 'ผู้ใช้งาน'}
+                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.phone || 'ผู้ใช้งาน'}
                     </span>
                     <span className="text-xs text-slate-500 line-clamp-1">{user.email || user.phone}</span>
                   </div>

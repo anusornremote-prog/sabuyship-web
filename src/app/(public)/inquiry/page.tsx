@@ -1,6 +1,5 @@
 "use client"
 
-import imageCompression from 'browser-image-compression'
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -9,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslation } from "@/components/providers/language-provider"
-import { createClient } from "@/lib/supabase/client"
 import { 
   ShoppingCart, 
   Truck, 
@@ -34,6 +32,8 @@ import {
 import { toast } from "sonner"
 import { vibrateTap, vibrateSuccess, readClipboardText } from "@/lib/haptics"
 import { canAcceptBusiness } from "@/lib/public-business-config"
+import { extractProductUrl } from "@/lib/product-link"
+import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 
 export default function InquiryForm() {
   const router = useRouter()
@@ -56,14 +56,17 @@ export default function InquiryForm() {
       const params = new URLSearchParams(window.location.search)
       const urlParam = params.get('url')
       if (urlParam) {
-        setItems([{ url: urlParam, quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
+        setItems([{ url: extractProductUrl(urlParam) || urlParam, quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }])
       }
     }
 
     const checkUser = async () => {
       try {
+        if (!hasSupabaseSessionCookie()) return
+        const { createClient } = await import("@/lib/supabase/client")
         const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { session } } = await supabase.auth.getSession()
+        const user = session?.user
         if (user) {
           setIsLoggedIn(true)
           const { data } = await supabase
@@ -83,7 +86,8 @@ export default function InquiryForm() {
         console.error("Error checking auth in inquiry:", err)
       }
     }
-    checkUser()
+    const timeoutId = window.setTimeout(checkUser, 250)
+    return () => window.clearTimeout(timeoutId)
   }, [])
 
   const handleCopyOrderNumber = () => {
@@ -99,7 +103,7 @@ export default function InquiryForm() {
     vibrateTap()
     const text = await readClipboardText()
     if (text) {
-      handleItemChange(index, 'url', text)
+      handleItemChange(index, 'url', extractProductUrl(text) || text)
       vibrateSuccess()
       toast.success(locale === 'zh' ? "链接已粘贴" : locale === 'en' ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
     } else {
@@ -131,6 +135,22 @@ export default function InquiryForm() {
     setItems(newItems)
   }
 
+  const handleProductUrlPaste = (index: number, event: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = event.clipboardData.getData("text")
+    const productUrl = extractProductUrl(pastedText)
+    if (!productUrl) return
+
+    event.preventDefault()
+    handleItemChange(index, "url", productUrl)
+  }
+
+  const normalizeProductUrl = (index: number) => {
+    const productUrl = extractProductUrl(items[index].url)
+    if (productUrl && productUrl !== items[index].url) {
+      handleItemChange(index, "url", productUrl)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
@@ -158,6 +178,7 @@ export default function InquiryForm() {
     setError(null)
 
     try {
+      const { createClient } = await import("@/lib/supabase/client")
       const supabase = createClient()
       
       // Upload images if any
@@ -172,6 +193,7 @@ export default function InquiryForm() {
           }
           let fileToUpload = item.file
           try {
+            const { default: imageCompression } = await import('browser-image-compression')
             fileToUpload = await imageCompression(item.file, options)
           } catch (error) {
             console.error("Compression error:", error)
@@ -469,6 +491,8 @@ export default function InquiryForm() {
                             placeholder="https://detail.1688.com/offer/..." 
                             value={item.url}
                             onChange={(e) => handleItemChange(index, 'url', e.target.value)}
+                            onPaste={(e) => handleProductUrlPaste(index, e)}
+                            onBlur={() => normalizeProductUrl(index)}
                             required
                             className="h-11 rounded-xl bg-white border-slate-300 font-mono text-xs sm:text-sm"
                           />

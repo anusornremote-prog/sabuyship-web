@@ -15,7 +15,7 @@ import {
   RotateCcw
 } from "lucide-react"
 import { vibrateTap, vibrateSuccess } from "@/lib/haptics"
-import { createClient } from "@/lib/supabase/client"
+import { fetchExchangeRate } from "@/lib/exchange-rate"
 import { toast } from "sonner"
 
 export function QuickRmbCalculator() {
@@ -39,15 +39,8 @@ export function QuickRmbCalculator() {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        const supabase = createClient()
-        const { data } = await supabase
-          .from("site_settings")
-          .select("value")
-          .eq("key", "exchange_rate")
-          .single()
-        if (data?.value && !isNaN(Number(data.value))) {
-          setRate(Number(data.value))
-        }
+        const exchangeRate = await fetchExchangeRate()
+        if (exchangeRate) setRate(exchangeRate)
       } catch (e) {
         console.warn("Failed to fetch exchange rate for calculator:", e)
       }

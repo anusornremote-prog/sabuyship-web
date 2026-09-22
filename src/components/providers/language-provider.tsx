@@ -1,7 +1,6 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { getTranslations, Locale } from '@/lib/i18n'
 
 interface LanguageContextType {
@@ -13,7 +12,6 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
   const [locale, setLocaleState] = useState<Locale>('th')
 
   // Load language from cookie on mount
@@ -28,7 +26,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = (newLang: Locale) => {
     setLocaleState(newLang)
     document.cookie = `lang=${newLang};path=/;max-age=31536000` // 1 year
-    router.refresh() // Refresh to trigger server components updates
+    document.documentElement.lang = newLang
   }
 
   const t = getTranslations(locale)

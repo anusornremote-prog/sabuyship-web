@@ -4,40 +4,37 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, Package, Plus, MessageCircle, User, Search, ShoppingBag } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 import { useTranslation } from "@/components/providers/language-provider"
+import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 
 export function MobileBottomNav() {
   const pathname = usePathname()
   const { locale } = useTranslation()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [badgeCount, setBadgeCount] = useState<number>(0)
 
   useEffect(() => {
-    const checkAuthAndBadge = async () => {
+    let cancelled = false
+
+    const checkAuth = async () => {
       try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          setIsLoggedIn(true)
-          // Fetch active orders count waiting payment
-          const { count } = await supabase
-            .from("orders")
-            .select("*", { count: "exact", head: true })
-            .eq("customer_id", user.id)
-            .eq("status", "WAITING_PAYMENT")
-          
-          if (count && count > 0) {
-            setBadgeCount(count)
-          }
-        } else {
-          setIsLoggedIn(false)
+        if (!hasSupabaseSessionCookie()) {
+          if (!cancelled) setIsLoggedIn(false)
+          return
         }
+        const { createClient } = await import("@/lib/supabase/client")
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!cancelled) setIsLoggedIn(!!session?.user)
       } catch (e) {
         console.error("Error in MobileBottomNav auth check:", e)
       }
     }
-    checkAuthAndBadge()
+
+    const timeoutId = window.setTimeout(checkAuth, 250)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
   }, [pathname])
 
   // Don't render on admin pages or printable invoice pages
@@ -89,11 +86,6 @@ export function MobileBottomNav() {
           >
             <div className="relative p-1">
               <Package className={`w-5 h-5 transition-transform ${isOrdersActive ? "scale-110 stroke-[2.5]" : "stroke-[1.8]"}`} />
-              {badgeCount > 0 && (
-                <span className="absolute -top-0.5 -right-1 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
-                  {badgeCount}
-                </span>
-              )}
               {isOrdersActive && (
                 <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full animate-in fade-in zoom-in-75 duration-200" />
               )}

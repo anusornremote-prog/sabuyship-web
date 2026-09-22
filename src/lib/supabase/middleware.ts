@@ -36,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   let isActive = true
   
   // Only query the profile role if we need to make a routing decision based on it
-  if (user && (pathname.startsWith('/admin') || pathname.startsWith('/dashboard') || pathname === '/login' || pathname === '/register')) {
+  if (user && (pathname.startsWith('/admin') || pathname === '/login' || pathname === '/register')) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, phone, is_active')
@@ -57,9 +57,6 @@ export async function updateSession(request: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
-    }
-    if (!hasPhone) {
-      return NextResponse.redirect(new URL('/complete-profile', request.url))
     }
   }
 

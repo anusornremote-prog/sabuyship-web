@@ -5,39 +5,44 @@ import { Badge } from "@/components/ui/badge"
 import { Package, Truck, Clock, CheckCircle2, ShoppingBag, ArrowRight, ExternalLink, Box, Sparkles, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { CustomerWarehouseCard } from "@/components/dashboard/CustomerWarehouseCard"
+import { redirect } from "next/navigation"
 
 export default async function DashboardOverview() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let profile = null
-  if (user) {
-    const { data } = await supabase
+  if (!user) redirect("/login")
+
+  const [
+    { data: profile },
+    { data: orders },
+    { data: recentShipments }
+  ] = await Promise.all([
+    supabase
       .from("profiles")
-      .select("*")
+      .select("full_name, customer_code")
       .eq("id", user.id)
-      .maybeSingle()
-    profile = data
-  }
+      .maybeSingle(),
+    supabase
+      .from("orders")
+      .select("id, order_number, status, created_at")
+      .eq("customer_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("shipments")
+      .select("id, tracking_number, product_name, container_date, shipping_cost")
+      .eq("customer_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5)
+  ])
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || "ลูกค้า Sabuy Ship"
 
-  // Fetch real order stats concurrently
-  const [
-    { count: totalOrders },
-    { count: pendingOrders },
-    { count: completedOrders },
-    { count: waitingPayment },
-    { data: recentOrders },
-    { data: recentShipments }
-  ] = await Promise.all([
-    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id),
-    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).neq("status", "DELIVERED"),
-    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).eq("status", "DELIVERED"),
-    supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", user?.id).eq("status", "WAITING_PAYMENT"),
-    supabase.from("orders").select("id, order_number, status, created_at").eq("customer_id", user?.id).order("created_at", { ascending: false }).limit(5),
-    supabase.from("shipments").select("*").eq("customer_id", user?.id).order("created_at", { ascending: false }).limit(5)
-  ])
+  const totalOrders = orders?.length || 0
+  const pendingOrders = orders?.filter(order => order.status !== "DELIVERED").length || 0
+  const completedOrders = orders?.filter(order => order.status === "DELIVERED").length || 0
+  const waitingPayment = orders?.filter(order => order.status === "WAITING_PAYMENT").length || 0
+  const recentOrders = orders?.slice(0, 5) || []
 
   const getStatusBadge = (status: string) => {
     switch (status) {

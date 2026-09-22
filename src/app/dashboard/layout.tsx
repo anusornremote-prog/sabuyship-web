@@ -29,7 +29,6 @@ export default function DashboardLayout({
   const router = useRouter()
   const supabase = createClient()
   const [showPhoneModal, setShowPhoneModal] = useState(false)
-  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [badgeCounts, setBadgeCounts] = useState({
     inquiriesCount: 0,
     ordersCount: 0
@@ -45,6 +44,7 @@ export default function DashboardLayout({
             inquiriesCount: data.inquiriesCount || 0,
             ordersCount: data.ordersCount || 0
           })
+          setShowPhoneModal(data.hasPhone === false)
         }
       } catch (error) {
         console.error("Failed to fetch badge counts:", error)
@@ -52,25 +52,6 @@ export default function DashboardLayout({
     }
     fetchCounts()
   }, [pathname])
-
-  useEffect(() => {
-    const checkProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUserEmail(user.email || null)
-        const { data } = await supabase
-          .from('profiles')
-          .select('phone')
-          .eq('id', user.id)
-          .maybeSingle()
-          
-        if (data && !data.phone) {
-          setShowPhoneModal(true)
-        }
-      }
-    }
-    checkProfile()
-  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

@@ -10,25 +10,30 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // 1. Get Quoted Inquiries Count (Waiting for customer to pay Round 1)
-    const { count: inquiriesCount, error: inquiriesError } = await supabase
-      .from("inquiries")
-      .select("*", { count: 'exact', head: true })
-      .eq("customer_id", user.id)
-      .eq("status", "QUOTED")
+    const [
+      { data: profile, error: profileError },
+      { count: inquiriesCount, error: inquiriesError },
+      { data: ordersData, error: ordersError }
+    ] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("phone")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("inquiries")
+        .select("*", { count: 'exact', head: true })
+        .eq("customer_id", user.id)
+        .eq("status", "QUOTED"),
+      supabase
+        .from("orders")
+        .select("status, payment_round_2_status, payment_round_3_status")
+        .eq("customer_id", user.id)
+        .in("status", ["ARRIVED", "DELIVERED"])
+    ])
 
+    if (profileError) throw profileError
     if (inquiriesError) throw inquiriesError
-
-    // 2. Get Orders needing Round 2 or 3 payment
-    // Instead of complex OR conditions on payment_round_x_status which might require postgrest filters,
-    // we can fetch the orders in ARRIVED or DELIVERED status and filter in JS if the count is small,
-    // or use Supabase or() filter.
-    const { data: ordersData, error: ordersError } = await supabase
-      .from("orders")
-      .select("status, payment_round_2_status, payment_round_3_status")
-      .eq("customer_id", user.id)
-      .in("status", ["ARRIVED", "DELIVERED"])
-
     if (ordersError) throw ordersError
 
     let ordersCount = 0
@@ -41,7 +46,8 @@ export async function GET() {
 
     return NextResponse.json({
       inquiriesCount: inquiriesCount || 0,
-      ordersCount: ordersCount || 0
+      ordersCount: ordersCount || 0,
+      hasPhone: !!profile?.phone
     }, { status: 200 })
 
   } catch (error: any) {
