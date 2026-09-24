@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input"
 import { X, Copy, Check, Upload, CheckCircle2, QrCode, AlertTriangle, Download, Camera, Image as ImageIcon, Trash2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import imageCompression from 'browser-image-compression'
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { vibrateTap, vibrateSuccess, vibrateWarning } from "@/lib/haptics"
@@ -159,6 +158,7 @@ export function PaymentSection({
         useWebWorker: true,
         initialQuality: 0.5,
       }
+      const { default: imageCompression } = await import('browser-image-compression')
       const compressedFile = await imageCompression(file, options)
 
       const { data: authData } = await supabase.auth.getUser()

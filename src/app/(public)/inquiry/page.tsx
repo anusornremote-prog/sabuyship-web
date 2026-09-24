@@ -103,9 +103,21 @@ export default function InquiryForm() {
     vibrateTap()
     const text = await readClipboardText()
     if (text) {
-      handleItemChange(index, 'url', extractProductUrl(text) || text)
-      vibrateSuccess()
-      toast.success(locale === 'zh' ? "链接已粘贴" : locale === 'en' ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
+      const extracted = extractProductUrl(text)
+      if (extracted) {
+        handleItemChange(index, 'url', extracted)
+        vibrateSuccess()
+        toast.success(locale === 'zh' ? "链接已粘贴并提取成功" : locale === 'en' ? "Product URL extracted and pasted" : "วางและดึงลิงก์สินค้าเรียบร้อยแล้ว")
+      } else {
+        handleItemChange(index, 'url', text)
+        toast.warning(
+          locale === 'zh'
+            ? "已粘贴内容，但未检测到有效商品链接，请核对"
+            : locale === 'en'
+            ? "Pasted content, but no valid product URL was detected"
+            : "ข้อความที่วางไม่มีลิงก์สินค้า กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https:// (เช่น จาก Taobao, 1688 หรือ Tmall)"
+        )
+      }
     } else {
       toast.info(locale === 'zh' ? "请手动在输入框粘贴" : locale === 'en' ? "Please paste into the box" : "กรุณากดวางลิงก์ลงในช่อง")
     }
@@ -138,16 +150,37 @@ export default function InquiryForm() {
   const handleProductUrlPaste = (index: number, event: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = event.clipboardData.getData("text")
     const productUrl = extractProductUrl(pastedText)
-    if (!productUrl) return
-
-    event.preventDefault()
-    handleItemChange(index, "url", productUrl)
+    if (productUrl) {
+      event.preventDefault()
+      handleItemChange(index, "url", productUrl)
+      toast.success(locale === 'zh' ? "已自动提取商品链接" : locale === 'en' ? "Product link extracted" : "ดึงลิงก์สินค้าจากข้อความแชร์ให้แล้ว")
+    } else if (pastedText && !pastedText.startsWith("http://") && !pastedText.startsWith("https://")) {
+      toast.warning(
+        locale === 'zh'
+          ? "未检测到有效商品链接，请提供包含 http:// หรือ https:// 的链接"
+          : locale === 'en'
+          ? "No valid product URL found in pasted text"
+          : "ข้อความที่วางไม่มีลิงก์สินค้า กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https://"
+      )
+    }
   }
 
   const normalizeProductUrl = (index: number) => {
-    const productUrl = extractProductUrl(items[index].url)
-    if (productUrl && productUrl !== items[index].url) {
-      handleItemChange(index, "url", productUrl)
+    const raw = items[index]?.url || ""
+    if (!raw.trim()) return
+    const productUrl = extractProductUrl(raw)
+    if (productUrl) {
+      if (productUrl !== raw) {
+        handleItemChange(index, "url", productUrl)
+      }
+    } else {
+      toast.warning(
+        locale === 'zh'
+          ? `商品 #${index + 1} 未检测到有效链接`
+          : locale === 'en'
+          ? `Item #${index + 1} does not contain a valid URL`
+          : `สินค้าชิ้นที่ ${index + 1}: ไม่พบลิงก์สินค้าที่ถูกต้อง กรุณาใส่ลิงก์ Taobao, 1688 หรือ Tmall`
+      )
     }
   }
 
@@ -156,8 +189,15 @@ export default function InquiryForm() {
     
     // Validate items based on serviceType
     if (serviceType === 'BUY_AND_IMPORT') {
-      if (items.some(item => !item.url.trim())) {
-        setError(locale === 'en' ? 'Please fill in all product URLs.' : locale === 'zh' ? '请填写所有商品链接。' : 'กรุณากรอกลิงก์สินค้าให้ครบทุกรายการ')
+      const invalidUrlIndex = items.findIndex(item => !extractProductUrl(item.url || ''))
+      if (invalidUrlIndex !== -1) {
+        setError(
+          locale === 'en'
+            ? `Item #${invalidUrlIndex + 1}: Please provide a valid product URL (starting with http:// or https:// from Taobao, 1688, or Tmall).`
+            : locale === 'zh'
+            ? `商品 #${invalidUrlIndex + 1}：请输入有效的商品链接（支持淘宝、1688、天猫等 HTTP/HTTPS 链接）。`
+            : `สินค้าชิ้นที่ ${invalidUrlIndex + 1}: กรุณากรอกลิงก์สินค้าที่ถูกต้อง (ขึ้นต้นด้วย http:// หรือ https:// เช่น จาก Taobao, 1688 หรือ Tmall)`
+        )
         return
       }
     } else {
@@ -218,7 +258,7 @@ export default function InquiryForm() {
         }
         
         return {
-          url: item.url,
+          url: extractProductUrl(item.url) || item.url.trim(),
           quantity: typeof item.quantity === 'string' ? parseInt(item.quantity) || 1 : item.quantity,
           remark: item.remark,
           wooden_crate: item.wooden_crate,
@@ -487,8 +527,9 @@ export default function InquiryForm() {
                             </button>
                           </div>
                           <Input 
-                            type="url" 
-                            placeholder="https://detail.1688.com/offer/..." 
+                            type="text"
+                            inputMode="url"
+                            placeholder="https://detail.1688.com/offer/... หรือข้อความแชร์จากแอป"
                             value={item.url}
                             onChange={(e) => handleItemChange(index, 'url', e.target.value)}
                             onPaste={(e) => handleProductUrlPaste(index, e)}

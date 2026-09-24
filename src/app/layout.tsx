@@ -47,7 +47,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider>
-          <div className="flex-1 flex flex-col pb-18 md:pb-0">
+          <div className="flex-1 flex flex-col pb-24 md:pb-0">
             {children}
           </div>
           <DeferredQuickRmbCalculator />

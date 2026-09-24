@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     })
 
     if (serviceType === 'BUY_AND_IMPORT' && normalizedItems.some((item: { url?: string }) => !extractProductUrl(item.url || ""))) {
-      return NextResponse.json({ error: "A valid product URL is required for every item" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุลิงก์สินค้าที่ถูกต้อง (รองรับลิงก์จาก Taobao, 1688 หรือ Tmall)" }, { status: 400 })
     }
 
     // Check optional authentication

@@ -10,9 +10,31 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { LineIcon } from "@/components/ui/icons"
 
+function getFriendlyErrorMessage(msg: string): string {
+  if (!msg) return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ"
+  const lower = msg.toLowerCase()
+  if (
+    lower.includes("provider is not enabled") ||
+    lower.includes("unsupported provider") ||
+    lower.includes("invalid provider") ||
+    lower.includes("provider_not_found") ||
+    lower.includes("issuer")
+  ) {
+    return "ระบบเข้าสู่ระบบนี้ยังไม่พร้อมใช้งานในขณะนี้ กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน หรือติดต่อเจ้าหน้าที่"
+  }
+  if (lower.includes("invalid login credentials") || lower.includes("invalid_credentials")) {
+    return "อีเมล หรือ รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง"
+  }
+  if (lower.includes("email not confirmed")) {
+    return "อีเมลนี้ยังไม่ได้ยืนยันตัวตน กรุณาตรวจสอบกล่องจดหมายของคุณ"
+  }
+  return msg
+}
+
 export default function Login() {
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
+  const [remember, setRemember] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -45,6 +67,35 @@ export default function Login() {
 
   useEffect(() => {
     initGoogleLogin();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const urlError = params.get("error")
+      const urlDesc = params.get("error_description")
+      const reason = params.get("reason")
+
+      if (reason === "admin-session-expired") {
+        setError("เซสชันหมดอายุเนื่องจากไม่มีการใช้งานเกิน 30 นาที กรุณาเข้าสู่ระบบใหม่อีกครั้ง")
+      } else if (urlError) {
+        if (urlError === "AuthFailed") {
+          setError("การเข้าสู่ระบบผ่านผู้ให้บริการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน")
+        } else if (urlError.includes("access_denied")) {
+          setError("การเข้าสู่ระบบถูกยกเลิก กรุณาลองใหม่อีกครั้ง")
+        } else {
+          setError(getFriendlyErrorMessage(urlDesc || urlError))
+        }
+      }
+
+      try {
+        const saved = localStorage.getItem("sabuy_remember_identifier")
+        if (saved) {
+          setIdentifier(saved)
+          setRemember(true)
+        }
+      } catch (e) {
+        // LocalStorage disabled or unavailable
+      }
+    }
   }, [])
 
   const handleGoogleCallback = async (response: any) => {
@@ -91,7 +142,7 @@ export default function Login() {
       if (typeof err === 'object' && Object.keys(err).length === 0 || errMessage === '{}') {
         errMessage = "เกิดข้อผิดพลาดจากฐานข้อมูล (Database Trigger Failed) กรุณารัน SQL Script ตามที่ระบบแนะนำ"
       }
-      setError(errMessage || "เกิดข้อผิดพลาดในการล็อกอินด้วย Google")
+      setError(getFriendlyErrorMessage(errMessage || "เกิดข้อผิดพลาดในการล็อกอินด้วย Google"))
       setLoading(false)
     }
   }
@@ -101,6 +152,17 @@ export default function Login() {
     setLoading(true)
     setError(null)
 
+    // Handle remember identifier persistence
+    try {
+      if (remember) {
+        localStorage.setItem("sabuy_remember_identifier", identifier.trim())
+      } else {
+        localStorage.removeItem("sabuy_remember_identifier")
+      }
+    } catch (e) {
+      // Ignore storage errors
+    }
+
     // Pass identifier as email parameter so mock client or supabase standard auth receives it.
     // In our mock client, we updated u.email === email || u.phone === email
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -109,11 +171,7 @@ export default function Login() {
     })
 
     if (error) {
-      if (error.message === "Invalid login credentials") {
-        setError("อีเมล หรือ รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง")
-      } else {
-        setError(error.message)
-      }
+      setError(getFriendlyErrorMessage(error.message))
       setLoading(false)
       return
     }
@@ -146,7 +204,7 @@ export default function Login() {
     })
     
     if (error) {
-      setError(error.message)
+      setError(getFriendlyErrorMessage(error.message))
       setLoading(false)
     }
   }
@@ -194,6 +252,8 @@ export default function Login() {
               type="checkbox" 
               id="remember" 
               name="remember"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
             />
             <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer">

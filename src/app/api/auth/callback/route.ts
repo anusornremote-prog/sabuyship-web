@@ -51,6 +51,15 @@ export async function GET(request: Request) {
     }
     
     console.error("Auth callback error:", error)
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error?.message || 'AuthFailed')}`)
+  }
+
+  const providerError = searchParams.get('error')
+  const providerErrorDesc = searchParams.get('error_description')
+  if (providerError) {
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(providerError)}&error_description=${encodeURIComponent(providerErrorDesc || '')}`
+    )
   }
 
   // Return the user to login with an error

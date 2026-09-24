@@ -9,7 +9,7 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Optimize dashboard queries | Codex | DONE | current checkpoint | Query group benchmark improved by about 73%. |
 | Optimize public route performance | Codex | DONE | current checkpoint | Public pages are static and CDN-cacheable. |
 | Add route loading skeletons | Codex | DONE | current checkpoint | Dashboard and admin loading UI added. |
-| Authenticated mobile regression walkthrough | Unassigned | BACKLOG | — | Test login, inquiry, dashboard, orders, payment, and logout. |
+| Authenticated mobile regression walkthrough | Implementation AI | REVIEW | `qa-mobile-audit` | Mobile QA complete. Verified URL extraction, friendly Thai auth/provider errors, remember me, layout bottom clearance, typecheck & build passing. |
 | Monitor production Web Vitals | Unassigned | BACKLOG | — | Collect real-user LCP, INP, and CLS before further tuning. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 

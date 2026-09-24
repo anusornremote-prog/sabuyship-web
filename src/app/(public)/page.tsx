@@ -79,20 +79,40 @@ export default function Home() {
 
   const handleQuickQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!quickUrl.trim()) {
+      router.push("/inquiry")
+      return
+    }
     const productUrl = extractProductUrl(quickUrl)
     if (!productUrl) {
-      router.push("/inquiry")
+      toast.error(
+        locale === 'zh'
+          ? "未检测到有效商品链接，请提供包含 http:// 或 https:// 的链接"
+          : locale === 'en'
+          ? "No valid product URL found. Please provide a link starting with http:// or https://"
+          : "ไม่พบลิงก์สินค้าในข้อความ กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https:// (เช่น จาก Taobao, 1688 หรือ Tmall)"
+      )
       return
     }
     router.push(`/inquiry?url=${encodeURIComponent(productUrl)}`)
   }
 
   const handleQuickUrlPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    const productUrl = extractProductUrl(event.clipboardData.getData("text"))
-    if (!productUrl) return
-
-    event.preventDefault()
-    setQuickUrl(productUrl)
+    const pastedText = event.clipboardData.getData("text")
+    const productUrl = extractProductUrl(pastedText)
+    if (productUrl) {
+      event.preventDefault()
+      setQuickUrl(productUrl)
+      toast.success(locale === 'zh' ? "已自动提取商品链接" : locale === 'en' ? "Product link extracted" : "ดึงลิงก์สินค้าจากข้อความแชร์ให้แล้ว")
+    } else if (pastedText && !pastedText.startsWith("http://") && !pastedText.startsWith("https://")) {
+      toast.warning(
+        locale === 'zh'
+          ? "未检测到有效商品链接，请提供包含 http:// 或 https:// 的链接"
+          : locale === 'en'
+          ? "No valid product URL found in pasted text"
+          : "ข้อความที่วางไม่มีลิงก์สินค้า กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https://"
+      )
+    }
   }
 
   const handleQuickTrackSubmit = (e: React.FormEvent) => {
@@ -246,8 +266,9 @@ export default function Home() {
                   <form onSubmit={handleQuickQuoteSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1 animate-in fade-in duration-200">
                     <div className="relative flex-1">
                       <Input
-                        type="url"
-                        placeholder="วางลิงก์ 1688, Taobao, Tmall ที่นี่..."
+                        type="text"
+                        inputMode="url"
+                        placeholder="วางลิงก์ 1688, Taobao, Tmall หรือข้อความแชร์ที่นี่..."
                         value={quickUrl}
                         onChange={(e) => setQuickUrl(e.target.value)}
                         onPaste={handleQuickUrlPaste}
