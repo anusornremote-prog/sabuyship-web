@@ -81,7 +81,14 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Added `@vercel/speed-insights` to the application dependencies.
 - Mounted `<SpeedInsights />` in the root layout.
 - Local typecheck and production build pass with instrumentation enabled.
-- Real-user mobile metrics remain pending production deployment and traffic.
+- Real-user mobile metrics remain pending sufficient production traffic.
+
+## Production Release
+
+- Merged `qa-mobile-audit` into `main` by fast-forward and pushed commit `d3784a2`.
+- Vercel production deployment `dpl_8NU8VdPatFzZgKJ7qgFw5JXzT5fN` completed successfully.
+- Public routes, protected-route redirects, sanitized OAuth callback behavior, email-only login copy, and the Speed Insights script endpoint passed production smoke checks.
+- Initial Production/Mobile P75 queries for LCP, CLS, and INP returned no datapoints immediately after deployment; monitor again after real traffic accumulates.
 
 ## Final Integration Findings
 

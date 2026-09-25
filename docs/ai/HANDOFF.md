@@ -1,13 +1,13 @@
 # Current Handoff
 
-Last updated: 2026-09-24 (Asia/Bangkok)
+Last updated: 2026-09-25 (Asia/Bangkok)
 
 ## Repository State
 
-- Active branch: `qa-mobile-audit`
+- Active branch: `main`
 - Primary branch: `main`
 - Production domain: `https://www.sabuyship.com`
-- Latest production deployment: `dpl_4PCUVpRwH7mnhPkpPZXmEnGA2Bj5`
+- Verified production deployment: `dpl_8NU8VdPatFzZgKJ7qgFw5JXzT5fN`
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
@@ -53,6 +53,11 @@ Never replace production environment values with staging values. Do not place an
 - **Unauthenticated Mobile Browser Walkthrough (390x844)** — PASS. Executed on `http://localhost:3000`. Recording: `mobile_qa_walkthrough_1790231063711.webp`.
 - **Authenticated Mobile Customer Walkthrough (390x844)** — **BLOCKED: TEST ACCOUNT REQUIRED**. No test account provided; creating test accounts or mock data in production Supabase (`kzqbzrfcdrnghwjpmany`) is strictly prohibited.
 - Zero mock transactions or destructive database alterations were performed in production.
+- Production `/`, `/login`, and `/inquiry` return HTTP 200.
+- Unauthenticated Production `/dashboard` and `/admin` return HTTP 307 to `/login`.
+- Production OAuth cancellation redirects to `/login?error=AuthCancelled` without forwarding `error_description`.
+- Production login markup advertises email-only authentication.
+- Production `/_vercel/speed-insights/script.js` returns HTTP 200.
 
 ## Browser Test Evidence (Mobile Viewport 390x844)
 
@@ -115,4 +120,4 @@ Never replace production environment values with staging values. Do not place an
 - Final integration code corrections are complete and local validation passes.
 - Authenticated mobile customer walkthrough remains blocked pending a safe non-production test account.
 - Vercel Speed Insights instrumentation is installed; verify collection after the next production deployment.
-- Do not deploy until the user explicitly requests it.
+- Production deployment is complete; initial mobile LCP, CLS, and INP queries returned no datapoints immediately after release and require real mobile traffic.
