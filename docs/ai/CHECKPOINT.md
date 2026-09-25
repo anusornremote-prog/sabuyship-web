@@ -76,6 +76,13 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Live LINE OAuth token exchange on production domain: **NOT TESTED** (Requires live LINE Channel Secret & production redirect URI).
 - Real-user Web Vitals (P75 LCP/CLS): **PENDING DEPLOYMENT** (Waiting for merge, deployment, and real mobile traffic accumulation).
 
+## Web Vitals Instrumentation
+
+- Added `@vercel/speed-insights` to the application dependencies.
+- Mounted `<SpeedInsights />` in the root layout.
+- Local typecheck and production build pass with instrumentation enabled.
+- Real-user mobile metrics remain pending production deployment and traffic.
+
 ## Final Integration Findings
 
 - Login now accurately accepts email only, matching the current email-based signup flow.

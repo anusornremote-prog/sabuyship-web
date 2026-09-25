@@ -32,6 +32,7 @@
 - Independent Supabase queries should run concurrently.
 - Avoid loading Supabase, ExcelJS, Recharts, image compression, or other heavy libraries on public initial routes unless immediately required.
 - Use route-level loading UI for data-heavy dashboard and admin navigation.
+- Collect production Core Web Vitals with Vercel Speed Insights from the root layout and evaluate mobile P75 LCP, CLS, and INP after deployment.
 
 ## Product Link Handling
 

@@ -37,6 +37,9 @@ Never replace production environment values with staging values. Do not place an
   - Added focused auth redirect and safe-message checks in `scripts/qa-auth-safety.mjs`.
 - **Customer Journey Bundle Performance (`src/components/orders/PaymentSection.tsx`)**:
   - Removed static top-level import of `browser-image-compression` in favor of dynamic import on slip submission, reducing the order detail page bundle size.
+- **Production Web Vitals Instrumentation (`src/app/layout.tsx`)**:
+  - Installed `@vercel/speed-insights` and mounted `<SpeedInsights />` in the root layout.
+  - Production deployment and real mobile traffic are still required before P75 LCP, CLS, and INP can be evaluated.
 
 ## Validation Completed
 
@@ -101,6 +104,7 @@ Never replace production environment values with staging values. Do not place an
 - `scripts/qa-auth-safety.mjs`
 - `src/lib/auth-errors.ts`
 - `package.json`
+- `package-lock.json`
 - `docs/ai/TASKS.md`
 - `docs/ai/HANDOFF.md`
 - `docs/ai/CHECKPOINT.md`
@@ -110,4 +114,5 @@ Never replace production environment values with staging values. Do not place an
 
 - Final integration code corrections are complete and local validation passes.
 - Authenticated mobile customer walkthrough remains blocked pending a safe non-production test account.
+- Vercel Speed Insights instrumentation is installed; verify collection after the next production deployment.
 - Do not deploy until the user explicitly requests it.
