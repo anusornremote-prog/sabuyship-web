@@ -157,7 +157,7 @@ export default function InquiryForm() {
     } else if (pastedText && !pastedText.startsWith("http://") && !pastedText.startsWith("https://")) {
       toast.warning(
         locale === 'zh'
-          ? "未检测到有效商品链接，请提供包含 http:// หรือ https:// 的链接"
+          ? "未检测到有效商品链接，请提供包含 http:// 或 https:// 的链接"
           : locale === 'en'
           ? "No valid product URL found in pasted text"
           : "ข้อความที่วางไม่มีลิงก์สินค้า กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https://"

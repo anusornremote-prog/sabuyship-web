@@ -10,15 +10,17 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { LineIcon } from "@/components/ui/icons"
 
-function getFriendlyErrorMessage(msg: string): string {
-  if (!msg) return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ"
-  const lower = msg.toLowerCase()
+function getFriendlyErrorMessage(msg?: string | null): string {
+  if (!msg) return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง"
+  const lower = String(msg).toLowerCase()
   if (
     lower.includes("provider is not enabled") ||
     lower.includes("unsupported provider") ||
     lower.includes("invalid provider") ||
     lower.includes("provider_not_found") ||
-    lower.includes("issuer")
+    lower.includes("provider") ||
+    lower.includes("issuer") ||
+    lower.includes("oauth")
   ) {
     return "ระบบเข้าสู่ระบบนี้ยังไม่พร้อมใช้งานในขณะนี้ กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน หรือติดต่อเจ้าหน้าที่"
   }
@@ -28,7 +30,14 @@ function getFriendlyErrorMessage(msg: string): string {
   if (lower.includes("email not confirmed")) {
     return "อีเมลนี้ยังไม่ได้ยืนยันตัวตน กรุณาตรวจสอบกล่องจดหมายของคุณ"
   }
-  return msg
+  if (lower.includes("access_denied") || lower.includes("user_cancelled") || lower.includes("cancelled")) {
+    return "การเข้าสู่ระบบถูกยกเลิก กรุณาลองใหม่อีกครั้ง"
+  }
+  if (lower.includes("database trigger failed") || lower.includes("trigger")) {
+    return "เกิดข้อผิดพลาดจากระบบฐานข้อมูล กรุณาติดต่อผู้ดูแลระบบ"
+  }
+  // Generic safe localized fallback: NEVER render raw technical details, stack traces, or URL params
+  return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อเจ้าหน้าที่"
 }
 
 export default function Login() {
@@ -257,7 +266,7 @@ export default function Login() {
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
             />
             <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer">
-              จำรหัสผ่านในระบบ
+              จำอีเมลหรือเบอร์โทร
             </label>
           </div>
           <Button type="submit" className="w-full h-11" disabled={loading}>

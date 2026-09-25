@@ -9,8 +9,8 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Optimize dashboard queries | Codex | DONE | current checkpoint | Query group benchmark improved by about 73%. |
 | Optimize public route performance | Codex | DONE | current checkpoint | Public pages are static and CDN-cacheable. |
 | Add route loading skeletons | Codex | DONE | current checkpoint | Dashboard and admin loading UI added. |
-| Authenticated mobile regression walkthrough | Implementation AI | REVIEW | `qa-mobile-audit` | Mobile QA complete. Verified URL extraction, friendly Thai auth/provider errors, remember me, layout bottom clearance, typecheck & build passing. |
-| Monitor production Web Vitals | Unassigned | BACKLOG | — | Collect real-user LCP, INP, and CLS before further tuning. |
+| Authenticated mobile regression walkthrough | Implementation AI | BLOCKED | `qa-mobile-audit` | BLOCKED: TEST ACCOUNT REQUIRED. Unauthenticated mobile walkthrough passed (login safe errors, Taobao link extraction, layout clearance, route guards). Authenticated customer journey (login, dashboard, orders, payment UI, logout) blocked pending non-production test account. Arbitrary production account creation forbidden. |
+| Monitor production Web Vitals | Codex | IN_PROGRESS | post-deploy | No mobile LCP/CLS data yet; Speed Insights collector and deployment are still pending. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 
 ## Task Claiming Rules
