@@ -9,36 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { LineIcon } from "@/components/ui/icons"
-
-function getFriendlyErrorMessage(msg?: string | null): string {
-  if (!msg) return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง"
-  const lower = String(msg).toLowerCase()
-  if (
-    lower.includes("provider is not enabled") ||
-    lower.includes("unsupported provider") ||
-    lower.includes("invalid provider") ||
-    lower.includes("provider_not_found") ||
-    lower.includes("provider") ||
-    lower.includes("issuer") ||
-    lower.includes("oauth")
-  ) {
-    return "ระบบเข้าสู่ระบบนี้ยังไม่พร้อมใช้งานในขณะนี้ กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน หรือติดต่อเจ้าหน้าที่"
-  }
-  if (lower.includes("invalid login credentials") || lower.includes("invalid_credentials")) {
-    return "อีเมล หรือ รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง"
-  }
-  if (lower.includes("email not confirmed")) {
-    return "อีเมลนี้ยังไม่ได้ยืนยันตัวตน กรุณาตรวจสอบกล่องจดหมายของคุณ"
-  }
-  if (lower.includes("access_denied") || lower.includes("user_cancelled") || lower.includes("cancelled")) {
-    return "การเข้าสู่ระบบถูกยกเลิก กรุณาลองใหม่อีกครั้ง"
-  }
-  if (lower.includes("database trigger failed") || lower.includes("trigger")) {
-    return "เกิดข้อผิดพลาดจากระบบฐานข้อมูล กรุณาติดต่อผู้ดูแลระบบ"
-  }
-  // Generic safe localized fallback: NEVER render raw technical details, stack traces, or URL params
-  return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อเจ้าหน้าที่"
-}
+import { getFriendlyAuthErrorMessage } from "@/lib/auth-errors"
 
 export default function Login() {
   const [identifier, setIdentifier] = useState("")
@@ -80,19 +51,12 @@ export default function Login() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
       const urlError = params.get("error")
-      const urlDesc = params.get("error_description")
       const reason = params.get("reason")
 
       if (reason === "admin-session-expired") {
         setError("เซสชันหมดอายุเนื่องจากไม่มีการใช้งานเกิน 30 นาที กรุณาเข้าสู่ระบบใหม่อีกครั้ง")
       } else if (urlError) {
-        if (urlError === "AuthFailed") {
-          setError("การเข้าสู่ระบบผ่านผู้ให้บริการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน")
-        } else if (urlError.includes("access_denied")) {
-          setError("การเข้าสู่ระบบถูกยกเลิก กรุณาลองใหม่อีกครั้ง")
-        } else {
-          setError(getFriendlyErrorMessage(urlDesc || urlError))
-        }
+        setError(getFriendlyAuthErrorMessage(urlError))
       }
 
       try {
@@ -151,7 +115,7 @@ export default function Login() {
       if (typeof err === 'object' && Object.keys(err).length === 0 || errMessage === '{}') {
         errMessage = "เกิดข้อผิดพลาดจากฐานข้อมูล (Database Trigger Failed) กรุณารัน SQL Script ตามที่ระบบแนะนำ"
       }
-      setError(getFriendlyErrorMessage(errMessage || "เกิดข้อผิดพลาดในการล็อกอินด้วย Google"))
+      setError(getFriendlyAuthErrorMessage(errMessage || "เกิดข้อผิดพลาดในการล็อกอินด้วย Google"))
       setLoading(false)
     }
   }
@@ -161,7 +125,6 @@ export default function Login() {
     setLoading(true)
     setError(null)
 
-    // Handle remember identifier persistence
     try {
       if (remember) {
         localStorage.setItem("sabuy_remember_identifier", identifier.trim())
@@ -172,15 +135,13 @@ export default function Login() {
       // Ignore storage errors
     }
 
-    // Pass identifier as email parameter so mock client or supabase standard auth receives it.
-    // In our mock client, we updated u.email === email || u.phone === email
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: identifier,
+      email: identifier.trim(),
       password,
     })
 
     if (error) {
-      setError(getFriendlyErrorMessage(error.message))
+      setError(getFriendlyAuthErrorMessage(error.message))
       setLoading(false)
       return
     }
@@ -213,7 +174,7 @@ export default function Login() {
     })
     
     if (error) {
-      setError(getFriendlyErrorMessage(error.message))
+      setError(getFriendlyAuthErrorMessage(error.message))
       setLoading(false)
     }
   }
@@ -229,15 +190,15 @@ export default function Login() {
         <form onSubmit={handleLogin} className="space-y-4">
           {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
           <div className="space-y-2">
-            <label className="text-sm font-medium">อีเมล หรือ เบอร์โทรศัพท์ *</label>
+            <label className="text-sm font-medium">อีเมล *</label>
             <Input 
-              type="text" 
+              type="email"
               name="email"
               autoComplete="username"
               required 
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="เช่น user@email.com หรือ 0812345678" 
+              placeholder="เช่น user@email.com"
             />
           </div>
           <div className="space-y-2">
@@ -266,7 +227,7 @@ export default function Login() {
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
             />
             <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer">
-              จำอีเมลหรือเบอร์โทร
+              จำอีเมล
             </label>
           </div>
           <Button type="submit" className="w-full h-11" disabled={loading}>

@@ -4,7 +4,7 @@ Date: 2026-09-24 (Asia/Bangkok)
 Branch: `qa-mobile-audit`
 Author: Senior QA & Full-stack Engineer
 Reviewer: Codex
-Status: READY FOR REVIEW (Authenticated Walkthrough: BLOCKED: TEST ACCOUNT REQUIRED)
+Status: CODE FIX COMPLETE (Authenticated Walkthrough: BLOCKED: TEST ACCOUNT REQUIRED)
 
 ## Summary
 
@@ -75,3 +75,10 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Real payment transactions: **NOT TESTED** (Strict safety rule: forbidden to execute real financial transfers in production).
 - Live LINE OAuth token exchange on production domain: **NOT TESTED** (Requires live LINE Channel Secret & production redirect URI).
 - Real-user Web Vitals (P75 LCP/CLS): **PENDING DEPLOYMENT** (Waiting for merge, deployment, and real mobile traffic accumulation).
+
+## Final Integration Findings
+
+- Login now accurately accepts email only, matching the current email-based signup flow.
+- OAuth callback redirects contain only opaque application error codes and no raw provider descriptions.
+- `npm.cmd run test:auth-safety`, URL extraction tests, typecheck, and production build pass.
+- Authenticated browser regression remains blocked pending a safe test account.

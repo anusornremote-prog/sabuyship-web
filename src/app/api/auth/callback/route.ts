@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { buildAuthErrorRedirectUrl } from '@/lib/auth-errors'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -51,17 +52,13 @@ export async function GET(request: Request) {
     }
     
     console.error("Auth callback error:", error)
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error?.message || 'AuthFailed')}`)
+    return NextResponse.redirect(buildAuthErrorRedirectUrl(origin))
   }
 
   const providerError = searchParams.get('error')
-  const providerErrorDesc = searchParams.get('error_description')
   if (providerError) {
-    return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(providerError)}&error_description=${encodeURIComponent(providerErrorDesc || '')}`
-    )
+    return NextResponse.redirect(buildAuthErrorRedirectUrl(origin, providerError))
   }
 
-  // Return the user to login with an error
-  return NextResponse.redirect(`${origin}/login?error=AuthFailed`)
+  return NextResponse.redirect(buildAuthErrorRedirectUrl(origin))
 }

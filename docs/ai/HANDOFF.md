@@ -32,6 +32,9 @@ Never replace production environment values with staging values. Do not place an
   - Added query parameter parsing in `login/page.tsx` for callback errors (`error=AuthFailed`, `error=access_denied`, `reason=admin-session-expired`).
   - Added "remember me" identifier persistence in localStorage.
   - Added `router.refresh()` to `handleLogout` across Navbar, Dashboard, and Admin layouts to ensure client router cache eviction.
+  - Aligned the login form with the email-based signup identity; phone remains profile metadata and is no longer advertised as a login identifier.
+  - Replaced provider callback descriptions with opaque `AuthFailed` and `AuthCancelled` redirect codes.
+  - Added focused auth redirect and safe-message checks in `scripts/qa-auth-safety.mjs`.
 - **Customer Journey Bundle Performance (`src/components/orders/PaymentSection.tsx`)**:
   - Removed static top-level import of `browser-image-compression` in favor of dynamic import on slip submission, reducing the order detail page bundle size.
 
@@ -39,6 +42,7 @@ Never replace production environment values with staging values. Do not place an
 
 - `git diff --check main` — passed with 0 whitespace warnings and 0 formatting errors.
 - `npm.cmd run typecheck` — passed with 0 errors.
+- `npm.cmd run test:auth-safety` — passed.
 - `node scripts/qa-mobile-audit.mjs` — passed all 6 test cases for URL extraction unit test suite.
 - `npm.cmd run schema:check` — passed (15 tables, RLS checks, auth admin, storage buckets verified).
 - `npm.cmd run business:check` — passed (READY).
@@ -94,6 +98,9 @@ Never replace production environment values with staging values. Do not place an
 - `src/app/admin/layout.tsx`
 - `src/components/orders/PaymentSection.tsx`
 - `scripts/qa-mobile-audit.mjs`
+- `scripts/qa-auth-safety.mjs`
+- `src/lib/auth-errors.ts`
+- `package.json`
 - `docs/ai/TASKS.md`
 - `docs/ai/HANDOFF.md`
 - `docs/ai/CHECKPOINT.md`
@@ -101,5 +108,6 @@ Never replace production environment values with staging values. Do not place an
 
 ## Remaining Follow-Up
 
-- Awaiting final review from integration owner / Codex.
-- Deploy to Vercel production only after approval.
+- Final integration code corrections are complete and local validation passes.
+- Authenticated mobile customer walkthrough remains blocked pending a safe non-production test account.
+- Do not deploy until the user explicitly requests it.

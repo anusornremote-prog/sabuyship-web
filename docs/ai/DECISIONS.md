@@ -19,6 +19,8 @@
 ## Authentication
 
 - Protected routes continue to use authoritative Supabase authentication checks.
+- Email/password authentication uses the email identity created during registration. Phone numbers are profile/contact metadata and are not advertised as login identifiers.
+- OAuth callback URLs expose only opaque application error codes, never raw provider error descriptions.
 - Proxy runs only on `/dashboard`, `/admin`, login, registration, and profile-completion routes.
 - Public navigation may use the local Supabase session cookie only for display decisions; authorization remains server-side and protected by RLS/API checks.
 - Missing phone information is handled by the dashboard phone modal instead of an extra Proxy database lookup.
