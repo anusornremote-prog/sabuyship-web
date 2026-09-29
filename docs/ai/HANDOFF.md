@@ -1,13 +1,13 @@
 # Current Handoff
 
-Last updated: 2026-09-25 (Asia/Bangkok)
+Last updated: 2026-09-29 (Asia/Bangkok)
 
 ## Repository State
 
 - Active branch: `main`
 - Primary branch: `main`
 - Production domain: `https://www.sabuyship.com`
-- Verified production deployment: `dpl_8NU8VdPatFzZgKJ7qgFw5JXzT5fN`
+- Verified production deployment: `dpl_E8SSAXNKdzd4n2nPTfem2m6fPg5r`
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
@@ -39,7 +39,7 @@ Never replace production environment values with staging values. Do not place an
   - Removed static top-level import of `browser-image-compression` in favor of dynamic import on slip submission, reducing the order detail page bundle size.
 - **Production Web Vitals Instrumentation (`src/app/layout.tsx`)**:
   - Installed `@vercel/speed-insights` and mounted `<SpeedInsights />` in the root layout.
-  - Production deployment and real mobile traffic are still required before P75 LCP, CLS, and INP can be evaluated.
+  - Instrumentation is collecting production data, but the current sample is not sufficient for mobile P75 evaluation.
 
 ## Validation Completed
 
@@ -91,7 +91,7 @@ Never replace production environment values with staging values. Do not place an
 
 - Real payment transactions: **NOT TESTED** (Strict safety rule: forbidden to execute real financial transfers in production).
 - Live LINE OAuth token exchange on production domain: **NOT TESTED** (Requires live LINE Channel Secret & production redirect URI).
-- Real-user Web Vitals (P75 LCP/CLS): **PENDING DEPLOYMENT** (Waiting for merge, deployment, and real mobile traffic accumulation).
+- Real-user mobile Web Vitals (P75 LCP/CLS/INP): **PENDING TRAFFIC** (No mobile samples collected through 2026-09-29).
 
 ## Important Changed Files
 
@@ -119,5 +119,7 @@ Never replace production environment values with staging values. Do not place an
 
 - Final integration code corrections are complete and local validation passes.
 - Authenticated mobile customer walkthrough remains blocked pending a safe non-production test account.
-- Vercel Speed Insights instrumentation is installed; verify collection after the next production deployment.
-- Production deployment is complete; initial mobile LCP, CLS, and INP queries returned no datapoints immediately after release and require real mobile traffic.
+- Vercel Speed Insights instrumentation is installed and its production script endpoint is healthy.
+- Production data through 2026-09-29 contains one Chrome desktop sample for `/`: LCP P75 364 ms and CLS P75 0.9762. The CLS attribution target is the root body container, but a single sample is not statistically actionable.
+- No mobile LCP, CLS, or INP samples are available yet. Recheck after at least 20 mobile samples exist; investigate only if mobile P75 CLS remains above 0.1 or mobile P75 LCP remains above 2.5 seconds.
+- Google PageSpeed Insights could not provide a lab run during this audit because the public API returned HTTP 429.

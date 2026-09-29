@@ -1,7 +1,7 @@
 # Checkpoint: Mobile Production Regression Audit
 
-Date: 2026-09-24 (Asia/Bangkok)
-Branch: `qa-mobile-audit`
+Date: 2026-09-29 (Asia/Bangkok)
+Branch: `main`
 Author: Senior QA & Full-stack Engineer
 Reviewer: Codex
 Status: CODE FIX COMPLETE (Authenticated Walkthrough: BLOCKED: TEST ACCOUNT REQUIRED)
@@ -74,7 +74,7 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 
 - Real payment transactions: **NOT TESTED** (Strict safety rule: forbidden to execute real financial transfers in production).
 - Live LINE OAuth token exchange on production domain: **NOT TESTED** (Requires live LINE Channel Secret & production redirect URI).
-- Real-user Web Vitals (P75 LCP/CLS): **PENDING DEPLOYMENT** (Waiting for merge, deployment, and real mobile traffic accumulation).
+- Real-user mobile Web Vitals (P75 LCP/CLS/INP): **PENDING TRAFFIC** (No mobile samples collected through 2026-09-29).
 
 ## Web Vitals Instrumentation
 
@@ -82,6 +82,9 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Mounted `<SpeedInsights />` in the root layout.
 - Local typecheck and production build pass with instrumentation enabled.
 - Real-user mobile metrics remain pending sufficient production traffic.
+- Production data through 2026-09-29 contains one Chrome desktop sample on `/`: LCP P75 364 ms and CLS P75 0.9762.
+- CLS attribution points to the root body container. Because the result is based on one sample, no speculative code change was made.
+- Recheck after at least 20 mobile samples; investigate if mobile P75 CLS is above 0.1 or mobile P75 LCP is above 2.5 seconds.
 
 ## Production Release
 
@@ -89,6 +92,7 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Vercel production deployment `dpl_8NU8VdPatFzZgKJ7qgFw5JXzT5fN` completed successfully.
 - Public routes, protected-route redirects, sanitized OAuth callback behavior, email-only login copy, and the Speed Insights script endpoint passed production smoke checks.
 - Initial Production/Mobile P75 queries for LCP, CLS, and INP returned no datapoints immediately after deployment; monitor again after real traffic accumulates.
+- Latest verified production deployment is `dpl_E8SSAXNKdzd4n2nPTfem2m6fPg5r`, aliased to `https://www.sabuyship.com`.
 
 ## Final Integration Findings
 
