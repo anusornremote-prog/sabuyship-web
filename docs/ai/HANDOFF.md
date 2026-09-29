@@ -7,7 +7,7 @@ Last updated: 2026-09-29 (Asia/Bangkok)
 - Active branch: `main`
 - Primary branch: `main`
 - Production domain: `https://www.sabuyship.com`
-- Verified production deployment: `dpl_4kZBbEDSu3QJzvjacz9NkdGs72Vi`
+- Verified production deployment: `dpl_J4GVdPYL71bYRqC4712FvP7boTHm`
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
@@ -55,6 +55,7 @@ Never replace production environment values with staging values. Do not place an
 - `npm.cmd run business:check` — passed (READY).
 - `npm.cmd run build` — passed (54/54 static pages generated, webpack production build successful).
 - Local mobile Lighthouse after image optimization: performance 69, FCP 1.6 s, LCP 5.4 s, TBT 410 ms, CLS 0.001, Speed Index 2.5 s, zero image-delivery savings, and zero unsized images. The LCP value includes a cold local image optimizer and requires production remeasurement.
+- Production mobile Lighthouse on `dpl_J4GVdPYL71bYRqC4712FvP7boTHm`: performance 69, FCP 1.2 s, LCP 4.4 s, TBT 270 ms, CLS 0, no image-delivery opportunity, zero unsized images, and 565 KiB total payload. The run's Speed Index was excluded because its observed navigation timing contained an inconsistent 19.4-second offset.
 - **Unauthenticated Mobile Browser Walkthrough (390x844)** — PASS. Executed on `http://localhost:3000`. Recording: `mobile_qa_walkthrough_1790231063711.webp`.
 - **Authenticated Mobile Customer Walkthrough (390x844)** — **BLOCKED: TEST ACCOUNT REQUIRED**. No test account provided; creating test accounts or mock data in production Supabase (`kzqbzrfcdrnghwjpmany`) is strictly prohibited.
 - Zero mock transactions or destructive database alterations were performed in production.
@@ -65,6 +66,7 @@ Never replace production environment values with staging values. Do not place an
 - Production `/_vercel/speed-insights/script.js` returns HTTP 200.
 - Production deployment `dpl_4kZBbEDSu3QJzvjacz9NkdGs72Vi` is Ready and aliased to `www.sabuyship.com`.
 - Post-deploy smoke checks pass: `/`, `/login`, and `/inquiry` return 200; `/dashboard` and `/admin` return 307 to `/login`; OAuth cancellation returns only `AuthCancelled`.
+- Image optimization release `cd91117` deployed as `dpl_J4GVdPYL71bYRqC4712FvP7boTHm`; Vercel reports Ready and aliases it to `www.sabuyship.com`.
 
 ## Browser Test Evidence (Mobile Viewport 390x844)
 

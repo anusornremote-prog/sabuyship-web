@@ -106,4 +106,6 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Supabase CLI reports `sabuyship-staging` as `INACTIVE`; the project owner must resume it in Supabase Studio before the temporary-account workflow can run.
 - Mobile Lighthouse identified 147 KiB of avoidable image transfer and three unsized images on the homepage.
 - Hero, navbar, and footer images now use responsive `next/image` sizing; flag images reserve explicit dimensions.
-- Local production Lighthouse after the fix reports no image-delivery opportunity, zero unsized images, CLS 0.001, and Speed Index 2.5 seconds. Production remeasurement remains pending deployment.
+- Local production Lighthouse before deployment reported no image-delivery opportunity, zero unsized images, CLS 0.001, and Speed Index 2.5 seconds.
+- Commit `cd91117` deployed successfully as `dpl_J4GVdPYL71bYRqC4712FvP7boTHm` and is aliased to `https://www.sabuyship.com`.
+- Production mobile Lighthouse confirms no image-delivery opportunity, zero unsized images, CLS 0, LCP 4.4 seconds, and payload reduced from 699 KiB to 565 KiB.

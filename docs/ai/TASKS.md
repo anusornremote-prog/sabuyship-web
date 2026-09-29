@@ -11,7 +11,7 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Add route loading skeletons | Codex | DONE | current checkpoint | Dashboard and admin loading UI added. |
 | Restore staging Supabase project | Project owner | BLOCKED | Supabase Studio | `sabuyship-staging` (`rhillakurearebtzjwyr`) is INACTIVE. Open the project in Supabase Studio and click `Resume project`; CLI has no resume command. |
 | Authenticated mobile regression walkthrough | Codex | BLOCKED | `qa-mobile-audit` | Staging smoke runner can create and clean temporary accounts automatically, but staging must be resumed and `.env.staging.local` supplied first. |
-| Monitor production Web Vitals | Codex | IN_PROGRESS | image optimization pending deploy | Through 2026-09-29: no mobile samples; two Chrome desktop `/` samples (LCP P75 2.116 s, latest CLS 0). Local Lighthouse image findings fixed; remeasure after deploy and after at least 20 mobile samples. |
+| Monitor production Web Vitals | Codex | IN_PROGRESS | `cd91117` / `dpl_J4GVdPYL71bYRqC4712FvP7boTHm` | Image waste and unsized images are resolved in Production; mobile lab CLS 0 and LCP 4.4 s. Continue collecting real-user mobile data until at least 20 samples. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 
 ## Task Claiming Rules
