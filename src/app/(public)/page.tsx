@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -148,17 +149,14 @@ export default function Home() {
             <div className="lg:col-span-5 flex justify-center order-1 lg:order-2">
               <div className="relative w-48 sm:w-64 lg:w-full max-w-md aspect-square">
                 <div className="absolute inset-0 bg-gradient-to-tr from-blue-300/30 via-indigo-200/20 to-orange-200/30 rounded-full blur-2xl animate-pulse" />
-                <picture>
-                  <source srcSet="/mascod.webp" type="image/webp" />
-                  <img 
-                    src="/mascod.png" 
-                    alt="Sabuy Ship Mascot" 
-                    width={400}
-                    height={400}
-                    fetchPriority="high"
-                    className="relative z-10 w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" 
-                  />
-                </picture>
+                <Image
+                  src="/mascod.webp"
+                  alt="Sabuy Ship Mascot"
+                  fill
+                  sizes="(max-width: 639px) 192px, (max-width: 1023px) 256px, 448px"
+                  fetchPriority="high"
+                  className="relative z-10 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                />
               </div>
             </div>
 
@@ -185,10 +183,10 @@ export default function Home() {
                       {locale === 'en' ? 'Live Rate' : locale === 'zh' ? '今日汇率' : 'เรทหยวนวันนี้'}
                     </div>
                     <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-800 pr-1">
-                      <img src="https://flagcdn.com/w20/cn.png" width="16" alt="CN" className="rounded-xs" />
+                      <img src="https://flagcdn.com/w20/cn.png" width="16" height="11" alt="CN" className="rounded-xs" />
                       <span>1 ¥</span>
                       <span className="text-slate-300 font-black">=</span>
-                      <img src="https://flagcdn.com/w20/th.png" width="16" alt="TH" className="rounded-xs" />
+                      <img src="https://flagcdn.com/w20/th.png" width="16" height="11" alt="TH" className="rounded-xs" />
                       <span className="text-primary font-black text-sm sm:text-base group-hover:underline">{exchangeRate} ฿</span>
                     </div>
                     <span className="text-[10px] text-slate-400 group-hover:text-primary font-bold pl-0.5">➔ คำนวณ</span>

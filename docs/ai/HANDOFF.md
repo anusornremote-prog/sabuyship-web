@@ -40,6 +40,10 @@ Never replace production environment values with staging values. Do not place an
 - **Production Web Vitals Instrumentation (`src/app/layout.tsx`)**:
   - Installed `@vercel/speed-insights` and mounted `<SpeedInsights />` in the root layout.
   - Instrumentation is collecting production data, but the current sample is not sufficient for mobile P75 evaluation.
+- **Homepage image delivery (`src/app/(public)/page.tsx`, `src/components/layout/navbar.tsx`, `src/components/layout/footer.tsx`)**:
+  - Replaced oversized hero, navbar, and footer image markup with `next/image` sizing and responsive `sizes` hints.
+  - Added explicit dimensions to marketplace flag images to prevent layout reservation gaps.
+  - Local mobile Lighthouse no longer reports image-delivery savings or unsized images; CLS is 0.001 and Speed Index is 2.5 seconds.
 
 ## Validation Completed
 
@@ -50,6 +54,7 @@ Never replace production environment values with staging values. Do not place an
 - `npm.cmd run schema:check` — passed (15 tables, RLS checks, auth admin, storage buckets verified).
 - `npm.cmd run business:check` — passed (READY).
 - `npm.cmd run build` — passed (54/54 static pages generated, webpack production build successful).
+- Local mobile Lighthouse after image optimization: performance 69, FCP 1.6 s, LCP 5.4 s, TBT 410 ms, CLS 0.001, Speed Index 2.5 s, zero image-delivery savings, and zero unsized images. The LCP value includes a cold local image optimizer and requires production remeasurement.
 - **Unauthenticated Mobile Browser Walkthrough (390x844)** — PASS. Executed on `http://localhost:3000`. Recording: `mobile_qa_walkthrough_1790231063711.webp`.
 - **Authenticated Mobile Customer Walkthrough (390x844)** — **BLOCKED: TEST ACCOUNT REQUIRED**. No test account provided; creating test accounts or mock data in production Supabase (`kzqbzrfcdrnghwjpmany`) is strictly prohibited.
 - Zero mock transactions or destructive database alterations were performed in production.
@@ -127,7 +132,7 @@ Never replace production environment values with staging values. Do not place an
 - Final integration code corrections are complete and local validation passes.
 - Authenticated mobile customer walkthrough remains blocked pending a safe non-production test account.
 - Vercel Speed Insights instrumentation is installed and its production script endpoint is healthy.
-- Production data through 2026-09-29 contains one Chrome desktop sample for `/`: LCP P75 364 ms and CLS P75 0.9762. The CLS attribution target is the root body container, but a single sample is not statistically actionable.
+- Production data through 2026-09-29 contains two Chrome desktop samples for `/`: aggregate LCP P75 2.116 s, TTFB P75 307 ms, and no INP sample. The first CLS sample was 0.9762 while the latest sample is 0; the dataset remains too small for a statistically actionable conclusion.
 - No mobile LCP, CLS, or INP samples are available yet. Recheck after at least 20 mobile samples exist; investigate only if mobile P75 CLS remains above 0.1 or mobile P75 LCP remains above 2.5 seconds.
 - Google PageSpeed Insights could not provide a lab run during this audit because the public API returned HTTP 429.
 - Staging workflow execution remains blocked until the paused Supabase staging project is resumed and a gitignored `.env.staging.local` is available.

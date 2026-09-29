@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Ship, Phone, Mail, MapPin } from "lucide-react"
 import { Facebook } from "@/components/ui/icons"
 import { useTranslation } from "@/components/providers/language-provider"
@@ -15,7 +16,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <img src="/logo.webp" alt="Sabuy Ship Logo" className="h-9 w-auto object-contain" loading="lazy" />
+              <Image src="/logo.webp" alt="Sabuy Ship Logo" width={800} height={910} sizes="32px" className="h-9 w-auto object-contain" />
               <span className="font-bold text-lg text-primary">Sabuy Ship</span>
             </Link>
             <p className="text-sm text-muted-foreground">

@@ -82,8 +82,8 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Mounted `<SpeedInsights />` in the root layout.
 - Local typecheck and production build pass with instrumentation enabled.
 - Real-user mobile metrics remain pending sufficient production traffic.
-- Production data through 2026-09-29 contains one Chrome desktop sample on `/`: LCP P75 364 ms and CLS P75 0.9762.
-- CLS attribution points to the root body container. Because the result is based on one sample, no speculative code change was made.
+- Production data through 2026-09-29 contains two Chrome desktop samples on `/`: LCP P75 2.116 s, TTFB P75 307 ms, and latest CLS 0. No mobile or INP sample is available yet.
+- The historical high CLS sample points to the root body container, while the latest desktop sample reports CLS 0. Continue monitoring rather than treating the original outlier as representative.
 - Recheck after at least 20 mobile samples; investigate if mobile P75 CLS is above 0.1 or mobile P75 LCP is above 2.5 seconds.
 
 ## Production Release
@@ -104,3 +104,6 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - The staging smoke runner now defaults to `.env.staging.local` and fails closed unless both environment and CLI refs equal `rhillakurearebtzjwyr`.
 - `node --check scripts/staging-workflow-smoke.mjs` passes, and a focused safety test confirms production `.env.local` is rejected.
 - Supabase CLI reports `sabuyship-staging` as `INACTIVE`; the project owner must resume it in Supabase Studio before the temporary-account workflow can run.
+- Mobile Lighthouse identified 147 KiB of avoidable image transfer and three unsized images on the homepage.
+- Hero, navbar, and footer images now use responsive `next/image` sizing; flag images reserve explicit dimensions.
+- Local production Lighthouse after the fix reports no image-delivery opportunity, zero unsized images, CLS 0.001, and Speed Index 2.5 seconds. Production remeasurement remains pending deployment.

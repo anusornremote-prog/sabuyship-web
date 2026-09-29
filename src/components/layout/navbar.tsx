@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuestion, LogOut, ShoppingCart } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
@@ -91,17 +92,15 @@ export function Navbar() {
         {/* 1. Left: Logo */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="flex items-center">
-            <picture>
-              <source srcSet="/Sabuy_Ship_Express.webp" type="image/webp" />
-              <img 
-                src="/Sabuy_Ship_Express.png" 
-                alt="Sabuy Ship Express Logo" 
-                width={200}
-                height={64}
-                fetchPriority="high"
-                className="h-12 sm:h-14 md:h-16 w-auto object-contain hover:scale-105 transition-transform" 
-              />
-            </picture>
+            <Image
+              src="/Sabuy_Ship_Express.webp"
+              alt="Sabuy Ship Express Logo"
+              width={200}
+              height={81}
+              sizes="(max-width: 639px) 119px, (max-width: 767px) 139px, 159px"
+              fetchPriority="high"
+              className="h-12 sm:h-14 md:h-16 w-auto object-contain hover:scale-105 transition-transform"
+            />
           </Link>
         </div>
 
@@ -168,13 +167,13 @@ export function Navbar() {
                     <span className="text-xs text-slate-500 font-semibold mb-2 block">เปลี่ยนภาษา / Language</span>
                     <div className="flex gap-1.5">
                       <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                        <img src="https://flagcdn.com/w20/th.png" srcSet="https://flagcdn.com/w40/th.png 2x" width="16" alt="TH" /> TH
+                        <img src="https://flagcdn.com/w20/th.png" srcSet="https://flagcdn.com/w40/th.png 2x" width="16" height="11" alt="TH" /> TH
                       </button>
                       <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                        <img src="https://flagcdn.com/w20/us.png" srcSet="https://flagcdn.com/w40/us.png 2x" width="16" alt="EN" /> EN
+                        <img src="https://flagcdn.com/w20/us.png" srcSet="https://flagcdn.com/w40/us.png 2x" width="16" height="11" alt="EN" /> EN
                       </button>
                       <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                        <img src="https://flagcdn.com/w20/cn.png" srcSet="https://flagcdn.com/w40/cn.png 2x" width="16" alt="ZH" /> ZH
+                        <img src="https://flagcdn.com/w20/cn.png" srcSet="https://flagcdn.com/w40/cn.png 2x" width="16" height="11" alt="ZH" /> ZH
                       </button>
                     </div>
                   </div>
@@ -313,13 +312,13 @@ export function Navbar() {
             <span className="text-xs text-slate-500 font-semibold mb-3 block text-center">เปลี่ยนภาษา / Language</span>
             <div className="flex gap-2 justify-center">
               <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                <img src="https://flagcdn.com/w20/th.png" srcSet="https://flagcdn.com/w40/th.png 2x" width="16" alt="TH" /> TH
+                <img src="https://flagcdn.com/w20/th.png" srcSet="https://flagcdn.com/w40/th.png 2x" width="16" height="11" alt="TH" /> TH
               </button>
               <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                <img src="https://flagcdn.com/w20/us.png" srcSet="https://flagcdn.com/w40/us.png 2x" width="16" alt="EN" /> EN
+                <img src="https://flagcdn.com/w20/us.png" srcSet="https://flagcdn.com/w40/us.png 2x" width="16" height="11" alt="EN" /> EN
               </button>
               <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                <img src="https://flagcdn.com/w20/cn.png" srcSet="https://flagcdn.com/w40/cn.png 2x" width="16" alt="ZH" /> ZH
+                <img src="https://flagcdn.com/w20/cn.png" srcSet="https://flagcdn.com/w40/cn.png 2x" width="16" height="11" alt="ZH" /> ZH
               </button>
             </div>
           </div>
