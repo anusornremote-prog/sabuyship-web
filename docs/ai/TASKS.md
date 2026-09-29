@@ -9,7 +9,8 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Optimize dashboard queries | Codex | DONE | current checkpoint | Query group benchmark improved by about 73%. |
 | Optimize public route performance | Codex | DONE | current checkpoint | Public pages are static and CDN-cacheable. |
 | Add route loading skeletons | Codex | DONE | current checkpoint | Dashboard and admin loading UI added. |
-| Authenticated mobile regression walkthrough | Codex | BLOCKED | `qa-mobile-audit` | Code fixes and validation pass. Authenticated login/dashboard/orders/payment/logout walkthrough still requires a safe test account. |
+| Restore staging Supabase project | Project owner | BLOCKED | Supabase Studio | `sabuyship-staging` (`rhillakurearebtzjwyr`) is INACTIVE. Open the project in Supabase Studio and click `Resume project`; CLI has no resume command. |
+| Authenticated mobile regression walkthrough | Codex | BLOCKED | `qa-mobile-audit` | Staging smoke runner can create and clean temporary accounts automatically, but staging must be resumed and `.env.staging.local` supplied first. |
 | Monitor production Web Vitals | Codex | IN_PROGRESS | `dpl_E8SSAXNKdzd4n2nPTfem2m6fPg5r` | Through 2026-09-29: no mobile samples; one Chrome desktop `/` sample (LCP 364 ms, CLS 0.9762). Recheck after at least 20 mobile samples. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 

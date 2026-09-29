@@ -9,6 +9,8 @@
 - Production contains the established user accounts and enabled OAuth configuration.
 - Environment changes must be verified by project ref before deployment.
 - Never document or commit anon keys, service-role keys, provider secrets, or database passwords.
+- Staging workflow tests load `.env.staging.local` by default and must verify both the environment project ref and the Supabase CLI linked ref before creating temporary data.
+- Never run staging workflow tests with production `.env.local`; the test runner must fail closed when the project ref is not `rhillakurearebtzjwyr`.
 
 ### Vercel Is the Production Host
 

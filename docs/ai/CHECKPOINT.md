@@ -100,3 +100,6 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - OAuth callback redirects contain only opaque application error codes and no raw provider descriptions.
 - `npm.cmd run test:auth-safety`, URL extraction tests, typecheck, and production build pass.
 - Authenticated browser regression remains blocked pending a safe test account.
+- The staging smoke runner now defaults to `.env.staging.local` and fails closed unless both environment and CLI refs equal `rhillakurearebtzjwyr`.
+- `node --check scripts/staging-workflow-smoke.mjs` passes, and a focused safety test confirms production `.env.local` is rejected.
+- Supabase CLI reports `sabuyship-staging` as `INACTIVE`; the project owner must resume it in Supabase Studio before the temporary-account workflow can run.

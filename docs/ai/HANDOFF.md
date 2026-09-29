@@ -86,6 +86,11 @@ Never replace production environment values with staging values. Do not place an
     7. Logout execution
     8. Verifying protected route lockout post-logout
   - Reason: Only live production Supabase is connected. Creating unauthorized accounts or inserting dummy data in production is forbidden.
+- **Staging workflow execution**: `BLOCKED: STAGING PROJECT INACTIVE`
+  - Supabase CLI confirms `sabuyship-staging` (`rhillakurearebtzjwyr`) is linked but currently `INACTIVE`.
+  - Supabase CLI exposes no resume command. The project owner must open Supabase Studio, select `sabuyship-staging`, and click `Resume project`.
+  - `scripts/staging-workflow-smoke.mjs` now reads `.env.staging.local` by default, creates temporary customer/admin users, exercises all three payment rounds, and removes its test data afterward.
+  - The runner refuses to execute unless both its environment and the linked CLI project match the staging ref. A focused safety check confirms `.env.local` (production) is rejected.
 
 ## Untested Items
 
@@ -123,3 +128,4 @@ Never replace production environment values with staging values. Do not place an
 - Production data through 2026-09-29 contains one Chrome desktop sample for `/`: LCP P75 364 ms and CLS P75 0.9762. The CLS attribution target is the root body container, but a single sample is not statistically actionable.
 - No mobile LCP, CLS, or INP samples are available yet. Recheck after at least 20 mobile samples exist; investigate only if mobile P75 CLS remains above 0.1 or mobile P75 LCP remains above 2.5 seconds.
 - Google PageSpeed Insights could not provide a lab run during this audit because the public API returned HTTP 429.
+- Staging workflow execution remains blocked until the paused Supabase staging project is resumed and a gitignored `.env.staging.local` is available.

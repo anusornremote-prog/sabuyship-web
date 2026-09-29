@@ -17,7 +17,15 @@ function loadEnv(filename) {
   )
 }
 
-const env = loadEnv(".env.local")
+const envFile = process.env.TEST_ENV_FILE || ".env.staging.local"
+if (!fs.existsSync(envFile)) {
+  throw new Error(`Missing staging environment file: ${envFile}`)
+}
+
+const env = {
+  ...loadEnv(envFile),
+  ...process.env,
+}
 const url = env.NEXT_PUBLIC_SUPABASE_URL
 const publishableKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const secretKey = env.SUPABASE_SERVICE_ROLE_KEY
@@ -25,7 +33,9 @@ if (!url || !publishableKey || !secretKey) throw new Error("Missing staging Supa
 
 const projectRef = new URL(url).hostname.split(".")[0]
 const linkedRef = fs.readFileSync("supabase/.temp/project-ref", "utf8").trim()
-if (projectRef !== linkedRef) throw new Error("Linked Supabase project does not match .env.local")
+const stagingRef = env.STAGING_SUPABASE_PROJECT_REF || "rhillakurearebtzjwyr"
+if (projectRef !== stagingRef) throw new Error("Refusing to run: environment is not the staging Supabase project")
+if (linkedRef !== stagingRef) throw new Error("Refusing to run: Supabase CLI is not linked to the staging project")
 
 const service = createClient(url, secretKey, {
   auth: { autoRefreshToken: false, persistSession: false },
