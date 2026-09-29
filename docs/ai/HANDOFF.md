@@ -7,7 +7,7 @@ Last updated: 2026-09-29 (Asia/Bangkok)
 - Active branch: `main`
 - Primary branch: `main`
 - Production domain: `https://www.sabuyship.com`
-- Verified production deployment: `dpl_E8SSAXNKdzd4n2nPTfem2m6fPg5r`
+- Verified production deployment: `dpl_4kZBbEDSu3QJzvjacz9NkdGs72Vi`
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
@@ -58,6 +58,8 @@ Never replace production environment values with staging values. Do not place an
 - Production OAuth cancellation redirects to `/login?error=AuthCancelled` without forwarding `error_description`.
 - Production login markup advertises email-only authentication.
 - Production `/_vercel/speed-insights/script.js` returns HTTP 200.
+- Production deployment `dpl_4kZBbEDSu3QJzvjacz9NkdGs72Vi` is Ready and aliased to `www.sabuyship.com`.
+- Post-deploy smoke checks pass: `/`, `/login`, and `/inquiry` return 200; `/dashboard` and `/admin` return 307 to `/login`; OAuth cancellation returns only `AuthCancelled`.
 
 ## Browser Test Evidence (Mobile Viewport 390x844)
 

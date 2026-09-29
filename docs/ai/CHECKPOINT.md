@@ -92,7 +92,8 @@ Completed mobile viewport regression audit and root-cause fixes for the Sabuyshi
 - Vercel production deployment `dpl_8NU8VdPatFzZgKJ7qgFw5JXzT5fN` completed successfully.
 - Public routes, protected-route redirects, sanitized OAuth callback behavior, email-only login copy, and the Speed Insights script endpoint passed production smoke checks.
 - Initial Production/Mobile P75 queries for LCP, CLS, and INP returned no datapoints immediately after deployment; monitor again after real traffic accumulates.
-- Latest verified production deployment is `dpl_E8SSAXNKdzd4n2nPTfem2m6fPg5r`, aliased to `https://www.sabuyship.com`.
+- Release commit `61500eb` deployed successfully as `dpl_4kZBbEDSu3QJzvjacz9NkdGs72Vi` and is aliased to `https://www.sabuyship.com`.
+- Post-deploy smoke checks pass for public pages, protected-route redirects, sanitized OAuth cancellation, and the Speed Insights script endpoint.
 
 ## Final Integration Findings
 
