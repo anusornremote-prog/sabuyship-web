@@ -4,7 +4,7 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 
 | Task | Owner | Status | Branch/Commit | Notes |
 | --- | --- | --- | --- | --- |
-| Premium public-site visual refresh | Codex | REVIEW | pending checkpoint | Homepage and shared public chrome rebuilt; tests and production build pass; awaiting production deploy. |
+| Premium public-site visual refresh | Codex | DONE | `ade178f` / `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd` | Homepage and shared public chrome rebuilt, validated, and released to Production. |
 | Restore production authentication database | Codex | DONE | current checkpoint | Production points to the established Supabase project. |
 | Accept full Taobao share text | Codex | DONE | current checkpoint | URL extraction exists in browser and API layers. |
 | Optimize dashboard queries | Codex | DONE | current checkpoint | Query group benchmark improved by about 73%. |

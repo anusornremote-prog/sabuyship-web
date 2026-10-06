@@ -3,7 +3,7 @@
 Date: 2026-10-06 (Asia/Bangkok)
 Branch: `main`
 Owner: Codex
-Status: READY FOR PRODUCTION DEPLOY
+Status: DEPLOYED AND VERIFIED
 
 ## Objective
 
@@ -32,9 +32,10 @@ Refresh the Sabuy Ship public experience so it feels distinctive and premium whi
 
 ## Deployment
 
-- Commit: pending
-- Vercel deployment: pending
-- Production smoke test: pending
+- Commit: `ade178f`
+- Vercel deployment: `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd` (Ready)
+- Production aliases: `https://www.sabuyship.com`, `https://sabuyship.com`
+- Smoke test: `/`, `/login`, `/inquiry`, and `/track` return 200; `/dashboard` and `/admin` return 307 to `/login`.
 
 ## Remaining External Blockers
 

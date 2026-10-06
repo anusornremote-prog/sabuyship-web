@@ -7,7 +7,7 @@ Last updated: 2026-10-06 (Asia/Bangkok)
 - Active branch: `main`
 - Primary branch: `main`
 - Production domain: `https://www.sabuyship.com`
-- Verified production deployment: `dpl_J4GVdPYL71bYRqC4712FvP7boTHm`
+- Verified production deployment: `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd`
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
@@ -23,7 +23,8 @@ Never replace production environment values with staging values. Do not place an
 - Refreshed the public navbar, account dropdown, mobile bottom navigation, footer, shared buttons, and cards so the new visual language carries across the site.
 - Kept the implementation dependency-free and CSS-driven to avoid adding client bundle weight.
 - Desktop visual QA passed in a real browser. The initial 390px capture exposed horizontal crowding; mobile container math, headline sizing, and the quote form grid were corrected afterward.
-- Production deployment status: pending this checkpoint commit.
+- Released in commit `ade178f` and deployed successfully as `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd`.
+- Production smoke tests pass: `/`, `/login`, `/inquiry`, and `/track` return 200; `/dashboard` and `/admin` return 307 to `/login`.
 
 ### 1. Mobile Regression & QA Audit
 - **Product Link Input Handling (`src/app/(public)/inquiry/page.tsx`, `src/app/(public)/page.tsx`, `src/app/api/inquiry/route.ts`)**:
