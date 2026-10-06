@@ -87,8 +87,8 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
-      <div className="container flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <header className="sticky top-0 z-50 w-full border-b border-blue-100/70 bg-white/82 shadow-[0_8px_35px_rgba(30,58,138,0.055)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/72">
+      <div className="site-container flex h-[4.75rem] items-center justify-between sm:h-20">
         {/* 1. Left: Logo */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="flex items-center">
@@ -99,26 +99,26 @@ export function Navbar() {
               height={81}
               sizes="(max-width: 639px) 119px, (max-width: 767px) 139px, 159px"
               fetchPriority="high"
-              className="h-12 sm:h-14 md:h-16 w-auto object-contain hover:scale-105 transition-transform"
+              className="h-12 w-auto object-contain transition-transform duration-300 hover:scale-[1.03] sm:h-14 md:h-[3.75rem]"
             />
           </Link>
         </div>
 
         {/* 2. Center: Balanced Navigation Links */}
-        <nav className="hidden xl:flex items-center justify-center gap-8 text-sm font-bold">
-          <Link href="/how-it-works" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+        <nav className="hidden items-center justify-center gap-1 rounded-full border border-slate-200/80 bg-slate-50/80 p-1.5 text-sm font-bold xl:flex">
+          <Link href="/how-it-works" className="whitespace-nowrap rounded-full px-4 py-2 text-slate-600 transition hover:bg-white hover:text-primary hover:shadow-sm">
             {t.navHowItWorks}
           </Link>
-          <Link href="/pricing" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+          <Link href="/pricing" className="whitespace-nowrap rounded-full px-4 py-2 text-slate-600 transition hover:bg-white hover:text-primary hover:shadow-sm">
             {t.navPricing}
           </Link>
-          <Link href="/track" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+          <Link href="/track" className="whitespace-nowrap rounded-full px-4 py-2 text-slate-600 transition hover:bg-white hover:text-primary hover:shadow-sm">
             {t.navTrack}
           </Link>
-          <Link href="/faq" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+          <Link href="/faq" className="whitespace-nowrap rounded-full px-4 py-2 text-slate-600 transition hover:bg-white hover:text-primary hover:shadow-sm">
             {t.navFaq}
           </Link>
-          <Link href="/contact" className="text-slate-700 hover:text-primary transition-colors whitespace-nowrap">
+          <Link href="/contact" className="whitespace-nowrap rounded-full px-4 py-2 text-slate-600 transition hover:bg-white hover:text-primary hover:shadow-sm">
             {t.navContact}
           </Link>
         </nav>
@@ -145,7 +145,7 @@ export function Navbar() {
                 <ChevronDown className="h-4 w-4 ml-1" />
               </Button>
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-slate-100 py-1 z-50">
+                <div className="absolute right-0 z-50 mt-3 w-64 rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
                   <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
                     <User className="h-4 w-4" /> ภาพรวม
                   </Link>
@@ -218,7 +218,7 @@ export function Navbar() {
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="xl:hidden relative z-[60] border-b bg-background px-4 py-4 pb-8 space-y-4 animate-in slide-in-from-top duration-200 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="relative z-[60] max-h-[calc(100vh-5rem)] space-y-4 overflow-y-auto border-b border-blue-100 bg-white/96 px-4 py-5 pb-8 shadow-2xl shadow-blue-950/10 backdrop-blur-xl animate-in slide-in-from-top duration-200 xl:hidden">
           <Link href="/inquiry" onClick={() => setIsOpen(false)}>
             <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
               <ShoppingCart className="w-5 h-5 mr-2" />

@@ -4,14 +4,15 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 
 | Task | Owner | Status | Branch/Commit | Notes |
 | --- | --- | --- | --- | --- |
+| Premium public-site visual refresh | Codex | REVIEW | pending checkpoint | Homepage and shared public chrome rebuilt; tests and production build pass; awaiting production deploy. |
 | Restore production authentication database | Codex | DONE | current checkpoint | Production points to the established Supabase project. |
 | Accept full Taobao share text | Codex | DONE | current checkpoint | URL extraction exists in browser and API layers. |
 | Optimize dashboard queries | Codex | DONE | current checkpoint | Query group benchmark improved by about 73%. |
-| Optimize public route performance | Codex | DONE | current checkpoint | Public pages are static and CDN-cacheable. |
+| Optimize public route performance | Codex | DONE | `cd91117` | Public pages are static and CDN-cacheable; image waste resolved. |
 | Add route loading skeletons | Codex | DONE | current checkpoint | Dashboard and admin loading UI added. |
 | Restore staging Supabase project | Project owner | BLOCKED | Supabase Studio | `sabuyship-staging` (`rhillakurearebtzjwyr`) is INACTIVE. Open the project in Supabase Studio and click `Resume project`; CLI has no resume command. |
 | Authenticated mobile regression walkthrough | Codex | BLOCKED | `qa-mobile-audit` | Staging smoke runner can create and clean temporary accounts automatically, but staging must be resumed and `.env.staging.local` supplied first. |
-| Monitor production Web Vitals | Codex | IN_PROGRESS | `cd91117` / `dpl_J4GVdPYL71bYRqC4712FvP7boTHm` | Image waste and unsized images are resolved in Production; mobile lab CLS 0 and LCP 4.4 s. Continue collecting real-user mobile data until at least 20 samples. |
+| Monitor production Web Vitals | Codex | IN_PROGRESS | `cd91117` / `dpl_J4GVdPYL71bYRqC4712FvP7boTHm` | Continue collecting real-user mobile data until at least 20 samples. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 
 ## Task Claiming Rules

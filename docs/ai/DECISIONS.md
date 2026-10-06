@@ -36,6 +36,14 @@
 - Use route-level loading UI for data-heavy dashboard and admin navigation.
 - Collect production Core Web Vitals with Vercel Speed Insights from the root layout and evaluate mobile P75 LCP, CLS, and INP after deployment.
 
+## Visual Design System
+
+- Preserve Sabuy Ship's blue/orange palette and mascot as primary brand assets.
+- Use the "Premium Logistics Concierge" direction: deep trustworthy blues, orange action accents, soft cloud-like backgrounds, generous spacing, rounded editorial surfaces, and restrained glass effects.
+- Keep motion CSS-only, subtle, and compatible with `prefers-reduced-motion`; avoid animation libraries on public initial routes.
+- Public calls to action prioritize two core jobs: requesting a quote from a pasted marketplace link and tracking an existing parcel.
+- Explain the real three-round payment workflow visually rather than replacing or simplifying the underlying business process.
+
 ## Product Link Handling
 
 - Customers may paste complete Chinese marketplace share messages.

@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-29 (Asia/Bangkok)
+Last updated: 2026-10-06 (Asia/Bangkok)
 
 ## Repository State
 
@@ -14,6 +14,16 @@ Last updated: 2026-09-29 (Asia/Bangkok)
 Never replace production environment values with staging values. Do not place any API keys in this document.
 
 ## Completed Work
+
+### 0. Premium Public-Site Visual Refresh
+- Rebuilt the homepage around a premium logistics-concierge direction while preserving the established blue/orange brand palette and mascot.
+- Introduced reusable visual foundations in `globals.css`: wider radii, glass surfaces, elevated cards, balanced display text, soft brand ambience, and reduced-motion-safe animation.
+- Redesigned the hero around the primary customer actions: paste a Chinese marketplace share message for a quote or track a parcel.
+- Preserved automatic URL extraction, live exchange-rate calculator access, the three-payment-round explanation, and all existing public routes.
+- Refreshed the public navbar, account dropdown, mobile bottom navigation, footer, shared buttons, and cards so the new visual language carries across the site.
+- Kept the implementation dependency-free and CSS-driven to avoid adding client bundle weight.
+- Desktop visual QA passed in a real browser. The initial 390px capture exposed horizontal crowding; mobile container math, headline sizing, and the quote form grid were corrected afterward.
+- Production deployment status: pending this checkpoint commit.
 
 ### 1. Mobile Regression & QA Audit
 - **Product Link Input Handling (`src/app/(public)/inquiry/page.tsx`, `src/app/(public)/page.tsx`, `src/app/api/inquiry/route.ts`)**:

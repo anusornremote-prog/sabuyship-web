@@ -58,7 +58,7 @@ export function MobileBottomNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 block md:hidden pointer-events-auto">
       {/* Subtle top glow blur & shadow */}
-      <div className="relative bg-white/92 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-8px_25px_rgba(0,0,0,0.06)] pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-1.5 px-3">
+      <div className="relative border-t border-blue-100/80 bg-white/90 px-3 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-1.5 shadow-[0_-12px_35px_rgba(30,58,138,0.1)] backdrop-blur-2xl">
         <nav className="flex items-center justify-around max-w-lg mx-auto relative">
           
           {/* 1. Home Button */}
@@ -101,11 +101,11 @@ export function MobileBottomNav() {
               title={labelSubmit}
             >
               {/* Outer soft glowing ring */}
-              <div className="absolute -inset-1.5 bg-gradient-to-tr from-orange-600 to-amber-400 rounded-full opacity-40 group-hover:opacity-75 blur-xs transition-opacity animate-pulse" />
+              <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-orange-600 to-amber-400 opacity-40 blur-sm transition-opacity group-hover:opacity-75" />
               
               {/* Main Button */}
-              <div className="relative w-13 h-13 rounded-full bg-gradient-to-tr from-orange-500 via-orange-600 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/35 border-2 border-white">
-                <Plus className="w-7 h-7 stroke-[3] transition-transform group-hover:rotate-90 duration-300" />
+              <div className="relative flex h-13 w-13 items-center justify-center rounded-2xl border-2 border-white bg-gradient-to-tr from-orange-500 via-orange-600 to-amber-500 text-white shadow-lg shadow-orange-500/35 rotate-45">
+                <Plus className="h-7 w-7 -rotate-45 stroke-[3] transition-transform duration-300 group-hover:rotate-45" />
               </div>
             </Link>
             <span className={`text-[11px] tracking-tight font-black mt-1 ${isInquiryActive ? "text-orange-600" : "text-slate-700"}`}>

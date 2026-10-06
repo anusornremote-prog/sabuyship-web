@@ -1,101 +1,82 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useEffect, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
+import {
+  ArrowRight,
+  BadgePercent,
+  Box,
+  Check,
+  CheckCircle2,
+  Clock3,
+  Copy,
+  CreditCard,
+  FileText,
+  Headphones,
+  Layers3,
+  MapPin,
+  PackageCheck,
+  Search,
+  ShieldCheck,
+  Ship,
+  ShoppingCart,
+  Sparkles,
+  Truck,
+  Zap,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { 
-  Ship, 
-  ShieldCheck, 
-  Clock, 
-  MapPin, 
-  ShoppingCart, 
-  ArrowRight, 
-  CheckCircle2, 
-  Truck, 
-  Sparkles, 
-  Search, 
-  CreditCard, 
-  PackageCheck,
-  Headphones,
-  BadgePercent,
-  Zap,
-  Globe,
-  Layers,
-  Check,
-  Clipboard,
-  ChevronRight,
-  FileText
-} from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
-import { vibrateTap, vibrateSuccess, readClipboardText } from "@/lib/haptics"
-import { toast } from "sonner"
 import { extractProductUrl } from "@/lib/product-link"
 import { fetchExchangeRate } from "@/lib/exchange-rate"
+import { readClipboardText, vibrateSuccess, vibrateTap } from "@/lib/haptics"
+import { toast } from "sonner"
+
+const logisticsSteps = [
+  { icon: ShoppingCart, number: "01", tone: "from-blue-600 to-indigo-600" },
+  { icon: Ship, number: "02", tone: "from-orange-500 to-amber-500" },
+  { icon: Truck, number: "03", tone: "from-emerald-500 to-teal-600" },
+]
 
 export default function Home() {
   const router = useRouter()
   const { t, locale } = useTranslation()
-  // Keep the first server/client render identical. The cached value is restored
-  // after hydration, then refreshed from Supabase below.
   const [exchangeRate, setExchangeRate] = useState("5.10")
   const [activeTab, setActiveTab] = useState<"quote" | "track">("quote")
   const [quickUrl, setQuickUrl] = useState("")
   const [quickTrackId, setQuickTrackId] = useState("")
 
-  const handlePasteQuickUrl = async () => {
-    vibrateTap()
-    const text = await readClipboardText()
-    if (text) {
-      setQuickUrl(extractProductUrl(text) || text)
-      vibrateSuccess()
-      toast.success(locale === 'zh' ? "链接已粘贴" : locale === 'en' ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
-    } else {
-      toast.info(locale === 'zh' ? "请手动粘贴" : locale === 'en' ? "Please paste into the box" : "กรุณากดวางลิงก์ลงในช่อง")
-    }
-  }
-
   useEffect(() => {
     const cachedRate = sessionStorage.getItem("sabuy_exchange_rate")
     if (cachedRate) setExchangeRate(cachedRate)
 
-    const fetchRate = async () => {
+    const loadRate = async () => {
       try {
         const rate = await fetchExchangeRate()
-        if (rate) {
-          const valStr = rate.toString()
-          setExchangeRate(valStr)
-          if (typeof window !== "undefined") {
-            sessionStorage.setItem("sabuy_exchange_rate", valStr)
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching exchange rate:", err)
+        if (!rate) return
+        const value = rate.toString()
+        setExchangeRate(value)
+        sessionStorage.setItem("sabuy_exchange_rate", value)
+      } catch (error) {
+        console.error("Error fetching exchange rate:", error)
       }
     }
-    fetchRate()
+
+    void loadRate()
   }, [])
 
-  const handleQuickQuoteSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!quickUrl.trim()) {
-      router.push("/inquiry")
+  const handlePasteQuickUrl = async () => {
+    vibrateTap()
+    const text = await readClipboardText()
+    if (!text) {
+      toast.info(locale === "zh" ? "请手动粘贴" : locale === "en" ? "Please paste into the box" : "กรุณากดวางลิงก์ลงในช่อง")
       return
     }
-    const productUrl = extractProductUrl(quickUrl)
-    if (!productUrl) {
-      toast.error(
-        locale === 'zh'
-          ? "未检测到有效商品链接，请提供包含 http:// 或 https:// 的链接"
-          : locale === 'en'
-          ? "No valid product URL found. Please provide a link starting with http:// or https://"
-          : "ไม่พบลิงก์สินค้าในข้อความ กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https:// (เช่น จาก Taobao, 1688 หรือ Tmall)"
-      )
-      return
-    }
-    router.push(`/inquiry?url=${encodeURIComponent(productUrl)}`)
+    setQuickUrl(extractProductUrl(text) || text)
+    vibrateSuccess()
+    toast.success(locale === "zh" ? "链接已粘贴" : locale === "en" ? "URL pasted" : "วางลิงก์เรียบร้อยแล้ว")
   }
 
   const handleQuickUrlPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
@@ -104,430 +85,166 @@ export default function Home() {
     if (productUrl) {
       event.preventDefault()
       setQuickUrl(productUrl)
-      toast.success(locale === 'zh' ? "已自动提取商品链接" : locale === 'en' ? "Product link extracted" : "ดึงลิงก์สินค้าจากข้อความแชร์ให้แล้ว")
-    } else if (pastedText && !pastedText.startsWith("http://") && !pastedText.startsWith("https://")) {
-      toast.warning(
-        locale === 'zh'
-          ? "未检测到有效商品链接，请提供包含 http:// 或 https:// 的链接"
-          : locale === 'en'
-          ? "No valid product URL found in pasted text"
-          : "ข้อความที่วางไม่มีลิงก์สินค้า กรุณาใส่ลิงก์ที่ขึ้นต้นด้วย http:// หรือ https://"
-      )
+      toast.success(locale === "zh" ? "已自动提取商品链接" : locale === "en" ? "Product link extracted" : "ดึงลิงก์สินค้าจากข้อความแชร์ให้แล้ว")
     }
   }
 
-  const handleQuickTrackSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!quickTrackId.trim()) {
-      router.push("/track")
+  const handleQuickQuoteSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!quickUrl.trim()) {
+      router.push("/inquiry")
       return
     }
-    router.push(`/track?id=${encodeURIComponent(quickTrackId.trim())}`)
+    const productUrl = extractProductUrl(quickUrl)
+    if (!productUrl) {
+      toast.error(locale === "zh" ? "未检测到有效商品链接" : locale === "en" ? "No valid product URL found" : "ไม่พบลิงก์สินค้า กรุณาวางข้อความที่มี http:// หรือ https://")
+      return
+    }
+    router.push(`/inquiry?url=${encodeURIComponent(productUrl)}`)
   }
 
-  const platforms = [
-    { name: "1688", tag: locale === 'en' ? 'Wholesale' : locale === 'zh' ? '源头厂家' : 'ราคาส่งโรงงาน', bg: "bg-orange-50 text-orange-700 border-orange-200" },
-    { name: "Taobao", tag: locale === 'en' ? 'Trending' : locale === 'zh' ? '海量正品' : 'ปลีก-ส่งครบ', bg: "bg-amber-50 text-amber-700 border-amber-200" },
-    { name: "Tmall", tag: locale === 'en' ? 'Brand stores' : locale === 'zh' ? '品牌店铺' : 'ร้านค้าแบรนด์', bg: "bg-rose-50 text-rose-700 border-rose-200" },
-    { name: "Pinduoduo", tag: locale === 'en' ? 'Deals' : locale === 'zh' ? '超值拼团' : 'ดีลสุดคุ้ม', bg: "bg-red-50 text-red-700 border-red-200" },
-    { name: "Poizon", tag: locale === 'en' ? 'Streetwear' : locale === 'zh' ? '得物潮牌' : 'สตรีทแวร์', bg: "bg-cyan-50 text-cyan-700 border-cyan-200" },
+  const handleQuickTrackSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    router.push(quickTrackId.trim() ? `/track?id=${encodeURIComponent(quickTrackId.trim())}` : "/track")
+  }
+
+  const stepCopy = [
+    {
+      title: t.homeStep1Title || "ส่งลิงก์สินค้าที่คุณต้องการ",
+      description: t.homeStep1Desc || "วางลิงก์จาก Taobao, 1688 หรือ Tmall พร้อมระบุสี ไซส์ และจำนวน",
+    },
+    {
+      title: t.homeStep2Title || "เราเช็กราคาและสั่งซื้อให้",
+      description: t.homeStep2Desc || "ทีมงานตรวจร้าน คำนวณราคา และแจ้งยอดอย่างชัดเจนก่อนชำระ",
+    },
+    {
+      title: t.homeStep3Title || "ติดตามจนถึงหน้าบ้าน",
+      description: t.homeStep3Desc || "ดูสถานะทุกช่วง พร้อมหลักฐานและแจ้งเตือน LINE ตลอดเส้นทาง",
+    },
+  ]
+
+  const paymentRounds = [
+    { icon: ShoppingCart, round: "01", title: locale === "en" ? "Product cost" : locale === "zh" ? "商品费用" : "ค่าสินค้า", description: locale === "en" ? "After approving the quotation" : locale === "zh" ? "确认报价后支付" : "หลังตรวจสอบและยืนยันใบเสนอราคา" },
+    { icon: Ship, round: "02", title: locale === "en" ? "China–Thailand freight" : locale === "zh" ? "中泰跨境运费" : "ค่าขนส่งจีน–ไทย", description: locale === "en" ? "When goods reach our China hub" : locale === "zh" ? "货物抵达中国仓库后" : "เมื่อสินค้าถึงโกดังจีน" },
+    { icon: Truck, round: "03", title: locale === "en" ? "Thailand delivery" : locale === "zh" ? "泰国境内配送" : "ค่าจัดส่งในไทย", description: locale === "en" ? "Choose delivery after arrival" : locale === "zh" ? "抵泰后选择配送方式" : "เลือกขนส่งเมื่อสินค้าถึงไทย" },
   ]
 
   return (
-    <div className="flex flex-col bg-white">
-      {/* 1. Hero Section (Mobile-First & Desktop Optimized) */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/90 via-indigo-50/30 to-white pt-6 pb-10 sm:pt-10 sm:pb-14 lg:pt-14 lg:pb-16 px-4 sm:px-6 lg:px-8">
-        {/* Subtle background ambient circles */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-gradient-to-tr from-blue-400/15 via-indigo-400/10 to-orange-400/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="overflow-hidden bg-[#f8faff] text-slate-950">
+      <section className="relative isolate px-4 pb-16 pt-8 sm:px-6 sm:pb-24 sm:pt-12 lg:px-8 lg:pb-28">
+        <div className="absolute inset-0 -z-20 bg-[linear-gradient(to_right,#dbeafe55_1px,transparent_1px),linear-gradient(to_bottom,#dbeafe55_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+        <div className="absolute left-[-12rem] top-[-10rem] -z-10 h-[34rem] w-[34rem] rounded-full bg-blue-300/25 blur-3xl" />
+        <div className="absolute right-[-12rem] top-8 -z-10 h-[32rem] w-[32rem] rounded-full bg-orange-300/20 blur-3xl" />
 
-        <div className="container max-w-7xl mx-auto relative z-10">
-
-          {/* Main Hero Grid: Text & Action Card (Left) | Mascot (Right) */}
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
-            {/* Mascot Container (Appears First on Mobile with order-1, Right side on Desktop with lg:order-2) */}
-            <div className="lg:col-span-5 flex justify-center order-1 lg:order-2">
-              <div className="relative w-48 sm:w-64 lg:w-full max-w-md aspect-square">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-300/30 via-indigo-200/20 to-orange-200/30 rounded-full blur-2xl animate-pulse" />
-                <Image
-                  src="/mascod.webp"
-                  alt="Sabuy Ship Mascot"
-                  fill
-                  sizes="(max-width: 639px) 192px, (max-width: 1023px) 256px, 448px"
-                  fetchPriority="high"
-                  className="relative z-10 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-                />
-              </div>
+        <div className="site-container grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
+          <div className="text-center lg:text-left">
+            <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("open-rmb-calculator"))}
+                className="eyebrow cursor-pointer transition hover:-translate-y-0.5 hover:border-blue-300"
+              >
+                <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" /></span>
+                {locale === "en" ? "LIVE RATE" : locale === "zh" ? "今日汇率" : "เรทหยวนวันนี้"} · ¥1 = ฿{exchangeRate}
+              </button>
+              <span className="eyebrow border-orange-200/80 text-orange-700"><Sparkles className="h-3.5 w-3.5" /> {locale === "en" ? "0% ordering fee" : locale === "zh" ? "0% 代购费" : "ฟรีค่ากดสั่ง 0%"}</span>
             </div>
 
-            {/* Main Content (Appears Under Mascot on Mobile with order-2, Left side on Desktop with lg:order-1) */}
-            <div className="lg:col-span-7 space-y-6 text-center sm:text-left order-2 lg:order-1">
-              
-              {/* 💰 Live Exchange Rate Capsule & Badges (Interactive Top Eyebrow) */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3">
-                {exchangeRate && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      vibrateTap()
-                      window.dispatchEvent(new CustomEvent('open-rmb-calculator'))
-                    }}
-                    className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/95 backdrop-blur-md rounded-full border border-blue-200/90 shadow-xs hover:border-primary hover:scale-105 active:scale-95 transition-all cursor-pointer group"
-                    title="คลิกเพื่อเปิดเครื่องคิดเลขแปลงเรทหยวน"
-                  >
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-black uppercase tracking-wider">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                      </span>
-                      {locale === 'en' ? 'Live Rate' : locale === 'zh' ? '今日汇率' : 'เรทหยวนวันนี้'}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-800 pr-1">
-                      <img src="https://flagcdn.com/w20/cn.png" width="16" height="11" alt="CN" className="rounded-xs" />
-                      <span>1 ¥</span>
-                      <span className="text-slate-300 font-black">=</span>
-                      <img src="https://flagcdn.com/w20/th.png" width="16" height="11" alt="TH" className="rounded-xs" />
-                      <span className="text-primary font-black text-sm sm:text-base group-hover:underline">{exchangeRate} ฿</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 group-hover:text-primary font-bold pl-0.5">➔ คำนวณ</span>
-                  </button>
-                )}
-
-                {/* Micro Badges */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs font-bold text-slate-600 max-w-full">
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-full border border-amber-200/80 shadow-2xs">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    {locale === 'en' ? '0% Service Fee' : locale === 'zh' ? '0% 免费采购' : 'ฟรีค่ากดสั่ง 0%'}
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-900 rounded-full border border-blue-200/80 shadow-2xs">
-                    <Zap className="w-3.5 h-3.5 text-blue-600" />
-                    {locale === 'en' ? 'No Minimum' : locale === 'zh' ? '无起运限制' : 'ไม่มีขั้นต่ำ 1 ชิ้นก็ส่ง'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Main Headline */}
-              <div className="space-y-3">
-                <h1 className="text-3xl sm:text-4xl lg:text-[42px] xl:text-[48px] font-black tracking-tight text-slate-900 leading-[1.25]">
-                  <span className="inline-block">{t.heroTitle1 || "สั่งของจีนง่าย"}</span>{" "}
-                  <span className="inline-block text-slate-900">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
-                  <br className="hidden sm:inline" />
-                  <span className="mt-1 block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500">
-                    <span className="block sm:inline-block sm:whitespace-nowrap">{t.heroTitleHighlight1 || "ก๊อปปี้ลิงก์ส่งมา..."}</span>{" "}
-                    <span className="block sm:inline-block sm:whitespace-nowrap">{t.heroTitleHighlight2 || "ที่เหลือเราดูแลให้ครบ!"}</span>
-                  </span>
-                </h1>
-                
-                <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-xl mx-auto sm:mx-0 leading-relaxed">
-                  {t.heroSub || "บริการฝากสั่งซื้อและนำเข้าสินค้าจากจีน Taobao, 1688, Tmall เรทหยวนตรงไปตรงมา ตรวจสอบสถานะได้ 24 ชั่วโมง"}
-                </p>
-              </div>
-
-              {/* 🌟 Interactive Quick Action Box (Hero Centerpiece) */}
-              <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-xl shadow-blue-950/5 p-3 sm:p-5 space-y-4 text-left">
-                {/* Tab Switcher */}
-                <div className="flex bg-slate-100/90 p-1.5 rounded-2xl gap-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      vibrateTap()
-                      setActiveTab("quote")
-                    }}
-                    className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === "quote" 
-                        ? "bg-white text-primary shadow-xs" 
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    <ShoppingCart className="w-4 h-4 text-orange-500" />
-                    <span>{locale === 'en' ? 'Paste Link for Quote' : locale === 'zh' ? '粘贴链接询价' : 'แปะลิงก์ขอราคาฟรี'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      vibrateTap()
-                      setActiveTab("track")
-                    }}
-                    className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      activeTab === "track" 
-                        ? "bg-white text-primary shadow-xs" 
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    <Search className="w-4 h-4 text-blue-600" />
-                    <span>{locale === 'en' ? 'Track Parcel' : locale === 'zh' ? '查询快递状态' : 'เช็คสถานะพัสดุ'}</span>
-                  </button>
-                </div>
-
-                {/* Tab Content 1: Quick Quote Form */}
-                {activeTab === "quote" && (
-                  <form onSubmit={handleQuickQuoteSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1 animate-in fade-in duration-200">
-                    <div className="relative flex-1">
-                      <Input
-                        type="text"
-                        inputMode="url"
-                        placeholder="วางลิงก์ 1688, Taobao, Tmall หรือข้อความแชร์ที่นี่..."
-                        value={quickUrl}
-                        onChange={(e) => setQuickUrl(e.target.value)}
-                        onPaste={handleQuickUrlPaste}
-                        onBlur={() => setQuickUrl(extractProductUrl(quickUrl) || quickUrl)}
-                        className="h-13 sm:h-14 rounded-2xl bg-slate-50 border-slate-300/80 font-mono text-xs sm:text-sm pl-4 pr-24 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={handlePasteQuickUrl}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 text-xs font-black text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 px-3 py-1.5 rounded-xl transition-all cursor-pointer active:scale-95 shadow-2xs"
-                      >
-                        <Clipboard className="w-3.5 h-3.5 text-primary" />
-                        <span>{locale === 'zh' ? '粘贴' : locale === 'en' ? 'Paste' : 'วางลิงก์'}</span>
-                      </button>
-                    </div>
-                    <Button 
-                      type="submit" 
-                      variant="orange" 
-                      className="h-13 sm:h-14 px-7 text-sm sm:text-base font-black rounded-2xl cursor-pointer shadow-lg shadow-orange-500/25 shrink-0 active:scale-[0.98] transition-all bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
-                    >
-                      <Sparkles className="w-4 h-4 mr-1.5" />
-                      {locale === 'en' ? 'Get Free Quote' : locale === 'zh' ? '获取报价' : 'ประเมินราคาฟรี ➔'}
-                    </Button>
-                  </form>
-                )}
-
-                {/* Tab Content 2: Quick Track Form */}
-                {activeTab === "track" && (
-                  <form onSubmit={handleQuickTrackSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1 animate-in fade-in duration-200">
-                    <div className="relative flex-1">
-                      <Input
-                        type="text"
-                        placeholder="กรอกรหัสออเดอร์ เช่น ORD-2608... หรือเลขพัสดุ"
-                        value={quickTrackId}
-                        onChange={(e) => setQuickTrackId(e.target.value)}
-                        className="h-13 sm:h-14 rounded-2xl bg-slate-50 border-slate-300/80 font-mono text-xs sm:text-sm pl-4 pr-3 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="h-13 sm:h-14 px-7 bg-primary text-white hover:bg-primary/90 text-sm sm:text-base font-black rounded-2xl cursor-pointer shadow-md shrink-0 active:scale-[0.98] transition-all"
-                    >
-                      <Search className="w-4 h-4 mr-1.5" />
-                      {locale === 'en' ? 'Track Now' : locale === 'zh' ? '立即查询' : 'ตรวจสอบสถานะ ➔'}
-                    </Button>
-                  </form>
-                )}
-
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 px-1 pt-0.5">
-                  <span className="flex items-center gap-1 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    ออกใบเสนอราคาฟรีใน 1-2 ชม.
-                  </span>
-                  <Link href="/how-it-works" className="text-primary font-black hover:underline flex items-center gap-0.5">
-                    <span>ดูวิธีสั่งซื้อ</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Supported Platforms Chips */}
-              <div className="space-y-2.5 pt-2">
-                <p className="text-xs font-black text-slate-400 uppercase tracking-wider text-left">
-                  {locale === 'en' ? 'Supported Platforms:' : locale === 'zh' ? '支持采购平台：' : 'รองรับการสั่งซื้อจากทุกเว็บจีนยอดนิยม:'}
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                  {platforms.map((p, idx) => (
-                    <span 
-                      key={idx} 
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border shadow-2xs ${p.bg}`}
-                    >
-                      <span className="font-black">{p.name}</span>
-                      <span className="text-[11px] opacity-75">({p.tag})</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Speed & Shipping Channels (2x2 Mobile / 4 Desktop) */}
-      <section className="py-6 sm:py-8 bg-slate-50/80 border-y border-slate-200/80">
-        <div className="container max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            
-            {/* Channel 1: Express Road */}
-            <div className="flex items-center gap-3 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-orange-300 transition-colors">
-              <div className="p-2.5 sm:p-3 bg-orange-100 text-orange-600 rounded-xl shrink-0">
-                <Truck className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-wider block">
-                  {t.speedRoad || "ทางรถด่วน (EK)"}
-                </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 block truncate">
-                  {t.speedRoadSub || "5 - 7 วันถึงไทย"}
-                </span>
-              </div>
-            </div>
-
-            {/* Channel 2: Economy Sea */}
-            <div className="flex items-center gap-3 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-blue-300 transition-colors">
-              <div className="p-2.5 sm:p-3 bg-blue-100 text-primary rounded-xl shrink-0">
-                <Ship className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-wider block">
-                  {t.speedSea || "ทางเรือประหยัด (SEA)"}
-                </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 block truncate">
-                  {t.speedSeaSub || "15 - 20 วัน"}
-                </span>
-              </div>
-            </div>
-
-            {/* Channel 3: Free QC Check */}
-            <div className="flex items-center gap-3 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-colors">
-              <div className="p-2.5 sm:p-3 bg-emerald-100 text-emerald-600 rounded-xl shrink-0">
-                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-wider block">
-                  {t.speedCheck || "ตรวจเช็คสินค้า"}
-                </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 block truncate">
-                  {t.speedCheckSub || "มั่นใจของตรงปก"}
-                </span>
-              </div>
-            </div>
-
-            {/* Channel 4: LINE Push Support */}
-            <div className="flex items-center gap-3 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-green-300 transition-colors">
-              <div className="p-2.5 sm:p-3 bg-green-100 text-green-600 rounded-xl shrink-0">
-                <Headphones className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-wider block">
-                  {t.speedSupport || "ดูแลใกล้ชิด"}
-                </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 block truncate">
-                  {t.speedSupportSub || "แจ้งเตือนผ่าน LINE"}
-                </span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Simple 3 Steps Section (Clean & Touch-friendly) */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 md:px-8 bg-white">
-        <div className="container max-w-6xl mx-auto space-y-8 sm:space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="inline-block px-3 py-1 bg-blue-100 text-primary rounded-full text-xs font-black uppercase tracking-wider">
-              {t.homeStepsTag || "Easy Workflow"}
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-              {t.homeStepsTitle || "3 ขั้นตอนง่ายๆ สั่งของจีนถึงหน้าบ้านคุณ"}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              {t.homeStepsSub || "ไม่ต้องรู้ภาษาจีน ไม่ต้องมีบัญชีเถาเป่า แค่ส่งลิงก์มา ที่เหลือเราจัดการให้ครบ"}
+            <h1 className="display-balance mt-7 text-[2.2rem] font-black leading-[1.12] tracking-[-0.04em] text-slate-950 min-[380px]:text-[2.35rem] sm:text-6xl lg:text-7xl">
+              {t.heroTitle1 || "สั่งของจีนง่าย"}<br />
+              <span className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-500 bg-clip-text text-transparent">{t.heroTitle2 || "เหมือนช้อปในไทย"}</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg lg:mx-0">
+              {t.heroSub || "บริการฝากสั่งซื้อและนำเข้าสินค้าจากจีนครบวงจร แค่ส่งลิงก์มา เราดูแลตั้งแต่เช็กร้านจนส่งถึงหน้าบ้าน"}
             </p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-            {/* Step 1 */}
-            <div className="p-6 sm:p-8 bg-gradient-to-br from-blue-50/50 to-white rounded-3xl border border-blue-100 shadow-sm relative space-y-3">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-md shadow-blue-600/25">
-                1
+            <div className="glass-panel mx-auto mt-8 w-full max-w-2xl rounded-[2rem] p-3 text-left sm:p-4 lg:mx-0">
+              <div className="mb-3 grid grid-cols-2 rounded-2xl bg-slate-100/80 p-1.5">
+                <button type="button" onClick={() => setActiveTab("quote")} className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black transition ${activeTab === "quote" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500"}`}><ShoppingCart className="h-4 w-4" />{locale === "en" ? "Get a quote" : locale === "zh" ? "商品询价" : "แปะลิงก์ขอราคา"}</button>
+                <button type="button" onClick={() => setActiveTab("track")} className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black transition ${activeTab === "track" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500"}`}><Search className="h-4 w-4" />{locale === "en" ? "Track parcel" : locale === "zh" ? "物流查询" : "ติดตามพัสดุ"}</button>
               </div>
-              <h3 className="text-lg sm:text-xl font-black text-slate-900">{t.homeStep1Title || "ก๊อปปี้ลิงก์สินค้าส่งให้เรา"}</h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                {t.homeStep1Desc || "คัดลอกลิงก์สินค้าจาก Taobao, 1688 หรือ Tmall พร้อมแนบรูปหรือระบุสี/ไซส์ ส่งผ่านระบบเพื่อขอใบเสนอราคาฟรี"}
-              </p>
-            </div>
 
-            {/* Step 2 */}
-            <div className="p-6 sm:p-8 bg-gradient-to-br from-orange-50/50 to-white rounded-3xl border border-orange-100 shadow-sm relative space-y-3">
-              <div className="w-12 h-12 bg-orange-500 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-md shadow-orange-500/25">
-                2
-              </div>
-              <h3 className="text-lg sm:text-xl font-black text-slate-900">{t.homeStep2Title || "ตรวจสอบราคา & ชำระเงิน"}</h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                {t.homeStep2Desc || "ทีมงานต่อรองราคาส่งและแจ้งยอดค่าสินค้า (รอบ 1) คุณยืนยันและโอนชำระเงิน เรากดสั่งของจากร้านจีนทันที"}
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="p-6 sm:p-8 bg-gradient-to-br from-emerald-50/50 to-white rounded-3xl border border-emerald-100 shadow-sm relative space-y-3">
-              <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-md shadow-emerald-600/25">
-                3
-              </div>
-              <h3 className="text-lg sm:text-xl font-black text-slate-900">{t.homeStep3Title || "รอรับพัสดุส่งตรงถึงบ้าน"}</h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                {t.homeStep3Desc || "สินค้าขนส่งมายังไทย ชำระค่าขนส่งตามจริง จากนั้นรอรับของส่งถึงหน้าบ้านพร้อมเลขแทร็กกิ้งตรวจสอบได้ตลอด 24 ชม."}
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center pt-2">
-            <Link href="/how-it-works">
-              <Button variant="outline" className="font-bold text-xs sm:text-sm h-11 px-6 rounded-xl border-slate-300 hover:bg-slate-50 cursor-pointer">
-                {t.homeViewAllSteps || "ดูขั้นตอนการทำงานแบบละเอียด 7 สเต็ป ➔"}
-              </Button>
-            </Link>
-          </div>
-
-          {/* Three-payment timeline: mirrors the real operational workflow. */}
-          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 sm:p-8">
-            <div className="max-w-2xl mx-auto text-center mb-6 sm:mb-8">
-              <span className="inline-flex items-center gap-2 text-xs font-black text-orange-700 bg-orange-100 px-3 py-1.5 rounded-full">
-                <CreditCard className="w-4 h-4" />
-                {locale === 'en' ? 'PAY ONLY WHEN EACH COST IS KNOWN' : locale === 'zh' ? '费用明确后再分阶段付款' : 'จ่ายตามจริงเมื่อทราบค่าใช้จ่ายแต่ละช่วง'}
-              </span>
-              <h3 className="mt-3 text-xl sm:text-2xl font-black text-slate-900">
-                {locale === 'en' ? 'The 3 payment rounds, made clear' : locale === 'zh' ? '三阶段付款，一目了然' : 'ชำระเงิน 3 รอบ แบบโปร่งใส'}
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                {locale === 'en' ? 'You pay each actual cost when the order reaches that stage—no need to pay every shipping cost upfront.' : locale === 'zh' ? '订单到达各阶段后按实际费用付款，无需一次预付全部运费。' : 'จ่ายทีละรอบเมื่อออเดอร์เดินทางถึงขั้นนั้น ไม่ต้องสำรองค่าขนส่งทั้งหมดตั้งแต่วันแรก'}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-3 sm:gap-4">
-              {[
-                {
-                  round: '1',
-                  icon: ShoppingCart,
-                  tone: 'bg-blue-600 text-white',
-                  title: locale === 'en' ? 'Product cost' : locale === 'zh' ? '商品费用' : 'ค่าสินค้า',
-                  desc: locale === 'en' ? 'After you approve the item quotation.' : locale === 'zh' ? '确认商品报价后支付。' : 'ชำระหลังตรวจสอบและยืนยันใบเสนอราคา',
-                },
-                {
-                  round: '2',
-                  icon: Ship,
-                  tone: 'bg-orange-500 text-white',
-                  title: locale === 'en' ? 'China–Thailand freight' : locale === 'zh' ? '中泰跨境运费' : 'ค่าขนส่งจีน–ไทย',
-                  desc: locale === 'en' ? 'Calculated when goods reach the China warehouse.' : locale === 'zh' ? '货物到达中国仓库后计算。' : 'คำนวณเมื่อสินค้าถึงโกดังจีน',
-                },
-                {
-                  round: '3',
-                  icon: Truck,
-                  tone: 'bg-emerald-600 text-white',
-                  title: locale === 'en' ? 'Thailand delivery' : locale === 'zh' ? '泰国境内配送费' : 'ค่าจัดส่งในไทย',
-                  desc: locale === 'en' ? 'Choose delivery and pay when goods reach Thailand.' : locale === 'zh' ? '货物到达泰国后选择配送方式并付款。' : 'เลือกขนส่งและชำระเมื่อสินค้าถึงโกดังไทย',
-                },
-              ].map(({ round, icon: RoundIcon, tone, title, desc }, index) => (
-                <div key={round} className="relative flex md:block gap-4 rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 shadow-xs">
-                  {index < 2 && <span className="hidden md:block absolute top-9 -right-3.5 w-3 border-t-2 border-dashed border-slate-300" aria-hidden="true" />}
-                  <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-black shadow-sm ${tone}`}>
-                    <RoundIcon className="w-5 h-5" aria-hidden="true" />
+              {activeTab === "quote" ? (
+                <form onSubmit={handleQuickQuoteSubmit} className="space-y-3">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                    <div className="relative min-w-0 flex-1">
+                      <Input value={quickUrl} onChange={(event) => setQuickUrl(event.target.value)} onPaste={handleQuickUrlPaste} placeholder={locale === "en" ? "Paste a product link or shared message" : locale === "zh" ? "粘贴商品链接或分享文案" : "วางลิงก์ หรือข้อความแชร์จากแอปจีนได้เลย"} className="h-14 rounded-2xl border-slate-200 bg-white pl-5 pr-12 text-base shadow-inner focus-visible:ring-blue-500" />
+                      <button type="button" onClick={handlePasteQuickUrl} className="absolute right-2 top-2 grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-700 transition hover:bg-blue-100" aria-label="Paste product link"><Copy className="h-4 w-4" /></button>
+                    </div>
+                    <Button type="submit" variant="orange" className="h-14 shrink-0 rounded-2xl px-4 sm:px-7">{locale === "en" ? "Quote" : locale === "zh" ? "询价" : "เช็กราคา"}<ArrowRight className="ml-1.5 hidden h-4 w-4 sm:block" /></Button>
                   </div>
-                  <div className="min-w-0 md:mt-4">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{locale === 'en' ? `Round ${round}` : locale === 'zh' ? `第 ${round} 阶段` : `รอบที่ ${round}`}</p>
-                    <h4 className="mt-1 font-black text-slate-900">{title}</h4>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">{desc}</p>
-                  </div>
+                  <p className="flex items-center gap-2 px-1 text-xs text-slate-500"><Zap className="h-3.5 w-3.5 text-orange-500" />{locale === "en" ? "We automatically extract the URL from shared text." : locale === "zh" ? "系统会自动从分享文案中提取链接。" : "ระบบดึง URL ออกจากข้อความภาษาจีนให้อัตโนมัติ"}</p>
+                </form>
+              ) : (
+                <form onSubmit={handleQuickTrackSubmit} className="flex gap-2">
+                  <Input value={quickTrackId} onChange={(event) => setQuickTrackId(event.target.value)} placeholder={locale === "en" ? "Order or tracking number" : locale === "zh" ? "订单号或运单号" : "เลขออเดอร์ หรือเลขพัสดุ"} className="h-14 rounded-2xl border-slate-200 bg-white px-5 text-base" />
+                  <Button type="submit" className="h-14 rounded-2xl px-5 sm:px-7">{locale === "en" ? "Track" : locale === "zh" ? "查询" : "ติดตาม"}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+                </form>
+              )}
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-bold text-slate-600 lg:justify-start">
+              {[locale === "en" ? "No minimum" : locale === "zh" ? "无最低数量" : "ไม่มีขั้นต่ำ", locale === "en" ? "Real-time status" : locale === "zh" ? "实时追踪" : "ติดตามได้ 24 ชม.", locale === "en" ? "Thai support" : locale === "zh" ? "泰语客服" : "แอดมินไทยดูแล"].map((label) => <span key={label} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />{label}</span>)}
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-xl">
+            <div className="absolute inset-[8%] rounded-full bg-gradient-to-br from-blue-600 via-indigo-500 to-orange-400 opacity-90 blur-[1px]" />
+            <div className="absolute inset-[3%] animate-orbit-soft rounded-full border border-dashed border-blue-300/80" />
+            <div className="absolute left-0 top-[18%] z-20 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-xl backdrop-blur animate-float-soft"><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">China → Thailand</p><p className="mt-1 flex items-center gap-2 text-sm font-black text-slate-800"><PackageCheck className="h-4 w-4 text-emerald-500" /> ดูแลครบทุกช่วง</p></div>
+            <div className="absolute bottom-[12%] right-0 z-20 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-xl backdrop-blur"><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Transparent</p><p className="mt-1 flex items-center gap-2 text-sm font-black text-slate-800"><ShieldCheck className="h-4 w-4 text-blue-600" /> จ่ายตามจริง 3 รอบ</p></div>
+            <div className="relative z-10 mx-auto aspect-square w-[84%] animate-float-soft">
+              <Image src="/mascod.webp" alt="Sabuy Ship mascot" fill priority sizes="(max-width: 768px) 84vw, 520px" className="object-contain drop-shadow-[0_32px_35px_rgba(15,23,42,0.2)]" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-blue-100/80 bg-white/80 px-4 py-5 backdrop-blur sm:px-6">
+        <div className="site-container flex flex-col items-center justify-between gap-4 md:flex-row">
+          <p className="text-center text-xs font-black uppercase tracking-[0.18em] text-slate-400 md:text-left">{locale === "en" ? "Shop from China’s leading platforms" : locale === "zh" ? "支持中国主流购物平台" : "สั่งได้ครบทุกแพลตฟอร์มจีนยอดนิยม"}</p>
+          <div className="flex flex-wrap justify-center gap-2">{["1688", "TAOBAO", "TMALL", "PINDUODUO", "POIZON"].map((platform) => <span key={platform} className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-black tracking-wide text-slate-600">{platform}</span>)}</div>
+        </div>
+      </section>
+
+      <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <div className="site-container">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="eyebrow"><Sparkles className="h-3.5 w-3.5" /> EASY FROM LINK TO DOOR</span>
+            <h2 className="display-balance mt-5 text-3xl font-black tracking-[-0.035em] text-slate-950 sm:text-5xl">{t.homeStepsTitle || "จากลิงก์สินค้า ถึงหน้าบ้าน ใน 3 ขั้นตอน"}</h2>
+            <p className="mt-4 text-slate-600">{t.homeStepsSub || "ไม่ต้องรู้ภาษาจีน ไม่ต้องมีบัญชีแอปจีน และไม่ต้องจัดการขนส่งเอง"}</p>
+          </div>
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {logisticsSteps.map(({ icon: Icon, number, tone }, index) => (
+              <article key={number} className="premium-card group relative overflow-hidden rounded-[2rem] p-7 sm:p-8">
+                <span className="absolute right-5 top-3 text-7xl font-black text-slate-100 transition group-hover:text-blue-50">{number}</span>
+                <div className={`relative grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}><Icon className="h-6 w-6" /></div>
+                <h3 className="relative mt-7 text-xl font-black text-slate-900">{stepCopy[index].title}</h3>
+                <p className="relative mt-3 text-sm leading-7 text-slate-600">{stepCopy[index].description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 pb-20 sm:px-6 sm:pb-28 lg:px-8">
+        <div className="site-container overflow-hidden rounded-[2.5rem] bg-[#071a3f] text-white shadow-[0_35px_100px_rgba(7,26,63,0.25)]">
+          <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="relative overflow-hidden p-8 sm:p-12 lg:p-14">
+              <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/30 blur-3xl" />
+              <div className="absolute -bottom-20 right-0 h-64 w-64 rounded-full bg-orange-500/20 blur-3xl" />
+              <div className="relative">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-black tracking-wide text-blue-100"><CreditCard className="h-4 w-4" /> PAY AS THE JOURNEY MOVES</span>
+                <h2 className="display-balance mt-6 text-3xl font-black tracking-[-0.035em] sm:text-5xl">{locale === "en" ? "Clear costs. Zero surprises." : locale === "zh" ? "费用透明，没有意外。" : "ค่าใช้จ่ายชัดเจน ไม่มีบวกทีหลัง"}</h2>
+                <p className="mt-5 max-w-xl leading-8 text-blue-100/75">{locale === "en" ? "Each payment happens only when the real cost is known at that stage." : locale === "zh" ? "每一阶段费用明确后再付款，无需预付全部运费。" : "จ่ายเงินเมื่อทราบค่าใช้จ่ายจริงในแต่ละช่วง ไม่ต้องสำรองค่าขนส่งทั้งหมดตั้งแต่วันแรก"}</p>
+                <Link href="/how-it-works" className="mt-8 inline-flex items-center gap-2 text-sm font-black text-orange-300 transition hover:text-orange-200">ดูขั้นตอนทั้งหมด <ArrowRight className="h-4 w-4" /></Link>
+              </div>
+            </div>
+            <div className="grid gap-px bg-white/10 sm:grid-cols-3 lg:grid-cols-1">
+              {paymentRounds.map(({ icon: Icon, round, title, description }) => (
+                <div key={round} className="group flex gap-4 bg-white/[0.055] p-6 transition hover:bg-white/[0.09] sm:block lg:flex lg:p-8">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-orange-300"><Icon className="h-5 w-5" /></div>
+                  <div className="sm:mt-4 lg:mt-0"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">ROUND {round}</p><h3 className="mt-1 font-black">{title}</h3><p className="mt-1 text-sm leading-6 text-blue-100/65">{description}</p></div>
                 </div>
               ))}
             </div>
@@ -535,106 +252,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. Why Choose Us (Value Proposition Grid) */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 md:px-8 bg-slate-50/80 border-t border-slate-200/80">
-        <div className="container max-w-6xl mx-auto space-y-8 sm:space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-              {t.whyTitle || "ทำไมต้องเลือก Sabuyship?"}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600">
-              {t.whySub || "จุดเด่นที่ทำให้เราแตกต่าง มั่นใจ ปลอดภัย และคุ้มค่าทุกการสั่งซื้อ"}
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <div className="w-12 h-12 bg-blue-100 text-primary rounded-2xl flex items-center justify-center">
-                <Clock className="w-6 h-6" />
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900">{t.cardSpeedTitle || "ขนส่งรวดเร็ว ตรงเวลา"}</h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{t.cardSpeedDesc || "ขนส่งทางรถ 5-7 วัน ทางเรือ 15-20 วัน ตู้สินค้าออกตรงเวลาทุกสัปดาห์"}</p>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900">{t.cardSafeTitle || "ปลอดภัย สินค้าไม่สูญหาย"}</h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{t.cardSafeDesc || "มีระบบบันทึกภาพและตรวจนับพัสดุในโกดังจีน ประกันสินค้าคุ้มครองความเสียหาย"}</p>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <div className="w-12 h-12 bg-orange-100 text-orange-700 rounded-2xl flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900">{t.cardTrackTitle || "เช็คสถานะสดได้ 24 ชั่วโมง"}</h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{t.cardTrackDesc || "ติดตามพัสดุได้ทุกขั้นตอนผ่านระบบหน้าเว็บ และแจ้งเตือนข้อความตรงเข้า LINE"}</p>
+      <section className="bg-white px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <div className="site-container grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          <div>
+            <span className="eyebrow"><ShieldCheck className="h-3.5 w-3.5" /> BUILT FOR PEACE OF MIND</span>
+            <h2 className="display-balance mt-5 text-3xl font-black tracking-[-0.035em] sm:text-5xl">{t.whyTitle || "เห็นทุกยอด รู้ทุกสถานะ มั่นใจทุกออเดอร์"}</h2>
+            <p className="mt-5 leading-8 text-slate-600">ดูใบเสนอราคา การชำระเงิน และเส้นทางพัสดุได้ในบัญชีของคุณ พร้อมทีมงานไทยที่ช่วยดูแลเมื่อคุณต้องการ</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {[{ icon: FileText, title: "ใบเสนอราคาแยกรายการ", desc: "เห็นราคา จำนวน และรายละเอียดชัดเจน" }, { icon: Layers3, title: "ประวัติชำระครบ 3 รอบ", desc: "รู้ว่าจ่ายค่าอะไรในแต่ละช่วง" }, { icon: MapPin, title: "ไทม์ไลน์ขนส่ง", desc: "ติดตามความเคลื่อนไหวได้ 24 ชั่วโมง" }, { icon: Headphones, title: "ทีมงานไทยดูแล", desc: "คุยง่าย เข้าใจตรงกัน ไม่ต้องแปลเอง" }].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-100 text-blue-700"><Icon className="h-5 w-5" /></div><div><h3 className="text-sm font-black text-slate-900">{title}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{desc}</p></div></div>
+              ))}
             </div>
           </div>
-
-          <div className="overflow-hidden rounded-3xl border border-blue-200/80 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white shadow-xl shadow-blue-950/10">
-            <div className="grid lg:grid-cols-[1.05fr_1fr] gap-0">
-              <div className="p-6 sm:p-8 lg:p-10">
-                <span className="inline-flex items-center gap-2 text-xs font-black text-blue-100 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
-                  <ShieldCheck className="w-4 h-4" />
-                  {locale === 'en' ? 'VERIFIABLE IN YOUR ACCOUNT' : locale === 'zh' ? '账户内全程可查' : 'ตรวจสอบได้จริงในบัญชีของคุณ'}
-                </span>
-                <h3 className="mt-4 text-2xl sm:text-3xl font-black leading-tight">
-                  {locale === 'en' ? 'Every baht and every status has a record' : locale === 'zh' ? '每笔费用、每个状态都有记录' : 'ทุกยอด ทุกสถานะ มีหลักฐานในระบบ'}
-                </h3>
-                <p className="mt-3 text-sm text-slate-300 leading-relaxed max-w-xl">
-                  {locale === 'en' ? 'Review itemized quotations, separate payment rounds and shipment updates yourself—without waiting for a chat reply.' : locale === 'zh' ? '商品明细、分阶段付款和物流更新均可自行查看，无需等待客服回复。' : 'ดูใบเสนอราคาแยกรายการ ประวัติชำระเงินแต่ละรอบ และสถานะขนส่งได้ด้วยตัวเอง ไม่ต้องรอถามแอดมิน'}
-                </p>
-                <Link href="/track" className="inline-flex items-center gap-2 mt-6 text-sm font-black text-white hover:text-orange-300 transition-colors">
-                  <Search className="w-4 h-4" />
-                  {locale === 'en' ? 'Open shipment tracking' : locale === 'zh' ? '打开物流查询' : 'เปิดหน้าติดตามสถานะ'}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              <div className="bg-white/7 border-t lg:border-t-0 lg:border-l border-white/10 p-5 sm:p-8">
-                <div className="space-y-3">
-                  {[
-                    { icon: FileText, title: locale === 'en' ? 'Itemized quotation' : locale === 'zh' ? '明细报价单' : 'ใบเสนอราคาแยกรายการ', desc: locale === 'en' ? 'See product price, quantity and service details.' : locale === 'zh' ? '查看商品价格、数量及服务明细。' : 'เห็นราคาสินค้า จำนวน และรายละเอียดบริการ' },
-                    { icon: Layers, title: locale === 'en' ? 'Three separate payment records' : locale === 'zh' ? '三阶段付款记录' : 'ประวัติชำระแยก 3 รอบ', desc: locale === 'en' ? 'Know exactly which cost is due at each stage.' : locale === 'zh' ? '清楚了解每阶段应付费用。' : 'รู้ชัดว่ากำลังชำระค่าอะไรในแต่ละช่วง' },
-                    { icon: MapPin, title: locale === 'en' ? 'Shipment timeline + LINE alerts' : locale === 'zh' ? '物流时间线 + LINE 提醒' : 'ไทม์ไลน์ขนส่ง + แจ้งเตือน LINE', desc: locale === 'en' ? 'Follow important movement without chasing updates.' : locale === 'zh' ? '重要进度自动通知，无需反复询问。' : 'ติดตามความเคลื่อนไหวสำคัญได้โดยไม่ต้องคอยทักถาม' },
-                  ].map(({ icon: ProofIcon, title, desc }) => (
-                    <div key={title} className="flex gap-3 rounded-2xl bg-white/8 border border-white/10 p-4">
-                      <div className="w-10 h-10 shrink-0 rounded-xl bg-orange-500 text-white flex items-center justify-center">
-                        <ProofIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-black">{title}</h4>
-                        <p className="mt-1 text-xs text-slate-300 leading-relaxed">{desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="relative rounded-[2.5rem] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-orange-50 p-6 shadow-2xl shadow-blue-900/10 sm:p-9">
+            <div className="flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-widest text-blue-600">Order Journey</p><h3 className="mt-1 text-xl font-black text-slate-950">ออเดอร์ #SS-240918</h3></div><span className="rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-black text-emerald-700">กำลังเดินทาง</span></div>
+            <div className="mt-8 space-y-1">
+              {[{ icon: Check, title: "ยืนยันและสั่งซื้อสินค้า", meta: "เสร็จแล้ว", done: true }, { icon: PackageCheck, title: "ถึงโกดังจีน", meta: "ตรวจรับสินค้าแล้ว", done: true }, { icon: Ship, title: "ขนส่งจีน–ไทย", meta: "กำลังเดินทาง", done: false }, { icon: Box, title: "ถึงโกดังไทย", meta: "ขั้นตอนถัดไป", done: false }].map(({ icon: Icon, title, meta, done }, index) => (
+                <div key={title} className="relative flex gap-4 pb-6 last:pb-0">{index < 3 && <span className={`absolute left-5 top-10 h-full w-px ${done ? "bg-blue-300" : "bg-slate-200"}`} />}<div className={`relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border-4 border-white shadow-sm ${done ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"}`}><Icon className="h-4 w-4" /></div><div className="pt-1"><p className="font-black text-slate-900">{title}</p><p className={`mt-1 text-xs font-bold ${done ? "text-blue-600" : "text-slate-400"}`}>{meta}</p></div></div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. Bottom Call to Action Banner */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 md:px-8 bg-slate-950 text-white relative overflow-hidden">
-        <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-500/15 rounded-full blur-3xl" />
-        <div className="container max-w-3xl mx-auto text-center space-y-6 relative z-10">
-          <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-            {t.ctaTitle || "พร้อมเริ่มต้นสั่งสินค้าจากจีนแล้วหรือยัง?"}
-          </h2>
-          <p className="text-xs sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
-            {t.ctaSub || "แค่ก๊อปปี้ลิงก์สินค้าจาก Taobao หรือ 1688 ส่งให้เราประเมินราคาฟรี ไม่มีค่ากดสั่งซื้อ 0 บาท"}
-          </p>
-          <div className="pt-2">
-            <Link href="/inquiry">
-              <Button size="lg" variant="orange" className="text-sm sm:text-base px-8 h-13 font-black shadow-xl shadow-orange-500/25 rounded-xl cursor-pointer hover:shadow-orange-500/35 transition-all">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                {t.ctaBtn || "ส่งลิงก์สินค้า ขอใบเสนอราคาฟรี ➔"}
-              </Button>
-            </Link>
-          </div>
+      <section className="px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <div className="site-container relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-700 via-blue-700 to-indigo-800 px-6 py-14 text-center text-white shadow-2xl shadow-blue-900/20 sm:px-12 sm:py-20">
+          <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-2xl" /><div className="absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-orange-400/25 blur-3xl" />
+          <div className="relative mx-auto max-w-3xl"><span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-black"><BadgePercent className="h-4 w-4 text-orange-300" /> เริ่มต้นฟรี ไม่มีขั้นต่ำ</span><h2 className="display-balance mt-5 text-3xl font-black tracking-[-0.04em] sm:text-5xl">{t.ctaTitle || "พร้อมให้ของจากจีน เดินทางมาหาคุณหรือยัง?"}</h2><p className="mx-auto mt-5 max-w-2xl leading-8 text-blue-100">{t.ctaSub || "ส่งลิงก์มาให้เราเช็กราคาก่อนได้ ไม่มีค่ากดสั่ง และยังไม่ต้องผูกมัด"}</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href="/inquiry"><Button variant="orange" size="lg" className="w-full rounded-2xl sm:w-auto"><ShoppingCart className="mr-2 h-5 w-5" />ส่งลิงก์ ขอราคาฟรี</Button></Link><Link href="/track"><Button size="lg" className="w-full rounded-2xl border border-white/20 bg-white/10 text-white shadow-none hover:bg-white/20 hover:text-white sm:w-auto"><Search className="mr-2 h-5 w-5" />ติดตามพัสดุ</Button></Link></div></div>
         </div>
       </section>
     </div>
