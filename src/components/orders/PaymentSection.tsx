@@ -226,218 +226,233 @@ export function PaymentSection({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && setIsOpen(false)}>
-        <DialogContent className="max-w-md w-full bg-white rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto fixed bottom-0 sm:bottom-auto left-1/2 -translate-x-1/2 animate-bottom-sheet sm:animate-none pb-safe">
-          {/* Mobile Bottom Sheet Pull Indicator Handle */}
-          <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-3 sm:hidden" />
-
-          <div className="flex justify-between items-start border-b border-slate-100 pb-3">
-            <DialogHeader>
+        <DialogContent className="max-w-md w-[calc(100%-1.5rem)] sm:w-full bg-white rounded-2xl sm:rounded-3xl p-0 gap-0 shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden border border-slate-200">
+          {/* Fixed Header */}
+          <div className="flex justify-between items-center p-4 sm:p-5 border-b border-slate-100 shrink-0 bg-white">
+            <DialogHeader className="text-left pr-6">
               <DialogTitle className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                แจ้งชำระเงิน รอบที่ {paymentRound}
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>แจ้งชำระเงิน รอบที่ {paymentRound}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-500 mt-0.5">
                 สแกน QR หรือโอนเข้าบัญชี แล้วแนบรูปสลิปเพื่อยืนยัน
               </DialogDescription>
             </DialogHeader>
-            <Button variant="ghost" size="icon" onClick={() => !isSubmitting && setIsOpen(false)} className="h-8 w-8 rounded-full cursor-pointer">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => !isSubmitting && setIsOpen(false)} 
+              className="h-8 w-8 rounded-full cursor-pointer shrink-0 text-slate-400 hover:text-slate-700"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-            
-            {/* Amount Banner with 1-Tap Copy */}
-            <div className="p-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl text-white flex justify-between items-center shadow-md shadow-blue-600/20">
-              <div>
-                <span className="text-[10px] text-blue-100 uppercase tracking-wider block font-bold">
-                  ยอดที่ต้องชำระ (รอบที่ {paymentRound})
-                </span>
-                <span className="text-xl sm:text-2xl font-black font-mono">
-                  ฿ {Number(amount || defaultAmount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={handleCopyAmount}
-                className="h-9 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl backdrop-blur-sm border border-white/20 shrink-0 cursor-pointer shadow-xs"
-              >
-                {copiedAmount ? (
-                  <span className="flex items-center gap-1 text-emerald-300">
-                    <Check className="w-3.5 h-3.5" /> คัดลอกแล้ว
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <Copy className="w-3.5 h-3.5" /> คัดลอกยอดเงิน
-                  </span>
-                )}
-              </Button>
-            </div>
-
-            {/* Payment Method Switcher: PromptPay QR / Bank Transfer */}
-            <div className="flex bg-slate-100 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setPaymentMethodTab('promptpay')}
-                disabled={!hasPromptPay}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  paymentMethodTab === 'promptpay' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <QrCode className="w-3.5 h-3.5 text-primary" />
-                <span>สแกน PromptPay QR</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethodTab('bank')}
-                disabled={!hasBankTransfer}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  paymentMethodTab === 'bank' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <span>โอนผ่านเลขบัญชี</span>
-              </button>
-            </div>
-
-            {/* Tab 1: Dynamic PromptPay QR Code with Download Button */}
-            {paymentMethodTab === 'promptpay' && hasPromptPay && (
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-3 animate-in fade-in duration-200">
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 inline-block shadow-xs">
-                  <img 
-                    src={qrUrl} 
-                    alt="PromptPay QR Code" 
-                    className="w-44 h-44 sm:w-48 sm:h-48 object-contain mx-auto rounded-lg" 
-                  />
-                  <div className="mt-1 flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700">
-                    <span>พร้อมเพย์: {accountName}</span>
-                  </div>
-                </div>
-
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-4">
+              
+              {/* Amount Banner with 1-Tap Copy */}
+              <div className="p-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl text-white flex justify-between items-center shadow-md shadow-blue-600/20">
                 <div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadQr}
-                    className="h-10 px-4 text-xs font-bold text-primary border-blue-200 hover:bg-blue-50 rounded-xl cursor-pointer shadow-xs"
-                  >
-                    <Download className="w-4 h-4 mr-1.5 text-primary" />
-                    📥 บันทึกรูป QR Code ลงมือถือ
-                  </Button>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    * บันทึกแล้วเปิดแอปธนาคาร เลือกสแกนรูปภาพจากคลังรูปภาพได้ทันที
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: Bank Account Info Card */}
-            {paymentMethodTab === 'bank' && hasBankTransfer && (
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-2.5 animate-in fade-in duration-200">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">
-                    บัญชีธนาคารสำหรับโอนเงิน
+                  <span className="text-[10px] text-blue-100 uppercase tracking-wider block font-bold">
+                    ยอดที่ต้องชำระ (รอบที่ {paymentRound})
                   </span>
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">
-                    บัญชีผู้ประกอบการบุคคลธรรมดา
+                  <span className="text-xl sm:text-2xl font-black font-mono">
+                    ฿ {Number(amount || defaultAmount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-
-                <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200">
-                  <div>
-                    <p className="font-black text-slate-900 text-sm">{bankName}</p>
-                    <p className="text-slate-500 text-xs">ชื่อบัญชี: {accountName}</p>
-                    <p className="font-mono text-base font-black text-primary tracking-wider mt-0.5">{bankAccount}</p>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopyAccount(bankAccount)}
-                    className="h-9 px-3 text-xs font-bold shrink-0 cursor-pointer rounded-xl border-slate-200 hover:bg-blue-50 hover:text-primary shadow-2xs"
-                  >
-                    {copiedBank ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
-                    {copiedBank ? "คัดลอกแล้ว" : "คัดลอก"}
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleCopyAmount}
+                  className="h-9 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl backdrop-blur-sm border border-white/20 shrink-0 cursor-pointer shadow-xs"
+                >
+                  {copiedAmount ? (
+                    <span className="flex items-center gap-1 text-emerald-300">
+                      <Check className="w-3.5 h-3.5" /> คัดลอกแล้ว
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <Copy className="w-3.5 h-3.5" /> คัดลอกยอดเงิน
+                    </span>
+                  )}
+                </Button>
               </div>
-            )}
 
-            {/* Slip File Upload (Touch-Friendly Box) */}
-            <div className="space-y-1.5 text-left">
-              <label className="text-xs font-bold text-slate-700 flex justify-between items-center">
-                <span>แนบรูปสลิปหลักฐานการโอน *</span>
-                <span className="text-[10px] text-slate-400 font-normal">รองรับไฟล์ JPG, PNG</span>
-              </label>
+              {/* Payment Method Switcher: PromptPay QR / Bank Transfer */}
+              <div className="flex bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethodTab('promptpay')}
+                  disabled={!hasPromptPay}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    paymentMethodTab === 'promptpay' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <QrCode className="w-3.5 h-3.5 text-primary" />
+                  <span>สแกน PromptPay QR</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethodTab('bank')}
+                  disabled={!hasBankTransfer}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    paymentMethodTab === 'bank' ? 'bg-white text-primary shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <span>โอนผ่านเลขบัญชี</span>
+                </button>
+              </div>
 
-              {!previewUrl ? (
-                <label className="border-2 border-dashed border-blue-200 hover:border-primary bg-blue-50/30 hover:bg-blue-50/60 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]">
-                  <div className="w-11 h-11 rounded-full bg-blue-100 text-primary flex items-center justify-center shadow-xs">
-                    <Camera className="w-5 h-5" />
-                  </div>
-                  <div className="text-center">
-                    <span className="text-xs font-bold text-primary block">แตะเพื่อถ่ายรูปหรือเลือกสลิปจากคลังภาพ</span>
-                    <span className="text-[10px] text-slate-400">ระบบจะช่วยบีบอัดรูปให้โหลดเร็วขึ้น</span>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    required
-                  />
-                </label>
-              ) : (
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in duration-200">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img src={previewUrl} alt="Slip preview" className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0" />
-                    <div className="min-w-0">
-                      <span className="font-bold text-slate-800 text-xs block truncate">เลือกสลิปเรียบร้อยแล้ว</span>
-                      <span className="text-emerald-600 text-[11px] font-semibold flex items-center gap-1">
-                        <Check className="w-3 h-3" /> พร้อมกดยืนยันด้านล่าง
-                      </span>
+              {/* Tab 1: Dynamic PromptPay QR Code with Download Button */}
+              {paymentMethodTab === 'promptpay' && hasPromptPay && (
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-3 animate-in fade-in duration-200">
+                  <div className="bg-white p-3 rounded-2xl border border-slate-200 inline-block shadow-xs">
+                    <img 
+                      src={qrUrl} 
+                      alt="PromptPay QR Code" 
+                      className="w-44 h-44 sm:w-48 sm:h-48 object-contain mx-auto rounded-lg" 
+                    />
+                    <div className="mt-1 flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700">
+                      <span>พร้อมเพย์: {accountName}</span>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setFile(null); setPreviewUrl(null); }}
-                    className="h-9 w-9 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl shrink-0 cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadQr}
+                      className="h-10 px-4 text-xs font-bold text-primary border-blue-200 hover:bg-blue-50 rounded-xl cursor-pointer shadow-xs"
+                    >
+                      <Download className="w-4 h-4 mr-1.5 text-primary" />
+                      📥 บันทึกรูป QR Code ลงมือถือ
+                    </Button>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      * บันทึกแล้วเปิดแอปธนาคาร เลือกสแกนรูปภาพจากคลังรูปภาพได้ทันที
+                    </p>
+                  </div>
                 </div>
               )}
+
+              {/* Tab 2: Bank Account Info Card */}
+              {paymentMethodTab === 'bank' && hasBankTransfer && (
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-2.5 animate-in fade-in duration-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">
+                      บัญชีธนาคารสำหรับโอนเงิน
+                    </span>
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">
+                      บัญชีผู้ประกอบการบุคคลธรรมดา
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200">
+                    <div>
+                      <p className="font-black text-slate-900 text-sm">{bankName}</p>
+                      <p className="text-slate-500 text-xs">ชื่อบัญชี: {accountName}</p>
+                      <p className="font-mono text-base font-black text-primary tracking-wider mt-0.5">{bankAccount}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCopyAccount(bankAccount)}
+                      className="h-9 px-3 text-xs font-bold shrink-0 cursor-pointer rounded-xl border-slate-200 hover:bg-blue-50 hover:text-primary shadow-2xs"
+                    >
+                      {copiedBank ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                      {copiedBank ? "คัดลอกแล้ว" : "คัดลอก"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Slip File Upload (Touch-Friendly Box) */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-bold text-slate-700 flex justify-between items-center">
+                  <span>แนบรูปสลิปหลักฐานการโอน *</span>
+                  <span className="text-[10px] text-slate-400 font-normal">รองรับไฟล์ JPG, PNG</span>
+                </label>
+
+                {!previewUrl ? (
+                  <label className="border-2 border-dashed border-blue-200 hover:border-primary bg-blue-50/30 hover:bg-blue-50/60 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]">
+                    <div className="w-11 h-11 rounded-full bg-blue-100 text-primary flex items-center justify-center shadow-xs">
+                      <Camera className="w-5 h-5" />
+                    </div>
+                    <div className="text-center">
+                      <span className="text-xs font-bold text-primary block">แตะเพื่อถ่ายรูปหรือเลือกสลิปจากคลังภาพ</span>
+                      <span className="text-[10px] text-slate-400">ระบบจะช่วยบีบอัดรูปให้โหลดเร็วขึ้น</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      required
+                    />
+                  </label>
+                ) : (
+                  <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in duration-200">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img src={previewUrl} alt="Slip preview" className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0" />
+                      <div className="min-w-0">
+                        <span className="font-bold text-slate-800 text-xs block truncate">เลือกสลิปเรียบร้อยแล้ว</span>
+                        <span className="text-emerald-600 text-[11px] font-semibold flex items-center gap-1">
+                          <Check className="w-3 h-3" /> พร้อมกดยืนยันด้านล่าง
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setFile(null); setPreviewUrl(null); }}
+                      className="h-9 w-9 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl shrink-0 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Collapsible Date/Time (Auto-filled) */}
+              <div className="space-y-1 text-left pt-1">
+                <label htmlFor="paymentDate" className="text-[11px] font-semibold text-slate-500">
+                  วัน-เวลาที่โอน (ตามสลิป)
+                </label>
+                <Input 
+                  id="paymentDate" 
+                  type="datetime-local" 
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="h-10 rounded-xl bg-slate-50 text-xs text-slate-700 font-mono"
+                />
+              </div>
+
             </div>
 
-            {/* Collapsible Date/Time (Auto-filled) */}
-            <div className="space-y-1 text-left pt-1">
-              <label htmlFor="paymentDate" className="text-[11px] font-semibold text-slate-500">
-                วัน-เวลาที่โอน (ตามสลิป)
-              </label>
-              <Input 
-                id="paymentDate" 
-                type="datetime-local" 
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-                className="h-10 rounded-xl bg-slate-50 text-xs text-slate-700 font-mono"
-              />
-            </div>
-
-            <DialogFooter className="pt-2 sm:justify-between gap-2 flex-col-reverse sm:flex-row">
-              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isSubmitting} className="cursor-pointer text-xs h-11">
+            {/* Pinned Sticky Footer - Always Visible on Screen */}
+            <div className="p-3 sm:p-4 border-t border-slate-100 bg-slate-50/95 backdrop-blur-xs shrink-0 flex items-center justify-between gap-2">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => !isSubmitting && setIsOpen(false)} 
+                disabled={isSubmitting} 
+                className="cursor-pointer text-xs h-11 px-3 text-slate-500 hover:text-slate-800"
+              >
                 ยกเลิก
               </Button>
               <Button 
                 type="submit" 
                 disabled={isSubmitting || !file}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 px-6 rounded-xl cursor-pointer shadow-md shadow-emerald-600/25 text-sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-11 px-5 rounded-xl cursor-pointer shadow-md shadow-emerald-600/25 text-xs sm:text-sm flex-1 sm:flex-initial transition-all disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>กำลังบันทึก...</span>
                   </div>
@@ -445,7 +460,7 @@ export function PaymentSection({
                   <span>✓ ยืนยันแจ้งชำระเงิน</span>
                 )}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

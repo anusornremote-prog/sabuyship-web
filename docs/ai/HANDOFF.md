@@ -90,6 +90,13 @@ Never replace production environment values with staging values. Do not place an
 - **Complete Profile Validation (`src/app/(auth)/complete-profile/page.tsx`)**:
   - Added strict 9-10 digit numeric format validation on `/complete-profile` before saving.
 
+### 5. Payment Modal Scrolling & Pinned Submit Button
+- **Modal Overflow & Scrolling Overhaul (`src/components/orders/PaymentSection.tsx`)**:
+  - Redesigned `DialogContent` to `flex flex-col max-h-[90dvh] overflow-hidden` with dynamic viewport unit `90dvh` to adapt cleanly across mobile browsers with virtual URL bars and desktop screens.
+  - Placed the modal header as a static `shrink-0` pinned element at the top.
+  - Placed all scrollable payment details (PromptPay QR, bank card, slip upload box, and datetime picker) inside a dedicated `flex-1 overflow-y-auto overscroll-contain min-h-0` container.
+  - Pinned the modal footer containing the "✓ ยืนยันแจ้งชำระเงิน" (Confirm Payment) button to the bottom (`shrink-0 border-t bg-slate-50/95`) so it is permanently visible on both mobile and desktop screens without getting cut off.
+
 ## Validation Completed
 
 - `git diff --check main` — passed with 0 whitespace warnings and 0 formatting errors.
