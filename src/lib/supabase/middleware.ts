@@ -53,29 +53,37 @@ export async function updateSession(request: NextRequest) {
     isActive = profile?.is_active !== false
   }
 
+  const createRedirectResponse = (url: string) => {
+    const redirectResponse = NextResponse.redirect(new URL(url, request.url))
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    return redirectResponse
+  }
+
   // Route Guards
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      return createRedirectResponse('/login')
     }
   }
 
   if (pathname.startsWith('/admin')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      return createRedirectResponse('/login')
     }
     if (role !== 'ADMIN' || !isActive) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return createRedirectResponse('/dashboard')
     }
     if (!hasPhone) {
-      return NextResponse.redirect(new URL('/complete-profile', request.url))
+      return createRedirectResponse('/complete-profile')
     }
   }
 
   if (pathname === '/login' || pathname === '/register') {
     if (user) {
       const dest = role === 'ADMIN' ? '/admin' : '/dashboard'
-      return NextResponse.redirect(new URL(dest, request.url))
+      return createRedirectResponse(dest)
     }
   }
 

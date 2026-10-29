@@ -15,7 +15,6 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
   const [supabase] = useState(() => createClient())
-  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [adminEmail, setAdminEmail] = useState<string | null>(null)
   
   const [badgeCounts, setBadgeCounts] = useState({
@@ -58,22 +57,7 @@ export default function AdminLayout({
     fetchCounts()
   }, [pathname])
 
-  useEffect(() => {
-    const resetIdleTimer = () => {
-      if (idleTimer.current) clearTimeout(idleTimer.current)
-      idleTimer.current = setTimeout(async () => {
-        await supabase.auth.signOut()
-        router.push("/login?reason=admin-session-expired")
-      }, 30 * 60 * 1000)
-    }
-    const events: Array<keyof WindowEventMap> = ["mousedown", "keydown", "touchstart", "scroll"]
-    events.forEach((event) => window.addEventListener(event, resetIdleTimer, { passive: true }))
-    resetIdleTimer()
-    return () => {
-      if (idleTimer.current) clearTimeout(idleTimer.current)
-      events.forEach((event) => window.removeEventListener(event, resetIdleTimer))
-    }
-  }, [router, supabase])
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

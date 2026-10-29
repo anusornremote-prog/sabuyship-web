@@ -14,7 +14,7 @@ import { getFriendlyAuthErrorMessage } from "@/lib/auth-errors"
 export default function Login() {
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
-  const [remember, setRemember] = useState(false)
+  const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -54,16 +54,21 @@ export default function Login() {
       const reason = params.get("reason")
 
       if (reason === "admin-session-expired") {
-        setError("เซสชันหมดอายุเนื่องจากไม่มีการใช้งานเกิน 30 นาที กรุณาเข้าสู่ระบบใหม่อีกครั้ง")
+        setError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง")
       } else if (urlError) {
         setError(getFriendlyAuthErrorMessage(urlError))
       }
 
       try {
-        const saved = localStorage.getItem("sabuy_remember_identifier")
-        if (saved) {
-          setIdentifier(saved)
-          setRemember(true)
+        const savedRemember = localStorage.getItem("sabuy_remember_me")
+        const shouldRemember = savedRemember !== "false"
+        setRemember(shouldRemember)
+
+        if (shouldRemember) {
+          const saved = localStorage.getItem("sabuy_remember_identifier") || localStorage.getItem("sabuy_last_email")
+          if (saved) {
+            setIdentifier(saved)
+          }
         }
       } catch (e) {
         // LocalStorage disabled or unavailable
@@ -128,8 +133,12 @@ export default function Login() {
     try {
       if (remember) {
         localStorage.setItem("sabuy_remember_identifier", identifier.trim())
+        localStorage.setItem("sabuy_last_email", identifier.trim())
+        localStorage.setItem("sabuy_remember_me", "true")
       } else {
         localStorage.removeItem("sabuy_remember_identifier")
+        localStorage.removeItem("sabuy_last_email")
+        localStorage.setItem("sabuy_remember_me", "false")
       }
     } catch (e) {
       // Ignore storage errors
@@ -190,25 +199,35 @@ export default function Login() {
         <form onSubmit={handleLogin} className="space-y-4">
           {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
           <div className="space-y-2">
-            <label className="text-sm font-medium">อีเมล *</label>
+            <label htmlFor="email" className="text-sm font-medium">อีเมล *</label>
             <Input 
+              id="email"
               type="email"
               name="email"
-              autoComplete="username"
+              autoComplete="email username"
               required 
               value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              onChange={(e) => {
+                setIdentifier(e.target.value)
+                try {
+                  if (remember) {
+                    localStorage.setItem("sabuy_remember_identifier", e.target.value.trim())
+                    localStorage.setItem("sabuy_last_email", e.target.value.trim())
+                  }
+                } catch {}
+              }}
               placeholder="เช่น user@email.com"
             />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">รหัสผ่าน *</label>
+              <label htmlFor="password" className="text-sm font-medium">รหัสผ่าน *</label>
               <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                 ลืมรหัสผ่าน?
               </Link>
             </div>
             <Input 
+              id="password"
               type="password" 
               name="password"
               autoComplete="current-password"
@@ -223,14 +242,27 @@ export default function Login() {
               id="remember" 
               name="remember"
               checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
+              onChange={(e) => {
+                const checked = e.target.checked
+                setRemember(checked)
+                try {
+                  localStorage.setItem("sabuy_remember_me", checked ? "true" : "false")
+                  if (checked && identifier.trim()) {
+                    localStorage.setItem("sabuy_remember_identifier", identifier.trim())
+                    localStorage.setItem("sabuy_last_email", identifier.trim())
+                  } else if (!checked) {
+                    localStorage.removeItem("sabuy_remember_identifier")
+                    localStorage.removeItem("sabuy_last_email")
+                  }
+                } catch {}
+              }}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
             />
             <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer">
               จำอีเมล
             </label>
           </div>
-          <Button type="submit" className="w-full h-11" disabled={loading}>
+          <Button type="submit" className="w-full h-11 cursor-pointer font-bold" disabled={loading}>
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </Button>
 

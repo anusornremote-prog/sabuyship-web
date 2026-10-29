@@ -66,6 +66,17 @@ Never replace production environment values with staging values. Do not place an
   - Enhanced the mobile header logout button with a clear "ออกจากระบบ" text label and icon.
   - Added a direct "ออกจากระบบ" quick action button at the end of the mobile horizontal navigation pill bar.
 
+### 3. Session Retention & Login Email Remembering
+- **Prevent Inactive Tab Kickout (`src/app/admin/layout.tsx`)**:
+  - Removed the aggressive 30-minute client-side `idleTimer` that was calling `supabase.auth.signOut()` whenever the admin switched tabs or windows to perform other tasks.
+  - Admin authentication session is now naturally preserved and refreshed via Supabase refresh tokens without premature logouts.
+- **Login Email Persistence & Browser Autofill (`src/app/(auth)/login/page.tsx`)**:
+  - Defaulted the "จำอีเมล" (Remember Email) checkbox to `true`.
+  - Added real-time persistence of entered email to `localStorage` (`sabuy_remember_identifier` and `sabuy_last_email`).
+  - Added `id="email"`, `name="email"`, `autoComplete="email username"` and `id="password"`, `autoComplete="current-password"` to activate native browser credential autofill.
+- **Session Cookie Forwarding in Middleware (`src/lib/supabase/middleware.ts`)**:
+  - Implemented `createRedirectResponse` to guarantee refreshed session cookies are forwarded on internal middleware route guard redirects.
+
 ## Validation Completed
 
 - `git diff --check main` — passed with 0 whitespace warnings and 0 formatting errors.
