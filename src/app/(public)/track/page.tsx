@@ -88,11 +88,19 @@ export default function TrackOrder() {
         ? (locale === 'zh' ? '海运 (SEA)' : locale === 'en' ? 'Sea Cargo (SEA)' : 'ขนส่งทางเรือ (SEA)') 
         : (locale === 'zh' ? '陆运 (EK)' : locale === 'en' ? 'Road Cargo (EK)' : 'ขนส่งทางรถ (EK)')
 
+      let inquiryItems = inquiry?.items || []
+      if (typeof inquiryItems === 'string') {
+        try { inquiryItems = JSON.parse(inquiryItems) } catch { inquiryItems = [] }
+      }
+      const chinaTrackings = inquiryItems.map((it: any) => (it.tracking_cn_cn || it.china_tracking_number || "").toString().trim()).filter(Boolean)
+      const chinaTrackingStr = Array.from(new Set(chinaTrackings)).join(", ")
+
       setPackageInfo({
         order_id: order.id,
         tracking_number: order.order_number,
         thai_tracking: order.tracking_number,
         thai_carrier: order.shipping_company,
+        china_tracking: chinaTrackingStr || null,
         status: order.status,
         created_at: order.created_at,
         shipping_type: shippingLabel,
@@ -271,6 +279,23 @@ export default function TrackOrder() {
                   <Badge className="bg-primary text-white font-bold px-3 py-1 text-xs border-0">
                     {packageInfo.shipping_type}
                   </Badge>
+                  {packageInfo.china_tracking && (
+                    <div className="flex items-center gap-1.5 p-1.5 px-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-900 shadow-2xs">
+                      <span>🇨🇳 แทร็กจีน:</span>
+                      <span className="font-mono text-amber-950">{packageInfo.china_tracking}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(packageInfo.china_tracking);
+                          toast.success("คัดลอกเลขพัสดุจีนแล้ว");
+                        }}
+                        className="p-1 hover:bg-amber-100 rounded text-amber-800 cursor-pointer ml-1"
+                        title="คัดลอกเลขพัสดุจีน"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                   {packageInfo.thai_tracking && (
                     <div className="flex items-center gap-1.5 p-1.5 px-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 shadow-2xs">
                       <span>🚚 {packageInfo.thai_carrier || "ขนส่งในไทย"}:</span>

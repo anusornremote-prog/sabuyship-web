@@ -159,11 +159,16 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {round === 2 ? "แจ้งค่าขนส่ง จีน-ไทย (รอบ 2)" : "แจ้งค่าจัดส่งในไทย (รอบ 3)"}
+            {round === 2 ? "บันทึกสินค้าถึงโกดังจีน & ประเมินค่าส่งจีน-ไทย (รอบ 2)" : "แจ้งค่าจัดส่งในไทย (รอบ 3)"}
           </DialogTitle>
           <DialogDescription asChild>
             <div className="flex flex-col gap-2 mt-2">
-              <span>ออเดอร์: {order.order_number}</span>
+              <span className="text-xs text-slate-500">ออเดอร์: {order.order_number}</span>
+              {round === 2 && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1.5 rounded-md inline-block w-fit text-xs">
+                  <span>📦 สินค้ามาถึงโกดังจีนแล้ว ชั่งน้ำหนัก/วัดขนาด และกรอกยอดค่าขนส่งเพื่อแจ้งยอดชำระรอบ 2 ให้ลูกค้า</span>
+                </div>
+              )}
               {round === 3 && order.shipping_company && (
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded-md inline-block w-fit text-sm">
                   <span className="font-semibold mr-1">การจัดส่งที่ลูกค้าเลือก:</span>

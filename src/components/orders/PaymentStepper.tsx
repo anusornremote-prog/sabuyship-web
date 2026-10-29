@@ -16,6 +16,7 @@ interface PaymentStepperProps {
   shippingCostThTh: number
   initialShippingMethod: string
   rejectionReason?: string | null
+  chinaTrackingNumber?: string | null
 }
 
 export function PaymentStepper({ 
@@ -29,7 +30,8 @@ export function PaymentStepper({
   shippingCostCnTh,
   shippingCostThTh,
   initialShippingMethod,
-  rejectionReason
+  rejectionReason,
+  chinaTrackingNumber
 }: PaymentStepperProps) {
   
   const [shippingMethod, setShippingMethod] = useState<string>(initialShippingMethod)
@@ -81,8 +83,12 @@ export function PaymentStepper({
           : paymentRound2Status === 'REJECTED' 
             ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" 
             : (status === 'CHINA_WAREHOUSE' 
-                ? (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "รอแอดมินประเมินค่าขนส่ง") 
-                : (status === 'ORDERED' || status === 'PENDING' ? "รอสินค้าถึงโกดังจีน" : "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย")),
+                ? (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "สินค้าถึงโกดังจีนแล้ว รอประเมินค่าขนส่ง") 
+                : (status === 'ORDERED' 
+                    ? (chinaTrackingNumber 
+                        ? `ร้านค้าจีนจัดส่งแล้ว กำลังไปโกดังจีน (รอสินค้าถึงโกดัง)` 
+                        : "สั่งซื้อสำเร็จแล้ว รอร้านค้าจีนจัดส่ง")
+                    : (status === 'PENDING' ? "รอสินค้าถึงโกดังจีน" : "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย"))),
       amount: shippingCostCnTh,
       isCompleted: paymentRound2Status === 'PAID',
       isActive: (paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE') && paymentRound2Status !== 'PAID',
@@ -143,6 +149,14 @@ export function PaymentStepper({
                   )}
                   
                   <p className={`text-sm mt-0.5 ${step.status === 'REJECTED' ? 'text-red-500 font-medium' : 'text-slate-500'}`}>{step.description}</p>
+                  
+                  {/* Chinese Domestic Tracking Badge */}
+                  {step.round === 2 && chinaTrackingNumber && (
+                    <div className="mt-2 inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-md text-xs font-mono shadow-xs">
+                      <span>🇨🇳 แทร็กจีน:</span>
+                      <span className="font-bold">{chinaTrackingNumber}</span>
+                    </div>
+                  )}
                   
                   {/* Rejection Reason Box - show only for REJECTED steps */}
                   {step.status === 'REJECTED' && rejectionReason && (

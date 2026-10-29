@@ -55,6 +55,7 @@
 - Preserve the three payment rounds: product, China-to-Thailand freight, and Thailand delivery.
 - Important order or payment status transitions must create `tracking_logs` entries.
 - Database columns use `snake_case`.
+- **Separation of Chinese Domestic Tracking from Round 2 Freight Invoice**: After Round 1 payment confirmation (`ORDERED`), Chinese domestic tracking is entered as a discrete step before entering Round 2 shipping costs. Customers can view the tracking number while goods are en route to the China warehouse, and Round 2 freight invoice is only submitted when items arrive at the China warehouse (`CHINA_WAREHOUSE`).
 
 ## Collaboration
 

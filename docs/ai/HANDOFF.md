@@ -120,6 +120,12 @@ Never replace production environment values with staging values. Do not place an
 - Post-deploy smoke checks pass: `/`, `/login`, and `/inquiry` return 200; `/dashboard` and `/admin` return 307 to `/login`; OAuth cancellation returns only `AuthCancelled`.
 - Image optimization release `cd91117` deployed as `dpl_J4GVdPYL71bYRqC4712FvP7boTHm`; Vercel reports Ready and aliases it to `www.sabuyship.com`.
 
+### 6. Chinese Domestic Tracking Step Separation from Round 2 Freight Invoice
+- **Business Requirement**: Separated Chinese domestic tracking input from Round 2 freight quotation. Admin enters Chinese tracking when merchant dispatches goods, notifying customer that goods are en route to the China warehouse. Round 2 shipping cost is only evaluated when parcel arrives at China warehouse.
+- **Admin Side**: Added `ChinaTrackingModal`, action button `ใส่แทร็กจีน` / `แก้ไขแทร็กจีน`, Chinese tracking badges, and detail card in `admin/orders`.
+- **API**: Added `POST /api/admin/orders/[id]/china-tracking` which logs `CHINA_TRANSIT` to `tracking_logs`, updates audit logs, and notifies customer.
+- **Customer Side**: Updated `PaymentStepper` and `dashboard/orders/[id]` with Chinese tracking pill, copy button, and tracking link.
+
 ## Browser Test Evidence (Mobile Viewport 390x844)
 
 - **Login Page (`/login`)**:

@@ -126,6 +126,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       case 'UPLOADED_ROUND_3': return 'รอตรวจสอบการชำระเงิน รอบที่ 3'
       case 'PAYMENT_REJECTED': return 'สลิปถูกปฏิเสธ (REJECTED)'
       case 'ORDERED': return 'สั่งซื้อสำเร็จ (ORDERED)'
+      case 'CHINA_TRANSIT': return 'ร้านค้าจีนจัดส่งแล้ว (กำลังไปโกดังจีน)'
       case 'CHINA_WAREHOUSE': return 'สินค้าถึงโกดังจีน (CHINA WAREHOUSE)'
       case 'SHIPPING': return 'อยู่ระหว่างจัดส่งมาไทย (SHIPPING)'
       case 'THAILAND_WAREHOUSE': return 'สินค้าถึงโกดังไทย (THAILAND WAREHOUSE)'
@@ -153,6 +154,12 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       inquiryItems = [];
     }
   }
+
+  // Extract Chinese domestic tracking numbers if available
+  const chinaTrackingNumbers = (inquiryItems || [])
+    .map((item: any) => (item.tracking_cn_cn || item.china_tracking_number || "").toString().trim())
+    .filter(Boolean)
+  const chinaTrackingString = Array.from(new Set(chinaTrackingNumbers)).join(", ")
 
   return (
     <div className="space-y-6">
@@ -236,6 +243,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           shippingCostThTh={quotation?.shipping_cost_th_th || 0}
           initialShippingMethod={order.shipping_company || ''}
           rejectionReason={rejectedPayment?.rejection_reason || null}
+          chinaTrackingNumber={chinaTrackingString || null}
         />
       </div>
 
@@ -481,38 +489,74 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="md:col-span-1 space-y-6">
-          {inquiryItems && inquiryItems.some((item: any) => item.tracking_cn_cn) && (
-            <Card className="shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100 mb-4">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-primary" />
-                  ข้อมูลการจัดส่งในจีน
-                </CardTitle>
+          {inquiryItems && (inquiryItems.some((item: any) => item.tracking_cn_cn || item.china_tracking_number) || order.status === 'ORDERED' || order.status === 'CHINA_WAREHOUSE') && (
+            <Card className="shadow-sm border-amber-200/70">
+              <CardHeader className="pb-3 border-b border-slate-100 mb-4 bg-amber-50/40 rounded-t-xl">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-base text-slate-800">
+                    <span className="text-base">🇨🇳</span>
+                    <span>ข้อมูลการจัดส่งในจีน</span>
+                  </CardTitle>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    order.status === 'CHINA_WAREHOUSE' 
+                      ? 'bg-purple-100 text-purple-700' 
+                      : chinaTrackingString 
+                        ? 'bg-amber-100 text-amber-800' 
+                        : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {order.status === 'CHINA_WAREHOUSE' 
+                      ? 'ถึงโกดังจีนแล้ว' 
+                      : chinaTrackingString 
+                        ? 'กำลังไปโกดังจีน' 
+                        : 'รอร้านค้าจัดส่ง'}
+                  </span>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {inquiryItems.filter((item: any) => item.tracking_cn_cn).map((item: any, idx: number) => (
-                    <div key={idx} className="bg-slate-50 p-3 rounded border border-slate-100">
-                      <div className="flex items-start gap-3">
-                        {item.image_url ? (
-                          <img src={item.image_url} alt={`Item ${idx}`} className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 bg-slate-200 rounded flex items-center justify-center text-[10px] text-slate-500 shrink-0">ไม่มีรูป</div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-slate-500 truncate mb-1">{item.url}</p>
-                          <div>
-                            <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">หมายเลขพัสดุจีน-จีน</h4>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-slate-800 text-sm">{item.tracking_cn_cn}</span>
-                              <CopyTrackingButton trackingNumber={item.tracking_cn_cn} label="" />
+                {chinaTrackingString ? (
+                  <div className="space-y-4">
+                    {inquiryItems.filter((item: any) => item.tracking_cn_cn || item.china_tracking_number).map((item: any, idx: number) => {
+                      const trackingNo = item.tracking_cn_cn || item.china_tracking_number
+                      return (
+                        <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
+                          <div className="flex items-start gap-3">
+                            {item.image_url ? (
+                              <img src={item.image_url} alt={`Item ${idx}`} className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0" />
+                            ) : (
+                              <div className="w-10 h-10 bg-slate-200 rounded flex items-center justify-center text-[10px] text-slate-500 shrink-0">ไม่มีรูป</div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-slate-500 truncate mb-1">{item.url}</p>
+                              <div>
+                                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">หมายเลขพัสดุจีน-จีน</h4>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-slate-800 font-mono text-sm">{trackingNo}</span>
+                                  <CopyTrackingButton trackingNumber={trackingNo} label="" />
+                                  <a
+                                    href={`https://t.17track.net/en#nums=${trackingNo}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-0.5"
+                                  >
+                                    เช็คแทร็ก ↗
+                                  </a>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      )
+                    })}
+                    <p className="text-[11px] text-slate-500 bg-amber-50/60 p-2.5 rounded border border-amber-100 leading-relaxed">
+                      💡 สินค้ากำลังเดินทางไปยังโกดังที่จีน เมื่อสินค้าถึงโกดังเรียบร้อยแล้ว แอดมินจะชั่งน้ำหนัก/วัดขนาด และแจ้งยอดค่าขนส่งจีน-ไทย (รอบ 2) ให้ทราบครับ
+                    </p>
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-slate-500 space-y-1">
+                    <p className="text-sm font-medium text-slate-700">สั่งซื้อสินค้าสำเร็จแล้ว</p>
+                    <p className="text-xs text-slate-400">ร้านค้าจีนกำลังเตรียมการจัดส่งและจะอัปเดตเลขพัสดุให้ทราบเร็วๆ นี้</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

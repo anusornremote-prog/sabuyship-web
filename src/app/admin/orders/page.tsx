@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus } from "lucide-react"
+import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus, Truck } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -11,6 +11,7 @@ import { exportSpreadsheet } from "@/lib/spreadsheet"
 import { PaymentApprovalModal } from "@/components/admin/PaymentApprovalModal"
 import { QuoteModal } from "@/components/admin/QuoteModal"
 import { OutOfStockModal } from "@/components/admin/OutOfStockModal"
+import { ChinaTrackingModal } from "@/components/admin/ChinaTrackingModal"
 import { PackageX } from "lucide-react"
 
 export default function AdminOrders() {
@@ -42,6 +43,26 @@ export default function AdminOrders() {
   // Out of Stock Modal states
   const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false)
   const [outOfStockOrder, setOutOfStockOrder] = useState<any>(null)
+
+  // China Domestic Tracking Modal states
+  const [chinaTrackingModalOpen, setChinaTrackingModalOpen] = useState(false)
+  const [chinaTrackingOrder, setChinaTrackingOrder] = useState<any>(null)
+
+  const handleOpenChinaTrackingModal = (order: any) => {
+    setChinaTrackingOrder(order)
+    setChinaTrackingModalOpen(true)
+  }
+
+  const getChinaTrackings = (order: any): string[] => {
+    const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
+    const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
+    let items = inquiry?.items || []
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items) } catch { items = [] }
+    }
+    const trackings = items.map((it: any) => (it.tracking_cn_cn || it.china_tracking_number || "").toString().trim()).filter(Boolean)
+    return Array.from(new Set(trackings)) as string[]
+  }
 
   const ITEMS_PER_PAGE = 20
   const [currentPage, setCurrentPage] = useState(1)
@@ -520,7 +541,11 @@ export default function AdminOrders() {
                     </td>
                   </tr>
                 ) : filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
+                  filteredOrders.map((order) => {
+                    const chinaTrackings = getChinaTrackings(order)
+                    const hasChinaTracking = chinaTrackings.length > 0
+
+                    return (
                     <tr key={order.id} className="border-b hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <input 
@@ -530,7 +555,15 @@ export default function AdminOrders() {
                           className="rounded border-slate-300 text-primary focus:ring-primary"
                         />
                       </td>
-                      <td className="px-6 py-4 font-semibold text-primary">{order.order_number}</td>
+                      <td className="px-6 py-4 font-semibold text-primary">
+                        <div>{order.order_number}</div>
+                        {hasChinaTracking && (
+                          <div className="flex items-center gap-1 text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded w-fit mt-1 font-normal" title="เลขแทร็กจีน">
+                            <Truck className="h-3 w-3 shrink-0 text-amber-600" />
+                            <span>จีน: {chinaTrackings.join(', ')}</span>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-slate-900">{order.customer?.full_name || '-'}</p>
                         <p className="text-xs text-slate-500 mb-1">
@@ -574,12 +607,27 @@ export default function AdminOrders() {
                             ตรวจสลิป
                           </Button>
                         )}
+
+                        {order.status === 'ORDERED' && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleOpenChinaTrackingModal(order)}
+                            className={`w-full max-w-[120px] mb-2 text-xs gap-1 cursor-pointer ${
+                              hasChinaTracking 
+                                ? "bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100" 
+                                : "bg-amber-600 hover:bg-amber-700 text-white"
+                            }`}
+                          >
+                            <Truck className="h-3 w-3" />
+                            {hasChinaTracking ? "แก้ไขแทร็กจีน" : "ใส่แทร็กจีน"}
+                          </Button>
+                        )}
                         
                         {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status)) && (
                           <Button 
                             size="sm" 
                             onClick={() => handleOpenQuoteModal(order, 2)}
-                            className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
+                            className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2 cursor-pointer"
                           >
                             ถึงโกดังจีน (แจ้งบิล)
                           </Button>
@@ -639,7 +687,7 @@ export default function AdminOrders() {
                         </div>
                       </td>
                     </tr>
-                  ))
+                  )})
                 ) : (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
@@ -685,6 +733,13 @@ export default function AdminOrders() {
                     </span>
                   </div>
 
+                  {getChinaTrackings(order).length > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md w-fit">
+                      <Truck className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                      <span>แทร็กจีน: {getChinaTrackings(order).join(', ')}</span>
+                    </div>
+                  )}
+
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1">
                     <p className="font-medium text-slate-900 text-sm">{order.customer?.full_name || '-'}</p>
                     <p className="text-xs text-slate-500">
@@ -713,9 +768,23 @@ export default function AdminOrders() {
                         ตรวจสลิป
                       </Button>
                     )}
+                    {order.status === 'ORDERED' && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleOpenChinaTrackingModal(order)} 
+                        className={`min-h-[44px] text-xs gap-1 ${
+                          getChinaTrackings(order).length > 0 
+                            ? "bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100" 
+                            : "bg-amber-600 hover:bg-amber-700 text-white"
+                        }`}
+                      >
+                        <Truck className="h-4 w-4" />
+                        {getChinaTrackings(order).length > 0 ? "แก้ไขแทร็กจีน" : "ใส่แทร็กจีน"}
+                      </Button>
+                    )}
                     {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && order.payment_round_2_status !== 'PAID')) && (
                       <Button size="sm" onClick={() => handleOpenQuoteModal(order, 2)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
-                        {order.payment_round_2_status ? "แก้ไขค่าส่งจีน" : "ถึงโกดังจีน"}
+                        {order.payment_round_2_status ? "แก้ไขค่าส่งจีน" : "ถึงโกดังจีน (แจ้งบิล)"}
                       </Button>
                     )}
                     {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && !order.consolidated_into_id && (
@@ -920,6 +989,16 @@ export default function AdminOrders() {
         order={outOfStockOrder}
         onSuccess={() => {
           setOutOfStockModalOpen(false)
+          fetchOrders()
+        }}
+      />
+      {/* China Domestic Tracking Modal */}
+      <ChinaTrackingModal
+        isOpen={chinaTrackingModalOpen}
+        onClose={() => setChinaTrackingModalOpen(false)}
+        order={chinaTrackingOrder}
+        onSuccess={() => {
+          setChinaTrackingModalOpen(false)
           fetchOrders()
         }}
       />
