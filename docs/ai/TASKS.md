@@ -12,6 +12,7 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Add route loading skeletons | Codex | DONE | current checkpoint | Dashboard and admin loading UI added. |
 | Restore staging Supabase project | Project owner | BLOCKED | Supabase Studio | `sabuyship-staging` (`rhillakurearebtzjwyr`) is INACTIVE. Open the project in Supabase Studio and click `Resume project`; CLI has no resume command. |
 | Authenticated mobile regression walkthrough | Codex | BLOCKED | `qa-mobile-audit` | Staging smoke runner can create and clean temporary accounts automatically, but staging must be resumed and `.env.staging.local` supplied first. |
+| Admin layout logout button & desktop header | Antigravity | DONE | `main` | Added sticky desktop sidebar, desktop top header with logout and breadcrumbs, and explicit mobile logout button. |
 | Monitor production Web Vitals | Codex | IN_PROGRESS | `cd91117` / `dpl_J4GVdPYL71bYRqC4712FvP7boTHm` | Continue collecting real-user mobile data until at least 20 samples. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 

@@ -56,6 +56,16 @@ Never replace production environment values with staging values. Do not place an
   - Added explicit dimensions to marketplace flag images to prevent layout reservation gaps.
   - Local mobile Lighthouse no longer reports image-delivery savings or unsized images; CLS is 0.001 and Speed Index is 2.5 seconds.
 
+### 2. Admin Layout Sign-Out & Desktop Header
+- **Desktop Sidebar Navigation (`src/app/admin/layout.tsx`)**:
+  - Made the desktop admin sidebar sticky (`sticky top-0 h-screen`) with independent scrolling (`flex-1 overflow-y-auto`) so the footer never gets pushed off-screen on long admin views.
+  - Sidebar sticky footer now includes a clean "เปิดหน้าบ้าน (เว็บไซต์)" link and a prominent "ออกจากระบบ" button with icon.
+- **Desktop Top Header (`src/app/admin/layout.tsx`)**:
+  - Added a dedicated top header bar on desktop (`hidden md:flex h-16 bg-white border-b`) with dynamic breadcrumbs, admin role badge, logged-in admin email, "หน้าบ้าน" button, and a prominent red "ออกจากระบบ" button.
+- **Mobile Header & Navigation (`src/app/admin/layout.tsx`)**:
+  - Enhanced the mobile header logout button with a clear "ออกจากระบบ" text label and icon.
+  - Added a direct "ออกจากระบบ" quick action button at the end of the mobile horizontal navigation pill bar.
+
 ## Validation Completed
 
 - `git diff --check main` — passed with 0 whitespace warnings and 0 formatting errors.
