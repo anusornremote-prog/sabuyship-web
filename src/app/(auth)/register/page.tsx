@@ -72,9 +72,9 @@ export default function Register() {
         // Auto-create profile if missing
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, role')
+          .select('id, role, phone')
           .eq('id', data.user.id)
-          .single()
+          .maybeSingle()
 
         let finalRole = profile?.role || "CUSTOMER"
 
@@ -88,6 +88,14 @@ export default function Register() {
             role: 'CUSTOMER',
             customer_code: customerCode
           })
+
+          router.push("/complete-profile")
+          return
+        }
+
+        if (!profile.phone || profile.phone.trim().length < 9) {
+          router.push("/complete-profile")
+          return
         }
 
         if (finalRole === "ADMIN") {
@@ -112,6 +120,13 @@ export default function Register() {
     setError(null)
     setSuccess(null)
 
+    const cleanPhone = phone.replace(/\D/g, '')
+    if (!cleanPhone || cleanPhone.length < 9 || cleanPhone.length > 10) {
+      setError("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (9-10 หลัก เช่น 0812345678)")
+      setLoading(false)
+      return
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -119,7 +134,7 @@ export default function Register() {
         emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
         data: {
           full_name: fullName,
-          phone: phone,
+          phone: cleanPhone,
           line_id: lineId,
         },
       },

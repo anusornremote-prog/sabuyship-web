@@ -44,8 +44,9 @@ export default function CompleteProfile() {
       return
     }
 
-    if (!phone) {
-      setError("กรุณากรอกเบอร์โทรศัพท์")
+    const cleanPhone = phone.replace(/\D/g, '')
+    if (!cleanPhone || cleanPhone.length < 9 || cleanPhone.length > 10) {
+      setError("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (9-10 หลัก เช่น 0812345678)")
       setLoading(false)
       return
     }
@@ -61,9 +62,9 @@ export default function CompleteProfile() {
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        full_name: fullName,
-        phone: phone,
-        line_id: lineId
+        full_name: fullName.trim(),
+        phone: cleanPhone,
+        line_id: lineId.trim() || null
       })
       .eq('id', user.id)
 

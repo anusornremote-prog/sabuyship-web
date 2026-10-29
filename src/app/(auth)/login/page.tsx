@@ -91,9 +91,9 @@ export default function Login() {
         // Auto-create profile if missing
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, role')
+          .select('id, role, phone')
           .eq('id', data.user.id)
-          .single()
+          .maybeSingle()
 
         let finalRole = profile?.role || "CUSTOMER"
 
@@ -107,6 +107,14 @@ export default function Login() {
             role: 'CUSTOMER',
             customer_code: customerCode
           })
+
+          router.push("/complete-profile")
+          return
+        }
+
+        if (!profile.phone || profile.phone.trim().length < 9) {
+          router.push("/complete-profile")
+          return
         }
 
         if (finalRole === "ADMIN") {

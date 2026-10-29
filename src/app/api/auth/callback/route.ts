@@ -25,9 +25,11 @@ export async function GET(request: Request) {
         // Check if profile exists
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, phone')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
+
+        let hasPhone = !!profile?.phone && profile.phone.trim().length >= 9
 
         if (!profile) {
           // Auto-generate customer code for new OAuth users
@@ -42,9 +44,14 @@ export async function GET(request: Request) {
             is_active: true,
             line_uid: lineUid
           })
+          hasPhone = false
         } else if (lineUid) {
           // Update existing profile with LINE UID if available
           await supabase.from('profiles').update({ line_uid: lineUid }).eq('id', user.id)
+        }
+
+        if (!hasPhone) {
+          return NextResponse.redirect(`${origin}/complete-profile`)
         }
       }
 

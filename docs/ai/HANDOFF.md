@@ -77,6 +77,19 @@ Never replace production environment values with staging values. Do not place an
 - **Session Cookie Forwarding in Middleware (`src/lib/supabase/middleware.ts`)**:
   - Implemented `createRedirectResponse` to guarantee refreshed session cookies are forwarded on internal middleware route guard redirects.
 
+### 4. Mandatory Phone Number Enforcement at Registration
+- **Email/Password Registration (`src/app/(auth)/register/page.tsx`)**:
+  - Validated that the phone number is provided and strictly 9-10 digits (`cleanPhone.length >= 9 && cleanPhone.length <= 10`).
+  - Saved normalized phone number to Supabase auth metadata.
+- **Social / OAuth Registration & Login (`src/app/(auth)/register/page.tsx`, `src/app/(auth)/login/page.tsx`, `src/app/api/auth/callback/route.ts`)**:
+  - Checked profile phone existence upon Google and LINE authentication.
+  - Automatically redirected any user without a valid phone number directly to `/complete-profile`.
+- **Middleware Guard (`src/lib/supabase/middleware.ts`)**:
+  - Enforced `hasPhone` check across all `/dashboard` routes and `/admin` routes.
+  - Blocked access to dashboard until `/complete-profile` is completed.
+- **Complete Profile Validation (`src/app/(auth)/complete-profile/page.tsx`)**:
+  - Added strict 9-10 digit numeric format validation on `/complete-profile` before saving.
+
 ## Validation Completed
 
 - `git diff --check main` — passed with 0 whitespace warnings and 0 formatting errors.
