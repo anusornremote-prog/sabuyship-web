@@ -150,12 +150,13 @@ Never replace production environment values with staging values. Do not place an
   - Added `AdminNotificationHeader` in `src/app/admin/notifications/page.tsx` with live status badge and a "ทดสอบส่งแจ้งเตือน LINE" button.
 
 ### 10. Multi-Admin LINE Notification Broadcast
-- **Requirement**: Notify all administrators upon new orders, payment slips, and inquiries.
+- **Requirement**: Notify all administrators and LINE OA staff (even non-website admins or LINE groups) upon new orders, payment slips, and inquiries.
 - **Implementation**:
-  - Created `getAdminLineUserIds()` in `src/lib/notify.ts`: merges UIDs from `LINE_ADMIN_USER_ID` env, `site_settings.line_admin_user_ids`, and active admin profiles with `line_uid`.
-  - Uses LINE Multicast API (`/v2/bot/message/multicast`) when multiple admin UIDs are present.
-  - Added `GET` & `POST` endpoints at `/api/admin/notifications/settings` for admins to view and manage additional admin LINE UIDs directly in the admin dashboard.
-  - Added "จัดการแอดมินรับแจ้งเตือน" modal in `AdminNotificationHeader.tsx` displaying registered admin accounts, connected LINE status, and custom UID configuration.
+  - Created `getAdminLineUserIds()` in `src/lib/notify.ts`: merges UIDs (`U...`) and Group/Room IDs (`C...` / `R...`) from `LINE_ADMIN_USER_ID` env, `site_settings.line_admin_user_ids`, and active admin profiles with `line_uid`.
+  - Uses LINE Multicast API (`/v2/bot/message/multicast`) for personal user IDs and Push API (`/v2/bot/message/push`) for LINE Group/Room IDs.
+  - Added `GET` & `POST` endpoints at `/api/admin/notifications/settings` returning all LINE-connected website users so admins can toggle notification delivery for any staff member with 1 click without granting website admin privileges.
+  - Added `/api/line/webhook` endpoint replying with User ID / Group ID when a user or group types `#uid`.
+  - Updated `AdminNotificationHeader.tsx` modal with 1-click staff selector and LINE Group instructions.
 
 
 

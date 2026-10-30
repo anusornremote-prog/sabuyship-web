@@ -21,9 +21,9 @@ export async function GET() {
 
     const settingUserIds = (setting?.value as string) || ""
 
-    // 2. Get env user IDs (masked for safety)
+    // 2. Get env user IDs
     const envIds = (process.env.LINE_ADMIN_USER_ID || "")
-      .split(",")
+      .split(/[\n,]+/)
       .map(s => s.trim())
       .filter(Boolean)
 
@@ -33,7 +33,13 @@ export async function GET() {
       .select("id, full_name, role, line_uid, is_active")
       .eq("role", "ADMIN")
 
-    // 4. Get active recipient list
+    // 4. Get all accounts (including non-admins / customers) that have linked LINE (line_uid is not null)
+    const { data: lineConnectedUsers } = await adminClient
+      .from("profiles")
+      .select("id, full_name, role, line_uid, is_active")
+      .not("line_uid", "is", null)
+
+    // 5. Get active recipient list
     const allRecipients = await getAdminLineUserIds()
 
     return NextResponse.json({
@@ -41,12 +47,23 @@ export async function GET() {
       settingUserIds,
       envRecipientCount: envIds.length,
       totalActiveRecipients: allRecipients.length,
+      activeRecipients: allRecipients,
       admins: (adminProfiles || []).map(a => ({
         id: a.id,
         fullName: a.full_name || "Admin",
         isActive: a.is_active,
         hasLineUid: Boolean(a.line_uid),
+        lineUid: a.line_uid || null,
         lineUidMasked: a.line_uid ? `${a.line_uid.slice(0, 5)}...${a.line_uid.slice(-4)}` : null,
+      })),
+      lineConnectedUsers: (lineConnectedUsers || []).map(u => ({
+        id: u.id,
+        fullName: u.full_name || "ผู้ใช้งาน LINE",
+        role: u.role,
+        lineUid: u.line_uid,
+        lineUidMasked: u.line_uid ? `${u.line_uid.slice(0, 6)}...${u.line_uid.slice(-4)}` : null,
+        isReceiving: u.line_uid ? allRecipients.includes(u.line_uid) : false,
+        isEnvDefault: u.line_uid ? envIds.includes(u.line_uid) : false,
       })),
     })
   } catch (err: any) {
@@ -85,7 +102,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "บันทึกรายชื่อผู้รับแจ้งเตือนแอดมินเรียบร้อยแล้ว",
+      message: "บันทึกรายชื่อผู้รับแจ้งเตือนเรียบร้อยแล้ว",
       totalActiveRecipients: allRecipients.length,
     })
   } catch (err: any) {

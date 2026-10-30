@@ -19,13 +19,14 @@ async function recordNotification(recipientType: 'ADMIN' | 'CUSTOMER', status: '
 
 export async function getAdminLineUserIds(): Promise<string[]> {
   const ids = new Set<string>();
+  const isValidLineTarget = (id: string) => /^[UCR][0-9a-fA-F]{32}$/.test(id) || id.startsWith('U') || id.startsWith('C') || id.startsWith('R');
 
   // 1. From environment variable LINE_ADMIN_USER_ID
   const envLineUserId = process.env.LINE_ADMIN_USER_ID;
   if (envLineUserId) {
-    envLineUserId.split(',').forEach(id => {
+    envLineUserId.split(/[\n,]+/).forEach(id => {
       const clean = id.trim();
-      if (clean && clean.startsWith('U')) ids.add(clean);
+      if (clean && isValidLineTarget(clean)) ids.add(clean);
     });
   }
 
@@ -40,9 +41,9 @@ export async function getAdminLineUserIds(): Promise<string[]> {
 
     if (setting && setting.value) {
       const raw = typeof setting.value === 'string' ? setting.value : String(setting.value);
-      raw.split(',').forEach(id => {
+      raw.split(/[\n,]+/).forEach(id => {
         const clean = id.trim().replace(/[\[\]"']/g, '');
-        if (clean && clean.startsWith('U')) ids.add(clean);
+        if (clean && isValidLineTarget(clean)) ids.add(clean);
       });
     }
   } catch (err) {
@@ -63,7 +64,7 @@ export async function getAdminLineUserIds(): Promise<string[]> {
       adminProfiles.forEach(p => {
         if (p.line_uid && typeof p.line_uid === 'string') {
           const clean = p.line_uid.trim();
-          if (clean && clean.startsWith('U')) ids.add(clean);
+          if (clean && isValidLineTarget(clean)) ids.add(clean);
         }
       });
     }
@@ -86,44 +87,61 @@ export async function sendAdminNotification(message: string) {
   let success = false;
   let lastErrorCode: string | undefined = undefined;
 
-  // 1. Send via LINE Official Account (Messaging API) to all admins
-  const userIds = await getAdminLineUserIds();
+  // 1. Send via LINE Official Account (Messaging API) to all admins & groups
+  const allTargetIds = await getAdminLineUserIds();
+  const personalUserIds = allTargetIds.filter(id => id.startsWith('U'));
+  const groupOrRoomIds = allTargetIds.filter(id => id.startsWith('C') || id.startsWith('R'));
 
-  if (lineToken && userIds.length > 0) {
+  if (lineToken && allTargetIds.length > 0) {
     try {
-      const endpoint = userIds.length > 1 
-        ? 'https://api.line.me/v2/bot/message/multicast' 
-        : 'https://api.line.me/v2/bot/message/push';
-        
-      const bodyPayload: any = {
-        messages: [
-          {
-            type: 'text',
-            text: finalMessage
-          }
-        ]
-      };
-      
-      if (userIds.length > 1) {
-        bodyPayload.to = userIds;
-      } else {
-        bodyPayload.to = userIds[0];
+      // 1A. Send to individual User IDs (U...) via push or multicast
+      if (personalUserIds.length > 0) {
+        const endpoint = personalUserIds.length > 1 
+          ? 'https://api.line.me/v2/bot/message/multicast' 
+          : 'https://api.line.me/v2/bot/message/push';
+          
+        const bodyPayload: any = {
+          messages: [{ type: 'text', text: finalMessage }],
+          to: personalUserIds.length > 1 ? personalUserIds : personalUserIds[0],
+        };
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${lineToken}`
+          },
+          body: JSON.stringify(bodyPayload)
+        });
+        if (response.ok) {
+          success = true;
+        } else {
+          const errorText = await response.text();
+          console.error(`LINE notification returned HTTP ${response.status}:`, errorText);
+          lastErrorCode = `LINE_HTTP_${response.status}`;
+        }
       }
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${lineToken}`
-        },
-        body: JSON.stringify(bodyPayload)
-      });
-      if (response.ok) {
-        success = true;
-      } else {
-        const errorText = await response.text();
-        console.error(`LINE notification returned HTTP ${response.status}:`, errorText);
-        lastErrorCode = `LINE_HTTP_${response.status}`;
+      // 1B. Send to Group / Room IDs (C... / R...) via push
+      for (const groupId of groupOrRoomIds) {
+        const response = await fetch('https://api.line.me/v2/bot/message/push', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${lineToken}`
+          },
+          body: JSON.stringify({
+            to: groupId,
+            messages: [{ type: 'text', text: finalMessage }],
+          })
+        });
+        if (response.ok) {
+          success = true;
+        } else {
+          const errorText = await response.text();
+          console.error(`LINE group notification returned HTTP ${response.status}:`, errorText);
+          lastErrorCode = `LINE_GROUP_HTTP_${response.status}`;
+        }
       }
     } catch (err) {
       console.error("Failed to send LINE notification", err);
