@@ -131,6 +131,16 @@ Never replace production environment values with staging values. Do not place an
 - Updated the button icon to `Package` to match the order tracking identity.
 - Added localized translations in `src/lib/i18n.ts`: `navMyOrders` (TH: "คำสั่งซื้อของฉัน", EN: "My Orders", ZH: "我的订单").
 
+### 8. China Warehouse Address Card - Transport Mode (EK/SEA) Selector
+- **User Request**: Added options for customers to copy the China warehouse address specifying transport method: ทางรถ (EK) or ทางเรือ (SEA).
+- **Implementation (`src/components/dashboard/CustomerWarehouseCard.tsx`)**:
+  - Added interactive mode switcher tabs: `🚚 ทางรถ (EK)` (5-7 days) and `🛳️ ทางเรือ (SEA)` (15-20 days).
+  - Dynamic Consignee: `傅先生 ${customerCode}(EK)` or `傅先生 ${customerCode}(SEA)`.
+  - Dynamic Detailed Address: `广东省广州市白云区人和镇人和大街68号（万宝集团）进大门右转直走到底61号仓（泰国专线仓库） (${customerCode}/EK)` or `...(${customerCode}/SEA)`.
+  - Smart Paste 1-Click copy updated to bundle the selected shipping mode and label (`Smart Identify` format).
+  - Alert box highlighted with the selected shipping mark (`外包装上请务必写上入仓唛头: ${customerCode}/${suffix}`).
+
+
 ## Browser Test Evidence (Mobile Viewport 390x844)
 
 - **Login Page (`/login`)**:

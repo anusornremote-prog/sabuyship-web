@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Sparkles, AlertTriangle, FileQuestion, ArrowRight, ShieldCheck, Zap, MapPin, Phone, User, Building } from "lucide-react"
+import { Copy, Check, Sparkles, AlertTriangle, FileQuestion, ShieldCheck, Zap, Truck, Ship } from "lucide-react"
 import { toast } from "sonner"
 import { vibrateSuccess } from "@/lib/haptics"
 
@@ -13,21 +13,25 @@ interface CustomerWarehouseCardProps {
 }
 
 export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardProps) {
+  const [shippingType, setShippingType] = useState<"EK" | "SEA">("EK")
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
-  const consigneeName = `傅先生 ${customerCode}`
+  const suffix = shippingType === "EK" ? "EK" : "SEA"
+  const transportName = shippingType === "EK" ? "ทางรถ (EK)" : "ทางเรือ (SEA)"
+
+  const consigneeName = `傅先生 ${customerCode}(${suffix})`
   const phone = "18602069827"
   const zipCode = "510470"
-  const address = `广东省广州市白云区人和镇人和大街68号（万宝集团）进大门右转直走到底61号仓（泰国专线仓库） (${customerCode})`
+  const address = `广东省广州市白云区人和镇人和大街68号（万宝集团）进大门右转直走到底61号仓（泰国专线仓库） (${customerCode}/${suffix})`
 
-    const smartAddressText = `${consigneeName}, ${phone}, ${address}, ${zipCode}`
+  const smartAddressText = `${consigneeName}, ${phone}, ${address}, ${zipCode}`
 
   const handleSmartCopy = () => {
     navigator.clipboard.writeText(smartAddressText)
     vibrateSuccess()
     setCopiedField("smart-paste")
-    toast.success("คัดลอกที่อยู่ Smart Paste สำเร็จ!", {
-      description: "นำไปวางในช่อง 智能识别 (Smart Identify) ของ Taobao / 1688 ได้ทันที ระบบจะแยกช่องให้อัตโนมัติ",
+    toast.success(`คัดลอก Smart Paste ${transportName} สำเร็จ!`, {
+      description: "นำไปวางในช่อง 智能识别地址 ของ Taobao / 1688 ได้ทันที ระบบจีนจะแยกช่องให้อัตโนมัติ",
     })
     setTimeout(() => setCopiedField(null), 2500)
   }
@@ -86,7 +90,7 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                 วิธีระบุข้อมูลสั่งซื้อกับร้านจีน
               </div>
               <p>
-                ในการสั่งซื้อสินค้าผ่าน Taobao, 1688 หรือส่งของเข้าโกดังจีน ให้กรอกข้อมูลผู้รับและที่อยู่ตามข้อมูลในกล่องขวามือนี้ทุกครั้ง
+                เลือกว่าต้องการส่งสินค้าเข้าไทยแบบ <strong className="text-slate-900">ทางรถ (EK)</strong> หรือ <strong className="text-slate-900">ทางเรือ (SEA)</strong> ระบบจะต่อท้ายรหัส <span className="font-mono font-bold text-primary">({customerCode}/{suffix})</span> ให้ร้านจีนติดข้างกล่องอัตโนมัติ เพื่อให้โกดังจีนคัดแยกขึ้นตู้ได้อย่างถูกต้อง
               </p>
             </div>
 
@@ -100,61 +104,108 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
             </div>
           </div>
 
-          {/* Right Column (7 cols): Warehouse Address with Individual Copy Buttons */}
+          {/* Right Column (7 cols): Warehouse Address with Transport Toggle */}
           <div className="lg:col-span-7 bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <span>🇨🇳</span> ที่อยู่โกดังจีน (กวางโจว) สำหรับสั่งสินค้า
               </h3>
-              <span className="text-[10px] font-bold text-primary bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+              <span className="text-[10px] font-bold text-primary bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100 w-fit">
                 Guangzhou Warehouse
               </span>
             </div>
 
-            <div className="space-y-3 text-xs">
-                          {/* Smart Paste 1-Click for Taobao / 1688 */}
-            <div className="p-3.5 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 rounded-xl border border-orange-200/90 space-y-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-start gap-2.5 min-w-0">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm mt-0.5">
-                    <Zap className="h-4 w-4 fill-white" />
-                  </span>
-                  <div className="space-y-0.5 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-black text-slate-900 text-sm">คัดลอกแบบ Smart Paste</span>
-                      <span className="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200">
-                        🔥 แนะนำสำหรับ Taobao / 1688
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-snug">
-                      แตะปุ่มนี้แล้วไปวางในช่อง <span className="font-bold text-slate-800">智能识别地址</span> ของ Taobao / 1688 ได้ใน 1 คลิก ระบบจีนจะแยกชื่อ เบอร์ ที่อยู่ และรหัสไปรษณีย์ให้อัตโนมัติ
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleSmartCopy}
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold h-10 px-4 rounded-xl shadow-md cursor-pointer shrink-0 text-xs w-full sm:w-auto"
+            {/* Transport Mode Switcher (EK vs SEA) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700">เลือกประเภทการขนส่งเข้าไทย:</span>
+                <span className="text-[11px] font-semibold text-slate-500">
+                  {shippingType === "EK" ? "⚡ ประมาณ 5-7 วัน" : "🛳️ ประมาณ 15-20 วัน"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100/90 rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShippingType("EK")}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                    shippingType === "EK"
+                      ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                  }`}
                 >
-                  {copiedField === "smart-paste" ? (
-                    <span className="flex items-center gap-1.5 text-white">
-                      <Check className="w-4 h-4" /> คัดลอกสำเร็จ!
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5">
-                      <Copy className="w-4 h-4" /> คัดลอก Smart Paste
-                    </span>
-                  )}
-                </Button>
+                  <Truck className="w-4 h-4" />
+                  <span>ทางรถ (EK)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShippingType("SEA")}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                    shippingType === "SEA"
+                      ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                  }`}
+                >
+                  <Ship className="w-4 h-4" />
+                  <span>ทางเรือ (SEA)</span>
+                </button>
               </div>
             </div>
+
+            <div className="space-y-3 text-xs">
+              {/* Smart Paste 1-Click for Taobao / 1688 */}
+              <div className="p-3.5 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 rounded-xl border border-orange-200/90 space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm mt-0.5">
+                      <Zap className="h-4 w-4 fill-white" />
+                    </span>
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-black text-slate-900 text-sm">
+                          คัดลอก Smart Paste {transportName}
+                        </span>
+                        <span className="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200">
+                          🔥 แนะนำ Taobao / 1688
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-snug">
+                        แตะปุ่มนี้แล้วไปวางในช่อง <span className="font-bold text-slate-800">智能识别地址</span> ของ Taobao / 1688 ได้ใน 1 คลิก ระบบจีนจะแยกชื่อ เบอร์ ที่อยู่ และรหัสไปรษณีย์ให้อัตโนมัติ
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={handleSmartCopy}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold h-10 px-4 rounded-xl shadow-md cursor-pointer shrink-0 text-xs w-full sm:w-auto"
+                  >
+                    {copiedField === "smart-paste" ? (
+                      <span className="flex items-center gap-1.5 text-white">
+                        <Check className="w-4 h-4" /> คัดลอกสำเร็จ!
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        <Copy className="w-4 h-4" /> คัดลอก Smart Paste ({suffix})
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </div>
 
               {/* Consignee */}
               <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    ผู้รับ (Consignee Name / 收件人)
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      ผู้รับ (Consignee Name / 收件人)
+                    </span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                      shippingType === "EK"
+                        ? "text-orange-700 bg-orange-50 border-orange-200"
+                        : "text-blue-700 bg-blue-50 border-blue-200"
+                    }`}>
+                      {suffix}
+                    </span>
+                  </div>
                   <span className="font-bold text-slate-900 text-sm block truncate font-mono">
                     {consigneeName}
                   </span>
@@ -219,24 +270,33 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
               </div>
 
               {/* Detailed Address */}
-              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1.5">
+              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-2">
                 <div className="flex justify-between items-center flex-wrap gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    ที่อยู่โกดัง (Detailed Address / 详细地址)
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      ที่อยู่โกดัง (Detailed Address / 详细地址)
+                    </span>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                      shippingType === "EK"
+                        ? "bg-orange-100 text-orange-700 border border-orange-200"
+                        : "bg-blue-100 text-blue-700 border border-blue-200"
+                    }`}>
+                      {transportName}
+                    </span>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleCopy(address, "ที่อยู่โกดัง")}
+                    onClick={() => handleCopy(address, `ที่อยู่โกดัง ${transportName}`)}
                     className="h-8 px-2.5 text-xs text-primary font-bold hover:bg-blue-50 border-blue-200 shrink-0 cursor-pointer shadow-2xs"
                   >
-                    {copiedField === "ที่อยู่โกดัง" ? (
+                    {copiedField === `ที่อยู่โกดัง ${transportName}` ? (
                       <span className="flex items-center gap-1 text-emerald-600">
                         <Check className="w-3.5 h-3.5" /> คัดลอกแล้ว
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
-                        <Copy className="w-3.5 h-3.5" /> คัดลอกที่อยู่ทั้งหมด
+                        <Copy className="w-3.5 h-3.5" /> คัดลอกที่อยู่ทั้งหมด ({suffix})
                       </span>
                     )}
                   </Button>
@@ -250,9 +310,9 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div>
-                  กรุณาแจ้งร้านค้าให้ติดรหัสลูกค้า ({customerCode}) ข้างกล่องพัสดุให้ชัดเจน
-                  <span className="block text-[11px] font-normal opacity-90 mt-0.5">
-                    (外包装上请务必写上入仓唛头: {customerCode})
+                  กรุณาแจ้งร้านค้าให้ติดรหัสลูกค้าพร้อมช่องทาง ({customerCode}/{suffix}) ข้างกล่องพัสดุให้ชัดเจน
+                  <span className="block text-[11px] font-normal opacity-90 mt-0.5 font-mono">
+                    (外包装上请务必写上入仓唛头: {customerCode}/{suffix})
                   </span>
                 </div>
               </div>
