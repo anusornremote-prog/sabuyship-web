@@ -190,14 +190,14 @@ export function Navbar() {
             </Link>
           )}
 
-          <Link href="/inquiry">
+          <Link href="/dashboard/orders">
             <Button 
               size="sm" 
               variant="orange" 
               className="font-black text-xs sm:text-sm px-3.5 lg:px-4 h-10 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
             >
-              <ShoppingCart className="w-4 h-4 mr-1.5 shrink-0" />
-              <span>{t.navSubmitLink || "ส่งลิงก์สินค้า"}</span>
+              <Package className="w-4 h-4 mr-1.5 shrink-0" />
+              <span>{t.navMyOrders || "คำสั่งซื้อของฉัน"}</span>
             </Button>
           </Link>
         </div>
@@ -219,10 +219,10 @@ export function Navbar() {
       {/* Mobile Menu Panel */}
       {isOpen && (
         <div className="relative z-[60] max-h-[calc(100vh-5rem)] space-y-4 overflow-y-auto border-b border-blue-100 bg-white/96 px-4 py-5 pb-8 shadow-2xl shadow-blue-950/10 backdrop-blur-xl animate-in slide-in-from-top duration-200 xl:hidden">
-          <Link href="/inquiry" onClick={() => setIsOpen(false)}>
+          <Link href="/dashboard/orders" onClick={() => setIsOpen(false)}>
             <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {t.navSubmitLink || "ส่งลิงก์สินค้า"}
+              <Package className="w-5 h-5 mr-2" />
+              {t.navMyOrders || "คำสั่งซื้อของฉัน"}
             </Button>
           </Link>
 

@@ -126,6 +126,11 @@ Never replace production environment values with staging values. Do not place an
 - **API**: Added `POST /api/admin/orders/[id]/china-tracking` which logs `CHINA_TRANSIT` to `tracking_logs`, updates audit logs, and notifies customer.
 - **Customer Side**: Updated `PaymentStepper` and `dashboard/orders/[id]` with Chinese tracking pill, copy button, and tracking link.
 
+### 7. Navbar Top CTA Updated to "My Orders"
+- Updated the primary top-right orange CTA button across desktop and mobile navbars from "ส่งลิงก์สินค้า" (`/inquiry`) to "คำสั่งซื้อของฉัน" (`/dashboard/orders`).
+- Updated the button icon to `Package` to match the order tracking identity.
+- Added localized translations in `src/lib/i18n.ts`: `navMyOrders` (TH: "คำสั่งซื้อของฉัน", EN: "My Orders", ZH: "我的订单").
+
 ## Browser Test Evidence (Mobile Viewport 390x844)
 
 - **Login Page (`/login`)**:

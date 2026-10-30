@@ -17,6 +17,7 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Enforce mandatory phone number on registration | Antigravity | DONE | `main` | Enforced phone validation on signup, routed OAuth users without phone to complete-profile, and added middleware route guards. |
 | Fix payment modal scrolling & pinned confirm button | Antigravity | DONE | `main` | Refactored DialogContent to flex-col with max-h-[90dvh], scrollable body, and pinned sticky footer so confirm button is never cut off. |
 | Separate Chinese domestic tracking from Round 2 invoice | Antigravity | DONE | `main` | Added ChinaTrackingModal, tracking badges, tracking_logs event, and customer dashboard/stepper tracking visibility. |
+| Update navbar top CTA to My Orders | Antigravity | DONE | `main` | Changed top right orange CTA button in desktop & mobile navbar to คำสั่งซื้อของฉัน (/dashboard/orders). |
 | Monitor production Web Vitals | Codex | IN_PROGRESS | `cd91117` / `dpl_J4GVdPYL71bYRqC4712FvP7boTHm` | Continue collecting real-user mobile data until at least 20 samples. |
 | Add dashboard aggregate RPC if order volume grows | Unassigned | BACKLOG | — | Only needed when per-customer order counts become large. |
 

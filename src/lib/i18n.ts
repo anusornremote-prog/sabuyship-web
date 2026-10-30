@@ -11,6 +11,7 @@ export const translations = {
     navFaq: "คำถามที่พบบ่อย",
     navLogin: "เข้าสู่ระบบ",
     navSubmitLink: "ส่งลิงก์สินค้า",
+    navMyOrders: "คำสั่งซื้อของฉัน",
 
     // Footer
     footerDesc: "บริการนำเข้าสินค้าจากจีนถึงไทยอย่างมืออาชีพ รวดเร็ว ปลอดภัย ตรวจสอบสถานะได้ 24 ชั่วโมง",
@@ -165,6 +166,7 @@ export const translations = {
     navFaq: "FAQ",
     navLogin: "Log in",
     navSubmitLink: "Submit Link",
+    navMyOrders: "My Orders",
 
     // Footer
     footerDesc: "Professional cargo and import service from China to Thailand. Fast, safe, and trackable 24/7.",
@@ -319,6 +321,7 @@ export const translations = {
     navFaq: "常见问题",
     navLogin: "登录",
     navSubmitLink: "发送商品链接",
+    navMyOrders: "我的订单",
 
     // Footer
     footerDesc: "专业的中国至泰国代购与进口货运服务。快速、安全、24小时全程追踪。",
