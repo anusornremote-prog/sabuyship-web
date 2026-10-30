@@ -140,6 +140,16 @@ Never replace production environment values with staging values. Do not place an
   - Smart Paste 1-Click copy updated to bundle the selected shipping mode and label (`Smart Identify` format).
   - Alert box highlighted with the selected shipping mark (`外包装上请务必写上入仓唛头: ${customerCode}/${suffix}`).
 
+### 9. Admin LINE Notification Diagnostic and Fix
+- **Root Cause**: `src/lib/notify.ts` had a hardcoded `if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;` which prematurely aborted all notification dispatches before sending to LINE API or logging to Supabase.
+- **Fixes**:
+  - Removed early return; added conditional `[DEMO]` prefix instead when demo mode is active so test and preview dispatches are never swallowed.
+  - Added full error body capture and status logging to `notification_logs`.
+  - Updated `src/app/api/contact/route.ts` to utilize unified `sendAdminNotification`.
+  - Added `POST /api/admin/notifications/test` for on-demand admin verification.
+  - Added `AdminNotificationHeader` in `src/app/admin/notifications/page.tsx` with live status badge and a "ทดสอบส่งแจ้งเตือน LINE" button.
+
+
 
 ## Browser Test Evidence (Mobile Viewport 390x844)
 

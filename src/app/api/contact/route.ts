@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { sendAdminNotification } from '@/lib/notify'
 
 export async function POST(req: Request) {
   try {
@@ -20,59 +21,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'ข้อมูลไม่ถูกต้องหรือยาวเกินกำหนด' }, { status: 400 })
     }
 
-    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
-      return NextResponse.json({ success: true, demo: true })
-    }
-
-    const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
-    const adminUserId = process.env.LINE_ADMIN_USER_ID
-
-    if (!channelAccessToken || !adminUserId) {
-      console.warn('LINE Messaging API variables are not set. Message was not sent to LINE.')
-      return NextResponse.json({ error: 'ช่องทางรับข้อความยังไม่พร้อม กรุณาติดต่อผ่าน LINE หรืออีเมลโดยตรง' }, { status: 503 })
-    }
-
-    // Format the message for LINE
     const lineMessage = `🔔 มีข้อความใหม่จากหน้าเว็บติดต่อเรา
--------------------------
+━━━━━━━━━━━━━━━
 👤 ชื่อ: ${name}
 📧 อีเมล: ${email}
 📱 เบอร์โทร: ${phone || '-'}
 💬 ข้อความ:
 ${message}
--------------------------`
+━━━━━━━━━━━━━━━`
 
-    const response = await fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${channelAccessToken}`,
-      },
-      body: JSON.stringify({
-        to: adminUserId,
-        messages: [
-          {
-            type: 'text',
-            text: lineMessage
-          }
-        ]
-      })
-    })
+    const sent = await sendAdminNotification(lineMessage)
 
-    if (!response.ok) {
-      const errorData = await response.text()
-      console.error('LINE Messaging API Error:', errorData)
-      return NextResponse.json(
-        { error: 'ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, notification_sent: sent })
   } catch (error) {
     console.error('Contact form error:', error)
     return NextResponse.json(
-      { error: 'เกิดข้อผิดพลาดภายในระบบ' },
+      { error: 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้ง' },
       { status: 500 }
     )
   }

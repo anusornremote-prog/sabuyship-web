@@ -18,14 +18,17 @@ async function recordNotification(recipientType: 'ADMIN' | 'CUSTOMER', status: '
 }
 
 export async function sendAdminNotification(message: string) {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   const lineUserId = process.env.LINE_ADMIN_USER_ID;
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
   const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
+  const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  const finalMessage = isDemo ? `[DEMO] ${message}` : message;
+
   let success = false;
+  let lastErrorCode: string | undefined = undefined;
 
   // 1. Send via LINE Official Account (Messaging API)
   if (lineToken && lineUserId) {
@@ -40,7 +43,7 @@ export async function sendAdminNotification(message: string) {
         messages: [
           {
             type: 'text',
-            text: message
+            text: finalMessage
           }
         ]
       };
@@ -59,10 +62,19 @@ export async function sendAdminNotification(message: string) {
         },
         body: JSON.stringify(bodyPayload)
       });
-      if (response.ok) success = true;
+      if (response.ok) {
+        success = true;
+      } else {
+        const errorText = await response.text();
+        console.error(`LINE notification returned HTTP ${response.status}:`, errorText);
+        lastErrorCode = `LINE_HTTP_${response.status}`;
+      }
     } catch (err) {
       console.error("Failed to send LINE notification", err);
+      lastErrorCode = "LINE_NETWORK_ERROR";
     }
+  } else {
+    lastErrorCode = !lineToken ? "LINE_TOKEN_MISSING" : "LINE_USER_ID_MISSING";
   }
 
   // 2. Send via Discord Webhook
@@ -74,7 +86,7 @@ export async function sendAdminNotification(message: string) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          content: message
+          content: finalMessage
         })
       });
       if (response.ok) success = true;
@@ -93,7 +105,7 @@ export async function sendAdminNotification(message: string) {
         },
         body: JSON.stringify({
           chat_id: telegramChatId,
-          text: message
+          text: finalMessage
         })
       });
       if (response.ok) success = true;
@@ -102,17 +114,19 @@ export async function sendAdminNotification(message: string) {
     }
   }
 
-  await recordNotification('ADMIN', success ? 'SENT' : 'FAILED', undefined, undefined, 'MULTI');
+  await recordNotification('ADMIN', success ? 'SENT' : 'FAILED', undefined, success ? undefined : lastErrorCode, 'MULTI');
   return success;
 }
 
 export async function sendCustomerNotification(profileId: string, message: string) {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return true;
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!lineToken) {
     await recordNotification('CUSTOMER', 'SKIPPED', profileId, 'LINE_NOT_CONFIGURED');
     return false;
   }
+
+  const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  const finalMessage = isDemo ? `[DEMO] ${message}` : message;
 
   try {
     const supabase = await createClient();
@@ -131,7 +145,7 @@ export async function sendCustomerNotification(profileId: string, message: strin
       },
       body: JSON.stringify({
         to: profile.line_uid,
-        messages: [{ type: 'text', text: message }]
+        messages: [{ type: 'text', text: finalMessage }]
       })
     });
     await recordNotification('CUSTOMER', response.ok ? 'SENT' : 'FAILED', profileId, response.ok ? undefined : `HTTP_${response.status}`);
