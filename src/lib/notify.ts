@@ -17,9 +17,65 @@ async function recordNotification(recipientType: 'ADMIN' | 'CUSTOMER', status: '
   }
 }
 
+export async function getAdminLineUserIds(): Promise<string[]> {
+  const ids = new Set<string>();
+
+  // 1. From environment variable LINE_ADMIN_USER_ID
+  const envLineUserId = process.env.LINE_ADMIN_USER_ID;
+  if (envLineUserId) {
+    envLineUserId.split(',').forEach(id => {
+      const clean = id.trim();
+      if (clean && clean.startsWith('U')) ids.add(clean);
+    });
+  }
+
+  // 2. From site_settings table (key: 'line_admin_user_ids')
+  try {
+    const adminClient = createAdminClient();
+    const { data: setting } = await adminClient
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'line_admin_user_ids')
+      .maybeSingle();
+
+    if (setting && setting.value) {
+      const raw = typeof setting.value === 'string' ? setting.value : String(setting.value);
+      raw.split(',').forEach(id => {
+        const clean = id.trim().replace(/[\[\]"']/g, '');
+        if (clean && clean.startsWith('U')) ids.add(clean);
+      });
+    }
+  } catch (err) {
+    console.error('Failed to fetch admin LINE IDs from site_settings:', err);
+  }
+
+  // 3. From profiles table where role = 'ADMIN' and line_uid is not null
+  try {
+    const adminClient = createAdminClient();
+    const { data: adminProfiles } = await adminClient
+      .from('profiles')
+      .select('line_uid')
+      .eq('role', 'ADMIN')
+      .eq('is_active', true)
+      .not('line_uid', 'is', null);
+
+    if (adminProfiles) {
+      adminProfiles.forEach(p => {
+        if (p.line_uid && typeof p.line_uid === 'string') {
+          const clean = p.line_uid.trim();
+          if (clean && clean.startsWith('U')) ids.add(clean);
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Failed to fetch admin LINE UIDs from profiles:', err);
+  }
+
+  return Array.from(ids);
+}
+
 export async function sendAdminNotification(message: string) {
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-  const lineUserId = process.env.LINE_ADMIN_USER_ID;
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
   const telegramChatId = process.env.TELEGRAM_CHAT_ID;
@@ -30,11 +86,11 @@ export async function sendAdminNotification(message: string) {
   let success = false;
   let lastErrorCode: string | undefined = undefined;
 
-  // 1. Send via LINE Official Account (Messaging API)
-  if (lineToken && lineUserId) {
+  // 1. Send via LINE Official Account (Messaging API) to all admins
+  const userIds = await getAdminLineUserIds();
+
+  if (lineToken && userIds.length > 0) {
     try {
-      const userIds = lineUserId.split(',').map(id => id.trim()).filter(id => id.length > 0);
-      
       const endpoint = userIds.length > 1 
         ? 'https://api.line.me/v2/bot/message/multicast' 
         : 'https://api.line.me/v2/bot/message/push';

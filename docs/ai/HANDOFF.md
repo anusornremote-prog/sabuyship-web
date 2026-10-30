@@ -149,6 +149,15 @@ Never replace production environment values with staging values. Do not place an
   - Added `POST /api/admin/notifications/test` for on-demand admin verification.
   - Added `AdminNotificationHeader` in `src/app/admin/notifications/page.tsx` with live status badge and a "ทดสอบส่งแจ้งเตือน LINE" button.
 
+### 10. Multi-Admin LINE Notification Broadcast
+- **Requirement**: Notify all administrators upon new orders, payment slips, and inquiries.
+- **Implementation**:
+  - Created `getAdminLineUserIds()` in `src/lib/notify.ts`: merges UIDs from `LINE_ADMIN_USER_ID` env, `site_settings.line_admin_user_ids`, and active admin profiles with `line_uid`.
+  - Uses LINE Multicast API (`/v2/bot/message/multicast`) when multiple admin UIDs are present.
+  - Added `GET` & `POST` endpoints at `/api/admin/notifications/settings` for admins to view and manage additional admin LINE UIDs directly in the admin dashboard.
+  - Added "จัดการแอดมินรับแจ้งเตือน" modal in `AdminNotificationHeader.tsx` displaying registered admin accounts, connected LINE status, and custom UID configuration.
+
+
 
 
 ## Browser Test Evidence (Mobile Viewport 390x844)

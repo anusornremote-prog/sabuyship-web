@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/require-admin"
-import { sendAdminNotification } from "@/lib/notify"
+import { sendAdminNotification, getAdminLineUserIds } from "@/lib/notify"
 
 export async function POST() {
   const auth = await requireAdmin()
@@ -9,30 +9,32 @@ export async function POST() {
   }
 
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
-  const lineUserId = process.env.LINE_ADMIN_USER_ID
+  const userIds = await getAdminLineUserIds()
 
-  if (!lineToken || !lineUserId) {
+  if (!lineToken || userIds.length === 0) {
     return NextResponse.json({
       success: false,
-      error: "ยังไม่ได้ตั้งค่า LINE_CHANNEL_ACCESS_TOKEN หรือ LINE_ADMIN_USER_ID ใน Environment Variables",
+      error: "ยังไม่ได้ตั้งค่า LINE Token หรือยังไม่มีรายชื่อ LINE User ID ของแอดมิน",
       hasToken: Boolean(lineToken),
-      hasAdminUserId: Boolean(lineUserId),
+      recipientCount: userIds.length,
     }, { status: 400 })
   }
 
   try {
     const timeStr = new Date().toLocaleTimeString("th-TH")
-    const testMessage = `🔔 [ทดสอบระบบ] ทดสอบการแจ้งเตือนแอดมินทาง LINE สำเร็จ!\nเวลา: ${timeStr}\nผู้ทดสอบ: ${auth.user?.email || "Admin"}`
+    const testMessage = `🔔 [ทดสอบระบบ] ทดสอบการแจ้งเตือนแอดมินทุกคนทาง LINE!\nจำนวนแอดมินที่ได้รับ: ${userIds.length} ท่าน\nเวลา: ${timeStr}\nผู้ทดสอบ: ${auth.user?.email || "Admin"}`
     const success = await sendAdminNotification(testMessage)
 
     if (success) {
       return NextResponse.json({
         success: true,
-        message: "ส่งข้อความทดสอบเข้า LINE เรียบร้อยแล้ว",
+        recipientCount: userIds.length,
+        message: `ส่งข้อความทดสอบไปยังแอดมินทั้งหมด ${userIds.length} ท่านเรียบร้อยแล้ว`,
       })
     } else {
       return NextResponse.json({
         success: false,
+        recipientCount: userIds.length,
         error: "LINE API ปฏิเสธการส่งข้อความ หรือเกิดข้อผิดพลาดในการเชื่อมต่อ",
       }, { status: 502 })
     }
