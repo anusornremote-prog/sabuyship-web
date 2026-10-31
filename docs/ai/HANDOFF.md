@@ -247,6 +247,8 @@ Never replace production environment values with staging values. Do not place an
 - `src/components/dashboard/PhoneSetupModal.tsx`
 - `src/lib/supabase/middleware.ts`
 - `src/app/(auth)/register/page.tsx`
+- `src/app/(auth)/forgot-password/page.tsx`
+- `src/app/(auth)/reset-password/page.tsx`
 - `docs/ai/TASKS.md`
 - `docs/ai/HANDOFF.md`
 - `docs/ai/CHECKPOINT.md`

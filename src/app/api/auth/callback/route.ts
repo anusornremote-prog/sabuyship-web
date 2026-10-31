@@ -1,19 +1,34 @@
 import { NextResponse } from 'next/server'
+import { type EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { buildAuthErrorRedirectUrl } from '@/lib/auth-errors'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const tokenHash = searchParams.get('token_hash')
+  const type = searchParams.get('type') as EmailOtpType | null
   
   // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = searchParams.get('next') ?? (type === 'recovery' ? '/reset-password' : '/dashboard')
+  const isPasswordRecovery = next.startsWith('/reset-password') || type === 'recovery'
 
-  if (code) {
+  if (code || (tokenHash && type)) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    let authError: any = null
+
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      authError = error
+    } else if (tokenHash && type) {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type,
+      })
+      authError = error
+    }
     
-    if (!error) {
+    if (!authError) {
       // Create user profile if it doesn't exist
       const { data: { user } } = await supabase.auth.getUser()
       
@@ -29,7 +44,8 @@ export async function GET(request: Request) {
           .eq('id', user.id)
           .maybeSingle()
 
-        let hasPhone = !!profile?.phone && profile.phone.trim().length >= 9
+        const cleanPhone = (profile?.phone || '').replace(/\D/g, '')
+        let hasPhone = cleanPhone.length >= 9 && cleanPhone.length <= 10
 
         if (!profile) {
           // Auto-generate customer code for new OAuth users
@@ -50,6 +66,11 @@ export async function GET(request: Request) {
           await supabase.from('profiles').update({ line_uid: lineUid }).eq('id', user.id)
         }
 
+        // Always allow password recovery to reach /reset-password first
+        if (isPasswordRecovery) {
+          return NextResponse.redirect(`${origin}/reset-password`)
+        }
+
         if (!hasPhone) {
           return NextResponse.redirect(`${origin}/dashboard`)
         }
@@ -58,13 +79,23 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`)
     }
     
-    console.error("Auth callback error:", error)
+    console.error("Auth callback error:", authError)
+    if (isPasswordRecovery) {
+      return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
+    }
     return NextResponse.redirect(buildAuthErrorRedirectUrl(origin))
   }
 
   const providerError = searchParams.get('error')
   if (providerError) {
+    if (isPasswordRecovery) {
+      return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
+    }
     return NextResponse.redirect(buildAuthErrorRedirectUrl(origin, providerError))
+  }
+
+  if (isPasswordRecovery) {
+    return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
   }
 
   return NextResponse.redirect(buildAuthErrorRedirectUrl(origin))
