@@ -516,7 +516,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                 {chinaTrackingString ? (
                   <div className="space-y-4">
                     {inquiryItems.filter((item: any) => item.tracking_cn_cn || item.china_tracking_number).map((item: any, idx: number) => {
-                      const trackingNo = item.tracking_cn_cn || item.china_tracking_number
+                      const rawTracking = (item.tracking_cn_cn || item.china_tracking_number || "").toString()
+                      const trackingList = rawTracking.split(/[\n,]+/).map((s: string) => s.trim()).filter(Boolean)
                       return (
                         <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
                           <div className="flex items-start gap-3">
@@ -526,21 +527,30 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                               <div className="w-10 h-10 bg-slate-200 rounded flex items-center justify-center text-[10px] text-slate-500 shrink-0">ไม่มีรูป</div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-slate-500 truncate mb-1">{item.url}</p>
-                              <div>
-                                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">หมายเลขพัสดุจีน-จีน</h4>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold text-slate-800 font-mono text-sm">{trackingNo}</span>
-                                  <CopyTrackingButton trackingNumber={trackingNo} label="" />
-                                  <a
-                                    href={`https://t.17track.net/en#nums=${trackingNo}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-0.5"
-                                  >
-                                    เช็คแทร็ก ↗
-                                  </a>
-                                </div>
+                              <p className="text-xs text-slate-500 truncate mb-1.5">{item.url}</p>
+                              <div className="space-y-1.5">
+                                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+                                  หมายเลขพัสดุจีน-จีน ({trackingList.length} ชิ้น)
+                                </h4>
+                                {trackingList.map((trackingNo: string, tIdx: number) => (
+                                  <div key={tIdx} className="flex items-center gap-2 flex-wrap bg-white px-2.5 py-1.5 rounded border border-slate-200/80">
+                                    {trackingList.length > 1 && (
+                                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                                        #{tIdx + 1}
+                                      </span>
+                                    )}
+                                    <span className="font-semibold text-slate-800 font-mono text-sm">{trackingNo}</span>
+                                    <CopyTrackingButton trackingNumber={trackingNo} label="" />
+                                    <a
+                                      href={`https://t.17track.net/en#nums=${encodeURIComponent(trackingNo)}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-0.5 ml-auto"
+                                    >
+                                      เช็คแทร็ก ↗
+                                    </a>
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           </div>

@@ -56,25 +56,43 @@ export async function POST(
 
     let finalItems = []
     const trackingStrings: string[] = []
+    const splitTrackings = (raw: any): string[] => {
+      if (!raw) return []
+      if (Array.isArray(raw)) {
+        return raw.map((s) => String(s || "").trim()).filter(Boolean)
+      }
+      return String(raw)
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    }
 
     if (Array.isArray(updatedItemsInput) && updatedItemsInput.length > 0) {
       finalItems = currentItems.map((item: any, idx: number) => {
         const matchingInput = updatedItemsInput[idx]
-        const tn = (matchingInput?.tracking_cn_cn ?? matchingInput?.china_tracking_number ?? "").toString().trim()
-        if (tn) trackingStrings.push(tn)
+        const list = splitTrackings(
+          matchingInput?.tracking_numbers_cn ??
+          matchingInput?.tracking_cn_cn ??
+          matchingInput?.china_tracking_number
+        )
+        const joined = Array.from(new Set(list)).join(", ")
+        list.forEach((t) => trackingStrings.push(t))
         return {
           ...item,
-          tracking_cn_cn: tn,
-          china_tracking_number: tn,
+          tracking_cn_cn: joined,
+          china_tracking_number: joined,
+          tracking_numbers_cn: Array.from(new Set(list)),
         }
       })
     } else {
-      const cleanTn = typeof tracking_number === "string" ? tracking_number.trim() : ""
-      if (cleanTn) trackingStrings.push(cleanTn)
+      const list = splitTrackings(body.tracking_numbers ?? tracking_number)
+      const cleanTn = Array.from(new Set(list)).join(", ")
+      list.forEach((t) => trackingStrings.push(t))
       finalItems = currentItems.map((item: any) => ({
         ...item,
         tracking_cn_cn: cleanTn,
         china_tracking_number: cleanTn,
+        tracking_numbers_cn: Array.from(new Set(list)),
       }))
     }
 

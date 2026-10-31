@@ -123,9 +123,8 @@ Never replace production environment values with staging values. Do not place an
 
 ### 6. Chinese Domestic Tracking Step Separation from Round 2 Freight Invoice
 - **Business Requirement**: Separated Chinese domestic tracking input from Round 2 freight quotation. Admin enters Chinese tracking when merchant dispatches goods, notifying customer that goods are en route to the China warehouse. Round 2 shipping cost is only evaluated when parcel arrives at China warehouse.
-- **Admin Side**: Added `ChinaTrackingModal`, action button `ใส่แทร็กจีน` / `แก้ไขแทร็กจีน`, Chinese tracking badges, and detail card in `admin/orders`.
-- **API**: Added `POST /api/admin/orders/[id]/china-tracking` which logs `CHINA_TRANSIT` to `tracking_logs`, updates audit logs, and notifies customer.
-- **Customer Side**: Updated `PaymentStepper` and `dashboard/orders/[id]` with Chinese tracking pill, copy button, and tracking link.
+- **Multi-Tracking Support**: Upgraded `ChinaTrackingModal.tsx` and `POST /api/admin/orders/[id]/china-tracking` so admins can dynamically add unlimited Chinese tracking numbers (`+ เพิ่มช่องใส่เลขแทร็ก`) both across the order and per product link (`tracking_numbers_cn`).
+- **Admin & Customer Side**: Updated `admin/orders/[id]` and `dashboard/orders/[id]` to split and display each Chinese tracking number with its own `#1, #2` badge, copy button, and `17TRACK` link.
 
 ### 7. Navbar Top CTA Updated to "My Orders"
 - Updated the primary top-right orange CTA button across desktop and mobile navbars from "ส่งลิงก์สินค้า" (`/inquiry`) to "คำสั่งซื้อของฉัน" (`/dashboard/orders`).
