@@ -242,7 +242,7 @@ export function PaymentStepper({
       {/* Sticky Mobile Floating Pay Pill (Appears only on mobile when payment is required) */}
       {(() => {
         const activePayStep = steps.find(
-          s => s.isActive && s.amount > 0 && s.status !== 'UPLOADED' && (s.round !== 2 || savedMethod)
+          s => s.isActive && s.amount > 0 && s.status !== 'UPLOADED' && (s.round !== 3 || savedMethod)
         )
         if (!activePayStep) return null
 

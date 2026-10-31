@@ -91,11 +91,12 @@ Never replace production environment values with staging values. Do not place an
   - Added strict 9-10 digit numeric format validation on `/complete-profile` before saving.
 
 ### 5. Payment Modal Scrolling & Pinned Submit Button
-- **Modal Overflow & Scrolling Overhaul (`src/components/orders/PaymentSection.tsx`)**:
-  - Redesigned `DialogContent` to `flex flex-col max-h-[90dvh] overflow-hidden` with dynamic viewport unit `90dvh` to adapt cleanly across mobile browsers with virtual URL bars and desktop screens.
-  - Placed the modal header as a static `shrink-0` pinned element at the top.
-  - Placed all scrollable payment details (PromptPay QR, bank card, slip upload box, and datetime picker) inside a dedicated `flex-1 overflow-y-auto overscroll-contain min-h-0` container.
-  - Pinned the modal footer containing the "✓ ยืนยันแจ้งชำระเงิน" (Confirm Payment) button to the bottom (`shrink-0 border-t bg-slate-50/95`) so it is permanently visible on both mobile and desktop screens without getting cut off.
+- **Modal Portal & Stacking Context Fix (`src/components/ui/custom-dialog.tsx`, `src/components/orders/PaymentSection.tsx`, `src/components/orders/PaymentStepper.tsx`)**:
+  - Updated `custom-dialog.tsx` to render via `createPortal(..., document.body)` with `z-[100]` and `cn()` class merging so the Payment Modal escapes `PaymentStepper`'s `z-10` stacking context and renders strictly above `MobileBottomNav` (`z-50`), `FloatingLineButton` (`z-50`), and the mobile floating pay pill (`z-40`).
+  - Kept `<input ref={fileInputRef} type="file">` permanently mounted without `required` on a hidden input, preventing mobile browser HTML5 validation from silently blocking submission.
+  - Made the pinned bottom CTA button adaptive: tapping it before file selection opens the mobile photo picker (`📷 เลือกรูปสลิปเพื่อแจ้งโอน`), and once selected it turns green (`✓ ยืนยันแจ้งชำระเงิน`) to submit directly.
+  - Added server-side `multipart/form-data` fallback in `POST /api/order/[id]/payment` and safe client compression fallback (`useWebWorker: false` with 6s timeout).
+  - Fixed `PaymentStepper.tsx` floating pay pill condition from `s.round !== 2` to `s.round !== 3`.
 
 ## Validation Completed
 
