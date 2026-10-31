@@ -213,12 +213,12 @@ export function ChinaTrackingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90dvh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 border-b border-slate-100 bg-slate-50/50">
+      <DialogContent className="max-w-lg max-h-[88dvh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="shrink-0 p-4 sm:p-6 pb-4 pr-10 border-b border-slate-100 bg-slate-50/50 text-left">
           <div className="flex items-center gap-2">
             <span className="text-xl">🇨🇳</span>
             <div>
-              <DialogTitle className="text-lg font-bold text-slate-900">
+              <DialogTitle className="text-base sm:text-lg font-bold text-slate-900">
                 ใส่เลขแทร็กขนส่งจีน (รองรับหลายชิ้น/หลายกล่อง)
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-500 mt-0.5">
@@ -233,8 +233,8 @@ export function ChinaTrackingModal({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-6 space-y-5 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-4 sm:p-6 space-y-5 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0">
             {/* Workflow Info Box */}
             <div className="bg-amber-50/80 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 space-y-1">
               <div className="flex items-center gap-1.5 font-semibold text-amber-950">
@@ -302,7 +302,7 @@ export function ChinaTrackingModal({
                   </Button>
                 </div>
 
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-2">
                   {trackingList.map((tn, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <span className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-lg shrink-0 min-w-[72px] text-center">
@@ -343,7 +343,7 @@ export function ChinaTrackingModal({
                 <label className="text-xs font-semibold text-slate-700 block">
                   ระบุเลขพัสดุจีนสำหรับแต่ละรายการสินค้า (แต่ละรายการเพิ่มได้หลายเลข)
                 </label>
-                <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                <div className="space-y-3">
                   {items.map((item, itemIdx) => {
                     const rowList: string[] = item.trackingList || [""]
                     return (

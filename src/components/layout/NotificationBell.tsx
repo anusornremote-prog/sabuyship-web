@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { 
   Bell, 
@@ -26,11 +27,18 @@ const READ_STORAGE_KEY = "sabuyship_read_notif_ids"
 export function NotificationBell() {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [desktopPos, setDesktopPos] = useState<{ top: number; right: number }>({ top: 64, right: 16 })
   const [notifications, setNotifications] = useState<CustomerNotification[]>([])
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'UNREAD' | 'TRACKING' | 'PAYMENT'>('ALL')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Load read notification IDs from LocalStorage
   useEffect(() => {
@@ -69,17 +77,43 @@ export function NotificationBell() {
     return () => clearInterval(interval)
   }, [])
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside & lock body scroll on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        (!panelRef.current || !panelRef.current.contains(target))
+      ) {
         setIsOpen(false)
       }
     }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
+
+    const updatePosition = () => {
+      if (dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect()
+        setDesktopPos({
+          top: rect.bottom + 8,
+          right: Math.max(12, window.innerWidth - rect.right),
+        })
+      }
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+
+    if (isOpen) {
+      updatePosition()
+      document.addEventListener("mousedown", handleClickOutside)
+      window.addEventListener("resize", updatePosition)
+      if (window.innerWidth < 768) {
+        document.body.style.overflow = "hidden"
+      }
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      window.removeEventListener("resize", updatePosition)
+      document.body.style.overflow = ""
+    }
   }, [isOpen])
 
   // Calculate unread notifications
@@ -199,19 +233,26 @@ export function NotificationBell() {
         )}
       </button>
 
-      {/* Dropdown Panel / Bottom Sheet */}
-      {isOpen && (
+      {/* Dropdown Panel / Bottom Sheet (Portaled to escape navbar backdrop-filter on mobile) */}
+      {mounted && isOpen && createPortal(
         <>
           {/* Mobile Backdrop */}
           <div 
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 md:hidden animate-in fade-in duration-200"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[100] md:hidden animate-in fade-in duration-200"
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="fixed md:absolute bottom-0 md:bottom-auto md:top-full right-0 left-0 md:left-auto md:mt-2 w-full md:w-96 bg-white rounded-t-3xl md:rounded-2xl shadow-2xl border border-slate-200/90 z-50 overflow-hidden flex flex-col max-h-[85vh] md:max-h-[540px] animate-bottom-sheet md:animate-in md:fade-in md:zoom-in-95 duration-200">
+          <div
+            ref={panelRef}
+            style={{
+              top: desktopPos.top,
+              right: desktopPos.right,
+            }}
+            className="fixed max-md:!top-auto max-md:!bottom-0 max-md:!left-0 max-md:!right-0 w-full md:w-96 bg-white rounded-t-3xl md:rounded-2xl shadow-2xl border border-slate-200/90 z-[100] overflow-hidden flex flex-col max-h-[85dvh] md:max-h-[540px] animate-bottom-sheet md:animate-in md:fade-in md:zoom-in-95 duration-200"
+          >
             
             {/* Mobile Drag Indicator Handle */}
-            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-1 md:hidden" />
+            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-1 shrink-0 md:hidden" />
 
             {/* Header */}
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
@@ -288,7 +329,7 @@ export function NotificationBell() {
             </div>
 
             {/* Notification Items List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 overscroll-contain">
+            <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch]">
               {filteredNotifications.length > 0 ? (
                 filteredNotifications.map((item) => {
                   const isUnread = !readIds.has(item.id)
@@ -350,7 +391,7 @@ export function NotificationBell() {
             </div>
 
             {/* Footer */}
-            <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center shrink-0">
+            <div className="p-2.5 pb-[max(env(safe-area-inset-bottom),0.625rem)] bg-slate-50 border-t border-slate-100 text-center shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -364,7 +405,8 @@ export function NotificationBell() {
             </div>
 
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   )

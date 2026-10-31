@@ -217,6 +217,14 @@ Never replace production environment values with staging values. Do not place an
 - `src/lib/auth-errors.ts`
 - `package.json`
 - `package-lock.json`
+- `src/components/layout/NotificationBell.tsx`
+- `src/app/admin/notifications/AdminNotificationHeader.tsx`
+- `src/components/ui/dialog.tsx`
+- `src/components/ui/custom-dialog.tsx`
+- `src/components/admin/ChinaTrackingModal.tsx`
+- `src/app/api/admin/orders/[id]/china-tracking/route.ts`
+- `src/app/api/order/[id]/payment/route.ts`
+- `src/lib/notify.ts`
 - `docs/ai/TASKS.md`
 - `docs/ai/HANDOFF.md`
 - `docs/ai/CHECKPOINT.md`

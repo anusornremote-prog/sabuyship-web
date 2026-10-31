@@ -173,18 +173,18 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
 
       {/* Modal: Manage Admin & Staff Recipients */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90dvh] flex flex-col overflow-hidden">
-          <DialogHeader className="shrink-0 border-b border-slate-100 pb-3">
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <Users className="w-5 h-5 text-primary" />
-              จัดการรายชื่อผู้รับแจ้งเตือน LINE (แอดมิน & ทีมงาน)
+        <DialogContent className="sm:max-w-[600px] max-h-[88dvh] flex flex-col p-0 gap-0 overflow-hidden">
+          <DialogHeader className="shrink-0 border-b border-slate-100 p-4 sm:p-5 pb-3 pr-10 text-left">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-900">
+              <Users className="w-5 h-5 text-primary shrink-0" />
+              <span>จัดการรายชื่อผู้รับแจ้งเตือน LINE (แอดมิน & ทีมงาน)</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
               สามารถเพิ่มทั้งแอดมินเว็บ, แอดมินเพจ LINE OA (ที่ไม่ใช่แอดมินเว็บ), หรือกลุ่ม LINE ของทีมงานให้รับแจ้งเตือนพร้อมกันได้
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-5">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] p-4 sm:p-5 space-y-5">
             {/* 1. Quick-Select from anyone who logged in with LINE */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-800 block">
@@ -193,18 +193,18 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
               <p className="text-[11px] text-slate-500">
                 แม้จะไม่ได้เป็นแอดมินเว็บ (เช่น เป็นพนักงานหรือแอดมิน LINE OA) แค่เคยกด &quot;เข้าสู่ระบบด้วย LINE&quot; บนเว็บ ก็สามารถกดเลือกให้รับแจ้งเตือนตรงนี้ได้เลย
               </p>
-              <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+              <div className="space-y-2">
                 {lineConnectedUsers.map((u) => {
                   const active = u.isEnvDefault || u.role === "ADMIN" || isUidSelectedInInput(u.lineUid)
                   return (
                     <div
                       key={u.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 text-xs"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50/70 text-xs"
                     >
-                      <div className="space-y-0.5">
-                        <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                          <span>{u.fullName}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="font-bold text-slate-800 flex flex-wrap items-center gap-1.5">
+                          <span className="truncate">{u.fullName}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold shrink-0 ${
                             u.role === "ADMIN"
                               ? "bg-blue-100 text-blue-700"
                               : "bg-slate-200 text-slate-600"
@@ -212,12 +212,12 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
                             {u.role === "ADMIN" ? "แอดมินเว็บ" : "สมาชิกทั่วไป / ทีมงาน"}
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-400 font-mono">
+                        <div className="text-[11px] text-slate-400 font-mono truncate">
                           LINE UID: {u.lineUidMasked}
                         </div>
                       </div>
 
-                      <div>
+                      <div className="shrink-0">
                         {u.isEnvDefault ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
                             <CheckCircle2 className="w-3.5 h-3.5" /> แอดมินหลัก (รับเสมอ)
@@ -228,7 +228,7 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
                             size="sm"
                             variant={active ? "default" : "outline"}
                             onClick={() => toggleUserUidInCustomList(u.lineUid)}
-                            className={`h-7 px-2.5 text-xs font-bold cursor-pointer ${
+                            className={`h-8 w-full sm:w-auto px-2.5 text-xs font-bold cursor-pointer ${
                               active
                                 ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                                 : "border-blue-200 text-primary hover:bg-blue-50"
