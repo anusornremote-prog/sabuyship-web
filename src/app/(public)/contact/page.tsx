@@ -71,9 +71,9 @@ export default function Contact() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">{t.lineResponse}</h3>
-                <p className="text-slate-600 text-lg font-bold text-green-600 mb-2">@sabuyship</p>
+                <p className="text-slate-600 text-lg font-bold text-green-600 mb-2">@516lqkcd</p>
                 <img src="/QR-Line.jpg" alt="LINE QR Code" className="w-40 h-40 mb-4 rounded-md shadow-sm border" />
-                <a href="https://lin.ee/UC0F9zl" target="_blank" rel="noopener noreferrer">
+                <a href="https://line.me/R/ti/p/@516lqkcd" target="_blank" rel="noopener noreferrer">
                   <Button className="bg-[#06C755] hover:bg-[#05b34c] text-white w-full max-w-xs mb-2 shadow-md shadow-[#06C755]/20 font-bold cursor-pointer flex items-center justify-center gap-2">
                     <LineIcon className="w-5 h-5 text-white" />
                     <span>เพิ่มเพื่อน (Add Friend)</span>

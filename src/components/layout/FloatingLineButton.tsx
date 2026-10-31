@@ -16,7 +16,7 @@ export function FloatingLineButton() {
     <aside aria-label="Line Support Chat" className="hidden md:flex fixed bottom-6 right-6 z-40 items-center group">
       {/* Tooltip Badge */}
       <a
-        href="https://lin.ee/UC0F9zl"
+        href="https://line.me/R/ti/p/@516lqkcd"
         target="_blank"
         rel="noopener noreferrer"
         className="hidden sm:flex items-center gap-2 bg-slate-900/90 backdrop-blur-md text-white text-xs font-bold py-2 px-3.5 rounded-full shadow-lg border border-slate-700 mr-2.5 opacity-90 group-hover:opacity-100 group-hover:-translate-x-1 transition-all duration-300 pointer-events-auto"
@@ -30,7 +30,7 @@ export function FloatingLineButton() {
 
       {/* Main Floating Circle */}
       <a
-        href="https://lin.ee/UC0F9zl"
+        href="https://line.me/R/ti/p/@516lqkcd"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="LINE Support"

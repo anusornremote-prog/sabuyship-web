@@ -40,7 +40,7 @@ export function Footer() {
           <div>
             <h3 className="text-xs font-black uppercase tracking-[0.18em] text-blue-300">{t.footerContactUs}</h3>
             <div className="mt-5 space-y-3">
-              <ContactLink href="https://lin.ee/UC0F9zl" icon={<MessageCircle className="h-4 w-4" />} label="LINE @sabuyship" />
+              <ContactLink href="https://line.me/R/ti/p/@516lqkcd" icon={<MessageCircle className="h-4 w-4" />} label="LINE @516lqkcd" />
               <ContactLink href="https://facebook.com/sabuyshipexpress" icon={<Facebook className="h-4 w-4" />} label="Sabuy Ship Express" />
               <ContactLink href="mailto:sabuyship.express@gmail.com" icon={<Mail className="h-4 w-4" />} label="sabuyship.express@gmail.com" />
             </div>

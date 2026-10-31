@@ -47,7 +47,7 @@ export function MobileBottomNav() {
   const isInquiryActive = pathname === "/inquiry"
   const isProfileActive = pathname.startsWith("/dashboard") && !pathname.startsWith("/dashboard/orders") || pathname === "/login" || pathname === "/register"
 
-  const lineUrl = process.env.NEXT_PUBLIC_LINE_OA_URL || "https://line.me/ti/p/~@sabuyship"
+  const lineUrl = process.env.NEXT_PUBLIC_LINE_OA_URL || "https://line.me/R/ti/p/@516lqkcd"
 
   const labelHome = locale === 'en' ? 'Home' : locale === 'zh' ? '首页' : 'หน้าแรก'
   const labelOrders = locale === 'en' ? 'Orders' : locale === 'zh' ? '订单/追踪' : 'ติดตาม/บิล'
