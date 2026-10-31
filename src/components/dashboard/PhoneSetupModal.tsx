@@ -14,7 +14,10 @@ export function PhoneSetupModal({ isOpen, onSuccess }: { isOpen: boolean, onSucc
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!phone) return alert("กรุณากรอกเบอร์โทรศัพท์")
+    const cleanPhone = phone.replace(/\D/g, "")
+    if (cleanPhone.length < 9 || cleanPhone.length > 10) {
+      return alert("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (ตัวเลข 9-10 หลัก)")
+    }
     
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
@@ -22,7 +25,7 @@ export function PhoneSetupModal({ isOpen, onSuccess }: { isOpen: boolean, onSucc
     
     const { error } = await supabase
       .from('profiles')
-      .update({ phone, line_id: lineId })
+      .update({ phone: cleanPhone, line_id: lineId })
       .eq('id', user.id)
 
     setLoading(false)

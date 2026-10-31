@@ -2,32 +2,26 @@ import crypto from "node:crypto"
 import { NextResponse } from "next/server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
-import { createClient } from "@/lib/supabase/server"
+import { requireAdmin } from "@/lib/require-admin"
+import { sendCustomerNotification } from "@/lib/notify"
 
 type NormalizedItem = {
+  url: string
   product_url: string
   product_name: string
   product_options: string
+  remark: string
   quantity: number
   unit_price: number
+  price_thb: number
+  quoted_price: number
 }
 
 export async function POST(request: Request) {
   try {
-    const sessionClient = await createClient()
-    const {
-      data: { user },
-    } = await sessionClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
-    const { data: actor } = await sessionClient
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle()
-    if (actor?.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
+    const auth = await requireAdmin()
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+    const user = auth.user
 
     const body = await request.json()
     const items = Array.isArray(body.items) ? body.items : []
@@ -35,13 +29,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid order details" }, { status: 400 })
     }
 
-    const normalizedItems: NormalizedItem[] = items.map((item: Record<string, unknown>) => ({
-      product_url: typeof item.product_url === "string" ? item.product_url.trim() : "",
-      product_name: typeof item.product_name === "string" ? item.product_name.trim() : "",
-      product_options: typeof item.product_options === "string" ? item.product_options.trim() : "",
-      quantity: Number(item.quantity),
-      unit_price: Number(item.unit_price),
-    }))
+    const normalizedItems: NormalizedItem[] = items.map((item: Record<string, unknown>) => {
+      const productUrl = typeof item.product_url === "string" ? item.product_url.trim() : ""
+      const productName = typeof item.product_name === "string" ? item.product_name.trim() : ""
+      const productOptions = typeof item.product_options === "string" ? item.product_options.trim() : ""
+      const quantity = Number(item.quantity)
+      const unitPrice = Number(item.unit_price)
+      return {
+        url: productUrl || productName,
+        product_url: productUrl,
+        product_name: productName,
+        product_options: productOptions,
+        remark: [productName, productOptions].filter(Boolean).join(" - "),
+        quantity,
+        unit_price: unitPrice,
+        price_thb: unitPrice,
+        quoted_price: quantity * unitPrice,
+      }
+    })
     if (normalizedItems.some((item) => !item.product_name || !Number.isInteger(item.quantity) || item.quantity <= 0 || !Number.isFinite(item.unit_price) || item.unit_price < 0)) {
       return NextResponse.json({ error: "Invalid item details" }, { status: 400 })
     }
@@ -136,6 +141,13 @@ export async function POST(request: Request) {
         created_by: user.id,
       })
       if (logError) throw logError
+
+      await sendCustomerNotification(
+        customer.id,
+        alreadyPaid
+          ? `🛒 สร้างคำสั่งซื้อและยืนยันยอดชำระรอบที่ 1 เรียบร้อยแล้ว!\nเลขที่ออเดอร์: ${order.order_number}\nยอดรวมรอบที่ 1: ฿${totalPrice.toLocaleString("th-TH", { minimumFractionDigits: 2 })}\nดูรายละเอียดได้ที่: https://www.sabuyship.com/dashboard/orders/${order.order_number}`
+          : `📋 แอดมินสร้างคำสั่งซื้อให้คุณเรียบร้อยแล้ว!\nเลขที่ออเดอร์: ${order.order_number}\nยอดรอชำระรอบที่ 1: ฿${totalPrice.toLocaleString("th-TH", { minimumFractionDigits: 2 })}\nกดชำระเงินได้ที่: https://www.sabuyship.com/dashboard/orders/${order.order_number}`
+      ).catch((err) => console.error("Failed to send customer notification for manual order:", err))
 
       return NextResponse.json({ success: true, data: order }, { status: 201 })
     } catch (error) {

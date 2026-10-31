@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { sendAdminNotification } from "@/lib/notify"
 
 // GET /api/order/[id] - Get order details
 export async function GET(
@@ -16,8 +17,8 @@ export async function GET(
     
     let query = supabase.from("orders").select(`
       *,
-      quotations (*),
-      profiles (full_name, phone, line_id)
+      quotation:quotation_id (*),
+      customer:customer_id (full_name, phone, line_id)
     `)
     
     if (isUUID) {
@@ -42,7 +43,7 @@ export async function GET(
     }
 
     if (!isAdmin) {
-      if (!user || (user.id !== data.customer_id && user.id !== data.user_id)) {
+      if (!user || user.id !== data.customer_id) {
         return NextResponse.json({ error: "Forbidden: You are not authorized to view this order" }, { status: 403 })
       }
     }
@@ -79,7 +80,7 @@ export async function PATCH(
     const adminClient = createAdminClient()
     const { data: order } = await adminClient
       .from("orders")
-      .select("id, customer_id, status, payment_round_3_status")
+      .select("id, order_number, customer_id, status, payment_round_3_status")
       .eq("id", id)
       .maybeSingle()
 
@@ -87,7 +88,7 @@ export async function PATCH(
     if (order.customer_id !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
-    if (order.status !== "THAILAND_WAREHOUSE" || ["UPLOADED", "PAID"].includes(order.payment_round_3_status)) {
+    if ((order.status !== "THAILAND_WAREHOUSE" && order.status !== "PAYMENT_REJECTED") || ["UPLOADED", "PAID"].includes(order.payment_round_3_status)) {
       return NextResponse.json({ error: "Shipping method cannot be changed now" }, { status: 409 })
     }
 
@@ -97,6 +98,17 @@ export async function PATCH(
       .eq("id", id)
       .eq("customer_id", user.id)
     if (error) throw error
+
+    await adminClient.from("tracking_logs").insert({
+      order_id: id,
+      status: "THAILAND_WAREHOUSE",
+      notes: `ลูกค้าเลือกวิธีจัดส่งในไทย: ${body.shipping_company}`,
+      created_by: user.id,
+    })
+
+    await sendAdminNotification(
+      `🚚 ลูกค้าเลือกวิธีจัดส่งในไทยแล้ว!\nเลขที่ออเดอร์: ${order.order_number}\nวิธีจัดส่ง: ${body.shipping_company}\nกรุณาประเมินค่าจัดส่งรอบที่ 3 ในระบบหลังบ้าน`
+    ).catch((err) => console.error("Failed to send admin notification for shipping method:", err))
 
     return NextResponse.json({ success: true })
   } catch (error: unknown) {

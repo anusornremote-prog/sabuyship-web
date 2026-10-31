@@ -1,6 +1,3 @@
-'use server';
-
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 async function recordNotification(recipientType: 'ADMIN' | 'CUSTOMER', status: 'SENT' | 'FAILED' | 'SKIPPED', recipientProfileId?: string, errorCode?: string, channel = 'LINE') {
@@ -203,8 +200,8 @@ export async function sendCustomerNotification(profileId: string, message: strin
   const finalMessage = isDemo ? `[DEMO] ${message}` : message;
 
   try {
-    const supabase = await createClient();
-    const { data: profile } = await supabase.from('profiles').select('line_uid').eq('id', profileId).single();
+    const supabase = createAdminClient();
+    const { data: profile } = await supabase.from('profiles').select('line_uid').eq('id', profileId).maybeSingle();
 
     if (!profile || !profile.line_uid) {
       await recordNotification('CUSTOMER', 'SKIPPED', profileId, 'LINE_UID_MISSING');

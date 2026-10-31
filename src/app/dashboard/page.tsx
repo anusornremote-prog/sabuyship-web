@@ -25,7 +25,7 @@ export default async function DashboardOverview() {
       .maybeSingle(),
     supabase
       .from("orders")
-      .select("id, order_number, status, created_at")
+      .select("id, order_number, status, payment_round_1_status, payment_round_2_status, payment_round_3_status, consolidated_into_id, created_at")
       .eq("customer_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -39,20 +39,30 @@ export default async function DashboardOverview() {
   const displayName = profile?.full_name || user?.email?.split('@')[0] || "ลูกค้า Sabuy Ship"
 
   const totalOrders = orders?.length || 0
-  const pendingOrders = orders?.filter(order => order.status !== "DELIVERED").length || 0
+  const pendingOrders = orders?.filter(order => order.status !== "DELIVERED" && order.status !== "CANCELED" && !order.consolidated_into_id).length || 0
   const completedOrders = orders?.filter(order => order.status === "DELIVERED").length || 0
-  const waitingPayment = orders?.filter(order => order.status === "WAITING_PAYMENT").length || 0
+  const waitingPayment = orders?.filter(order => {
+    if (order.consolidated_into_id) return false
+    const r1 = (order.status === "WAITING_PAYMENT" || order.status === "PAYMENT_REJECTED") && (!order.payment_round_1_status || order.payment_round_1_status === "PENDING" || order.payment_round_1_status === "REJECTED")
+    const r2 = (order.status === "CHINA_WAREHOUSE" || order.status === "PAYMENT_REJECTED") && (order.payment_round_2_status === "PENDING" || order.payment_round_2_status === "REJECTED")
+    const r3 = (order.status === "THAILAND_WAREHOUSE" || order.status === "PAYMENT_REJECTED") && (order.payment_round_3_status === "PENDING" || order.payment_round_3_status === "REJECTED")
+    return r1 || r2 || r3
+  }).length || 0
   const recentOrders = orders?.slice(0, 5) || []
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'NEW': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'PAID': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      case 'PAYMENT_REJECTED': return 'bg-rose-100 text-rose-800 border-rose-200'
+      case 'PAID':
+      case 'ORDERED': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
       case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800 border-purple-200'
       case 'SHIPPING': return 'bg-sky-100 text-sky-800 border-sky-200'
       case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800 border-teal-200'
+      case 'OUT_FOR_DELIVERY': return 'bg-indigo-100 text-indigo-800 border-indigo-200'
       case 'DELIVERED': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      case 'CANCELED': return 'bg-slate-200 text-slate-600 border-slate-300'
       default: return 'bg-slate-100 text-slate-800 border-slate-200'
     }
   }
@@ -61,12 +71,15 @@ export default async function DashboardOverview() {
     switch (status) {
       case 'NEW': return 'รอดำเนินการ'
       case 'WAITING_PAYMENT': return 'รอชำระเงิน'
+      case 'PAYMENT_REJECTED': return 'สลิปไม่ผ่าน/รอแนบใหม่'
       case 'PAID': return 'ชำระเงินแล้ว'
       case 'ORDERED': return 'สั่งซื้อสำเร็จ'
       case 'CHINA_WAREHOUSE': return 'ถึงโกดังจีน'
       case 'SHIPPING': return 'อยู่ระหว่างจัดส่ง'
       case 'THAILAND_WAREHOUSE': return 'ถึงโกดังไทย'
+      case 'OUT_FOR_DELIVERY': return 'กำลังนำส่งลูกค้า'
       case 'DELIVERED': return 'จัดส่งสำเร็จ'
+      case 'CANCELED': return 'ยกเลิกรายการ'
       default: return status
     }
   }

@@ -52,6 +52,11 @@ export default function ProfilePage() {
     setErrorMsg("")
 
     try {
+      const cleanPhone = phone.replace(/\D/g, "")
+      if (cleanPhone.length < 9 || cleanPhone.length > 10) {
+        throw new Error("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (9-10 หลัก)")
+      }
+
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("ไม่พบผู้ใช้งาน")
@@ -60,7 +65,7 @@ export default function ProfilePage() {
         .from("profiles")
         .update({
           full_name: fullName,
-          phone: phone,
+          phone: cleanPhone,
           updated_at: new Date().toISOString()
         })
         .eq("id", user.id)

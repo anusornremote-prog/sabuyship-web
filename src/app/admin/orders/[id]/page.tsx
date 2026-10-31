@@ -31,7 +31,9 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     payment_round_1_status,
     payment_round_2_status,
     payment_round_3_status,
+    consolidated_into_id,
     shipping_address_id,
+    payments (*),
     address:shipping_address_id (
       full_name,
       phone,
@@ -202,6 +204,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           shippingCostThTh={quotation?.shipping_cost_th_th || 0}
           initialShippingMethod={order.shipping_company || ''}
           chinaTrackingNumber={chinaTrackingString || null}
+          isAdminView={true}
         />
       </div>
 
@@ -385,7 +388,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   </div>
                   <div className="flex justify-between pt-2">
                     <span className="font-bold text-lg text-slate-950">ยอดรวมทั้งสิ้น (รวมทุกรอบ)</span>
-                    <span className="font-bold text-lg text-primary">{formatCurrency((quotation.total_price || 0) + (quotation.shipping_cost_cn_th || 0) + (quotation.shipping_cost_th_th || 0))}</span>
+                    <span className="font-bold text-lg text-primary">{formatCurrency(quotation.total_price || 0)}</span>
                   </div>
                 </div>
               ) : (

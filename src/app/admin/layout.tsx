@@ -148,7 +148,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-clip">
         {/* Desktop Top Header Bar with prominent Logout & Breadcrumb */}
         <header className="hidden md:flex h-16 bg-white border-b border-slate-200 items-center justify-between px-6 lg:px-8 sticky top-0 z-20 shrink-0 shadow-xs">
           <div className="flex items-center gap-3">
@@ -242,7 +242,7 @@ export default function AdminLayout({
           </button>
         </nav>
 
-        <main className="flex-1 p-3 sm:p-4 md:p-8 overflow-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-8 overflow-x-hidden">
           {children}
         </main>
       </div>

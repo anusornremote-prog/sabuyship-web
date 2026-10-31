@@ -14,6 +14,7 @@ interface TrackingUpdateModalProps {
 const ORDER_STATUSES = [
   { value: "SHIPPING", label: "กำลังจัดส่งมาไทย" },
   { value: "THAILAND_WAREHOUSE", label: "ถึงโกดังไทยแล้ว" },
+  { value: "OUT_FOR_DELIVERY", label: "กำลังนำส่งลูกค้า (ใส่เลขพัสดุในไทย)" },
   { value: "DELIVERED", label: "จัดส่งให้ลูกค้าแล้ว (เสร็จสิ้น)" }
 ]
 

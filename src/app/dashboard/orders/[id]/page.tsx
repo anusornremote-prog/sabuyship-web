@@ -104,11 +104,15 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     switch (status) {
       case 'NEW': return 'bg-blue-100 text-blue-800 border-none'
       case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800 border-none'
-      case 'PAID': return 'bg-green-100 text-green-800 border-none'
+      case 'PAYMENT_REJECTED': return 'bg-rose-100 text-rose-800 border-none'
+      case 'PAID':
+      case 'ORDERED': return 'bg-green-100 text-green-800 border-none'
       case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800 border-none'
       case 'SHIPPING': return 'bg-sky-100 text-sky-800 border-none'
       case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800 border-none'
+      case 'OUT_FOR_DELIVERY': return 'bg-indigo-100 text-indigo-800 border-none'
       case 'DELIVERED': return 'bg-emerald-100 text-emerald-800 border-none'
+      case 'CANCELED': return 'bg-slate-200 text-slate-700 border-none'
       default: return 'bg-slate-100 text-slate-800 border-none'
     }
   }
@@ -122,16 +126,23 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       case 'UPLOADED_ROUND_1': return 'รอตรวจสอบการชำระเงิน รอบที่ 1'
       case 'PAID_ROUND_2': return 'ชำระเงินรอบที่ 2 สำเร็จ (ค่าขนส่งจีน-ไทย)'
       case 'UPLOADED_ROUND_2': return 'รอตรวจสอบการชำระเงิน รอบที่ 2'
+      case 'QUOTED_ROUND_2': return 'ประเมินค่าขนส่งจีน-ไทย (รอบที่ 2)'
       case 'PAID_ROUND_3': return 'ชำระเงินรอบที่ 3 สำเร็จ (ค่าจัดส่งในไทย)'
       case 'UPLOADED_ROUND_3': return 'รอตรวจสอบการชำระเงิน รอบที่ 3'
+      case 'QUOTED_ROUND_3': return 'ประเมินค่าจัดส่งในไทย (รอบที่ 3)'
       case 'PAYMENT_REJECTED': return 'สลิปถูกปฏิเสธ (REJECTED)'
       case 'ORDERED': return 'สั่งซื้อสำเร็จ (ORDERED)'
       case 'CHINA_TRANSIT': return 'ร้านค้าจีนจัดส่งแล้ว (กำลังไปโกดังจีน)'
       case 'CHINA_WAREHOUSE': return 'สินค้าถึงโกดังจีน (CHINA WAREHOUSE)'
       case 'SHIPPING': return 'อยู่ระหว่างจัดส่งมาไทย (SHIPPING)'
       case 'THAILAND_WAREHOUSE': return 'สินค้าถึงโกดังไทย (THAILAND WAREHOUSE)'
+      case 'CONSOLIDATION_PARENT': return 'รวมพัสดุเพื่อจัดส่งในไทย (ออเดอร์หลัก)'
+      case 'CONSOLIDATED': return 'รวมจัดส่งกับออเดอร์หลัก'
       case 'OUT_FOR_DELIVERY': return 'อยู่ระหว่างนำจ่าย (OUT FOR DELIVERY)'
       case 'DELIVERED': return 'จัดส่งสำเร็จ (DELIVERED)'
+      case 'ITEM_OUT_OF_STOCK': return 'สินค้าบางรายการหมดสต็อก'
+      case 'ORDER_CANCELED':
+      case 'CANCELED': return 'ยกเลิกรายการ (CANCELED)'
       default: return status
     }
   }

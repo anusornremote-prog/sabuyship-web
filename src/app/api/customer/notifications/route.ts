@@ -28,9 +28,10 @@ export async function GET() {
     // 1. Fetch Quoted Inquiries (Waiting for customer to order/pay Round 1)
     const { data: quotedInquiries } = await supabase
       .from("inquiries")
-      .select("id, inquiry_number, status, updated_at, created_at, quotations:quotation_id(total_price)")
+      .select("id, inquiry_number, status, updated_at, created_at, quotations(total_price)")
       .eq("customer_id", user.id)
       .eq("status", "QUOTED")
+      .is("archived_at", null)
       .order("updated_at", { ascending: false })
       .limit(10)
 
@@ -70,6 +71,7 @@ export async function GET() {
           shipping_cost_cn_cn,
           shipping_cost_cn_th,
           shipping_cost_th_th,
+          other_fee,
           total_price,
           inquiry:inquiry_id (items)
         )
@@ -98,24 +100,45 @@ export async function GET() {
           const orderNum = matchedOrder.order_number
           let title = "📦 อัปเดตสถานะพัสดุ"
           let message = log.notes || `สถานะออเดอร์ ${orderNum} มีการเปลี่ยนแปลง`
+          let notifType: CustomerNotification['type'] = 'TRACKING'
 
           switch (log.status) {
             case 'PAID_ROUND_1':
+              title = "✅ ยืนยันชำระเงิน รอบที่ 1 สำเร็จ"
+              message = log.notes || `ออเดอร์ ${orderNum} อนุมัติยอดชำระค่าสินค้าเรียบร้อยแล้ว กำลังดำเนินการสั่งซื้อ`
+              notifType = 'PAYMENT_APPROVED'
+              break
+            case 'PAID_ROUND_2':
+              title = "✅ ยืนยันชำระเงิน รอบที่ 2 สำเร็จ"
+              message = log.notes || `ออเดอร์ ${orderNum} อนุมัติยอดชำระค่าขนส่งจีน-ไทยเรียบร้อยแล้ว`
+              notifType = 'PAYMENT_APPROVED'
+              break
+            case 'PAID_ROUND_3':
+              title = "✅ ยืนยันชำระเงิน รอบที่ 3 สำเร็จ"
+              message = log.notes || `ออเดอร์ ${orderNum} อนุมัติยอดชำระค่าจัดส่งในไทยเรียบร้อยแล้ว`
+              notifType = 'PAYMENT_APPROVED'
+              break
             case 'ORDERED':
               title = "🛒 สั่งซื้อสินค้าสำเร็จแล้ว"
               message = `ออเดอร์ ${orderNum} ทางโกดังจีนได้ดำเนินการสั่งซื้อสินค้ากับทางร้านค้าเรียบร้อยแล้ว`
               break
+            case 'CHINA_TRANSIT':
+              title = "🇨🇳 ร้านค้าจีนจัดส่งพัสดุแล้ว"
+              message = log.notes || `ออเดอร์ ${orderNum} มีการอัปเดตเลขแทร็กขนส่งในจีน`
+              break
             case 'CHINA_WAREHOUSE':
+            case 'QUOTED_ROUND_2':
               title = "🇨🇳 สินค้าถึงโกดังจีนแล้ว"
-              message = `พัสดุออเดอร์ ${orderNum} มาถึงโกดังจีนแล้ว กำลังเตรียมโหลดตู้จัดส่งมาไทย`
+              message = log.notes || `พัสดุออเดอร์ ${orderNum} มาถึงโกดังจีนแล้ว กำลังเตรียมโหลดตู้จัดส่งมาไทย`
               break
             case 'SHIPPING':
               title = "🚢 อยู่ระหว่างจัดส่งมาไทย"
               message = `พัสดุออเดอร์ ${orderNum} ถูกส่งออกจากโกดังจีนแล้ว อยู่ระหว่างการขนส่งข้ามแดนมายังไทย`
               break
             case 'THAILAND_WAREHOUSE':
+            case 'QUOTED_ROUND_3':
               title = "🇹🇭 สินค้าถึงโกดังไทยแล้ว!"
-              message = `พัสดุออเดอร์ ${orderNum} เดินทางถึงโกดังไทยเรียบร้อยแล้ว พร้อมส่งต่อไปยังที่อยู่ของคุณ`
+              message = log.notes || `พัสดุออเดอร์ ${orderNum} เดินทางถึงโกดังไทยเรียบร้อยแล้ว พร้อมส่งต่อไปยังที่อยู่ของคุณ`
               break
             case 'OUT_FOR_DELIVERY':
               title = "🚚 พัสดุอยู่ระหว่างนำจ่าย"
@@ -128,12 +151,20 @@ export async function GET() {
             case 'PAYMENT_REJECTED':
               title = "⚠️ สลิปโอนเงินถูกปฏิเสธ"
               message = `สลิปสำหรับออเดอร์ ${orderNum} ไม่ผ่านการตรวจสอบ: ${log.notes || 'กรุณาแนบสลิปใหม่อีกครั้ง'}`
+              notifType = 'PAYMENT_REJECTED'
+              break
+            case 'ITEM_OUT_OF_STOCK':
+            case 'ORDER_CANCELED':
+            case 'CANCELED':
+              title = "⚠️ แจ้งเตือนสถานะสินค้า / ยกเลิกรายการ"
+              message = log.notes || `ออเดอร์ ${orderNum} มีการเปลี่ยนแปลงสถานะรายการสินค้า`
+              notifType = 'OUT_OF_STOCK'
               break
           }
 
           notifications.push({
             id: `track-${log.id}`,
-            type: log.status === 'PAYMENT_REJECTED' ? 'PAYMENT_REJECTED' : 'TRACKING',
+            type: notifType,
             title,
             message,
             timestamp: log.created_at,
@@ -149,8 +180,8 @@ export async function GET() {
         const orderNum = order.order_number
 
         // Round 1 Payment Due
-        if (order.payment_round_1_status === 'PENDING' && order.status === 'WAITING_PAYMENT') {
-          const round1Amount = (quotation?.product_cost || 0) + (quotation?.shipping_cost_cn_cn || 0)
+        if ((order.payment_round_1_status === 'PENDING' || order.payment_round_1_status === 'REJECTED') && (order.status === 'WAITING_PAYMENT' || order.status === 'PAYMENT_REJECTED')) {
+          const round1Amount = (quotation?.product_cost || 0) + (quotation?.shipping_cost_cn_cn || 0) + (quotation?.other_fee || 0)
           notifications.push({
             id: `pay-r1-${order.id}`,
             type: 'PAYMENT_DUE',
@@ -165,7 +196,7 @@ export async function GET() {
         }
 
         // Round 2 Payment Due (China-Thai shipping)
-        if (order.payment_round_2_status === 'PENDING' && (quotation?.shipping_cost_cn_th || 0) > 0 && order.status === 'CHINA_WAREHOUSE') {
+        if ((order.payment_round_2_status === 'PENDING' || order.payment_round_2_status === 'REJECTED') && (quotation?.shipping_cost_cn_th || 0) > 0 && (order.status === 'CHINA_WAREHOUSE' || order.status === 'PAYMENT_REJECTED')) {
           const round2Amount = quotation?.shipping_cost_cn_th || 0
           notifications.push({
             id: `pay-r2-${order.id}`,
@@ -181,7 +212,7 @@ export async function GET() {
         }
 
         // Round 3 Payment Due (Local Thai Delivery)
-        if (order.payment_round_3_status === 'PENDING' && (quotation?.shipping_cost_th_th || 0) > 0 && order.status === 'THAILAND_WAREHOUSE') {
+        if ((order.payment_round_3_status === 'PENDING' || order.payment_round_3_status === 'REJECTED') && (quotation?.shipping_cost_th_th || 0) > 0 && (order.status === 'THAILAND_WAREHOUSE' || order.status === 'PAYMENT_REJECTED')) {
           const round3Amount = quotation?.shipping_cost_th_th || 0
           notifications.push({
             id: `pay-r3-${order.id}`,

@@ -497,12 +497,15 @@ export default function AdminOrders() {
             <option value="ALL">สถานะทั้งหมด</option>
             <option value="NEW">NEW (รอชำระเงิน/อัปสลิป)</option>
             <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
+            <option value="PAYMENT_REJECTED">PAYMENT_REJECTED (สลิปถูกปฏิเสธ)</option>
             <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
+            <option value="ORDERED">ORDERED (ชำระรอบ 1 แล้ว/รอร้านจีนส่ง)</option>
             <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
             <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
             <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
             <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
             <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
+            <option value="CANCELED">CANCELED (ยกเลิก)</option>
           </select>
         </CardContent>
         {loadError && (
@@ -623,23 +626,23 @@ export default function AdminOrders() {
                           </Button>
                         )}
                         
-                        {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && !order.payment_round_2_status)) && (
+                        {(order.status === 'ORDERED' || (order.status === 'CHINA_WAREHOUSE' && order.payment_round_2_status !== 'PAID')) && (
                           <Button 
                             size="sm" 
                             onClick={() => handleOpenQuoteModal(order, 2)}
                             className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2 cursor-pointer"
                           >
-                            ถึงโกดังจีน (แจ้งบิล)
+                            {order.payment_round_2_status ? "แก้ไขค่าส่งจีน" : "ถึงโกดังจีน (แจ้งบิล)"}
                           </Button>
                         )}
 
-                        {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status)) && (
+                        {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && !order.consolidated_into_id && (
                           <Button 
                             size="sm" 
                             onClick={() => handleArrivedInThailand(order)}
-                            className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2"
+                            className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2 cursor-pointer"
                           >
-                            ถึงโกดังไทย (แจ้งบิล)
+                            {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "ถึงโกดังไทย (แจ้งบิล)"}
                           </Button>
                         )}
 
@@ -882,9 +885,9 @@ export default function AdminOrders() {
 
       {/* Status Update Modal */}
       {editingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card className="w-full max-w-md shadow-2xl bg-white border border-slate-100 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <Card className="w-full max-w-md max-h-[90dvh] flex flex-col overflow-hidden shadow-2xl bg-white border border-slate-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 shrink-0">
               <div>
                 <h3 className="font-bold text-lg text-slate-900">อัปเดตสถานะสินค้า</h3>
                 <p className="text-xs text-slate-500">คำสั่งซื้อ: {editingOrder.order_number}</p>
@@ -899,8 +902,8 @@ export default function AdminOrders() {
               </Button>
             </div>
             
-            <form onSubmit={handleUpdateStatus}>
-              <CardContent className="p-6 space-y-4">
+            <form onSubmit={handleUpdateStatus} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <CardContent className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0">
                 {successMsg && (
                   <div className="p-3 bg-green-50 text-green-700 text-sm rounded-lg font-medium border border-green-200">
                     {successMsg}

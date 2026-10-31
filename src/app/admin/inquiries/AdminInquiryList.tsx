@@ -173,13 +173,15 @@ export default function AdminInquiryList({
     setSelectedInquiry(inquiry)
     
     if (existingQuote) {
+      const hasMultiItems = inquiry.items && inquiry.items.length > 0
       const pCost = existingQuote.product_cost?.toString() || ""
-      const sCost = existingQuote.shipping_cost_cn_cn?.toString() || ""
+      const sCost = hasMultiItems ? "" : (existingQuote.shipping_cost_cn_cn?.toString() || "")
       setProductCost(pCost)
       setShippingCostCnCn(sCost)
       setOtherFee(existingQuote.other_fee?.toString() || "")
       if (parseFloat(pCost) && exchangeRate > 0) setProductCostRMB((parseFloat(pCost) / exchangeRate).toFixed(2))
-      if (parseFloat(sCost) && exchangeRate > 0) setShippingCostCnCnRMB((parseFloat(sCost) / exchangeRate).toFixed(2))
+      if (sCost && parseFloat(sCost) && exchangeRate > 0) setShippingCostCnCnRMB((parseFloat(sCost) / exchangeRate).toFixed(2))
+      else setShippingCostCnCnRMB("")
       
       const newCostMap: Record<number, string> = {}
       const newCostRMBMap: Record<number, string> = {}
@@ -253,7 +255,7 @@ export default function AdminInquiryList({
       const payload: any = {
         inquiry_id: selectedInquiry.id,
         product_cost: totalProductCost,
-        shipping_cost_cn_cn: (parseFloat(shippingCostCnCn) || 0) + totalItemShippingCost,
+        shipping_cost_cn_cn: isMultiItem ? totalItemShippingCost : (parseFloat(shippingCostCnCn) || 0),
         other_fee: parseFloat(otherFee) || 0,
         updated_items: isMultiItem ? updatedItems : null,
       }
@@ -620,15 +622,27 @@ export default function AdminInquiryList({
                         <div className="flex justify-end gap-2">
                           {inq.status === "PENDING" ? (
                             <>
-                              <Button
-                                size="sm"
-                                variant="default"
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold"
-                                onClick={() => openQuoteModal(inq)}
-                              >
-                                <PlusCircle className="h-4 w-4 mr-1.5" />
-                                ทำใบเสนอราคา
-                              </Button>
+                              {inq.service_type === "IMPORT_ONLY" ? (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer font-bold"
+                                  onClick={() => handleApproveImportOnly(inq)}
+                                >
+                                  <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                                  อนุมัตินำเข้า
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-bold"
+                                  onClick={() => openQuoteModal(inq)}
+                                >
+                                  <PlusCircle className="h-4 w-4 mr-1.5" />
+                                  ทำใบเสนอราคา
+                                </Button>
+                              )}
                               <Button
                                 size="sm"
                                 variant="ghost"
@@ -636,6 +650,26 @@ export default function AdminInquiryList({
                                 onClick={() => handleRejectInquiry(inq.id)}
                               >
                                 <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : inq.quotations && inq.quotations.length > 0 && inq.status === "QUOTED" ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="font-bold text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
+                                onClick={() => openQuoteModal(inq, inq.quotations[0])}
+                              >
+                                แก้ไขราคา
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="orange"
+                                className="font-bold cursor-pointer"
+                                onClick={() => setSelectedQuote({ ...inq.quotations[0], inquiry: inq })}
+                              >
+                                <FileText className="h-4 w-4 mr-1.5" />
+                                ดูใบเสนอราคา
                               </Button>
                             </>
                           ) : inq.quotations && inq.quotations.length > 0 ? (
@@ -743,9 +777,15 @@ export default function AdminInquiryList({
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {inq.status === "PENDING" ? (
                       <>
-                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 min-h-[44px]" onClick={() => openQuoteModal(inq)}>
-                          ทำใบเสนอราคา
-                        </Button>
+                        {inq.service_type === "IMPORT_ONLY" ? (
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 min-h-[44px]" onClick={() => handleApproveImportOnly(inq)}>
+                            อนุมัตินำเข้า
+                          </Button>
+                        ) : (
+                          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 min-h-[44px]" onClick={() => openQuoteModal(inq)}>
+                            ทำใบเสนอราคา
+                          </Button>
+                        )}
                         <Button size="sm" variant="outline" className="text-rose-600 border-rose-200 min-h-[44px]" onClick={() => handleRejectInquiry(inq.id)}>
                           ยกเลิก
                         </Button>
@@ -839,7 +879,7 @@ export default function AdminInquiryList({
               <div className="space-y-2">
                 <span className="text-xs text-slate-500 uppercase tracking-wider block font-bold">รายการสินค้าและประเมินราคา</span>
                 {selectedInquiry.items && selectedInquiry.items.length > 0 ? (
-                  <div className="space-y-3 max-h-64 overflow-y-auto bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <div className="space-y-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
                     {selectedInquiry.items.map((item: any, idx: number) => (
                       <div key={idx} className="flex flex-col gap-2 p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
                         <div className="flex justify-between items-center text-xs">
@@ -1014,8 +1054,7 @@ export default function AdminInquiryList({
                     (selectedInquiry?.items && selectedInquiry.items.length > 0 
                       ? Object.values(itemCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0) +
                         Object.values(itemShippingCosts).reduce((sum, cost) => sum + (parseFloat(cost as string) || 0), 0)
-                      : parseFloat(productCost) || 0) +
-                    (parseFloat(shippingCostCnCn) || 0) +
+                      : (parseFloat(productCost) || 0) + (parseFloat(shippingCostCnCn) || 0)) +
                     (parseFloat(otherFee) || 0)
                   ).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                 </span>

@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { Printer, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { hasLegalIdentity, publicBusinessConfig } from "@/lib/public-business-config"
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
   const { id } = await params
   const taxId = process.env.BUSINESS_TAX_ID?.trim()
 
@@ -67,10 +69,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     notFound()
   }
 
-  const quotation = order.quotation as any
-  const inquiry = quotation?.inquiry as any
-  const customer = order.customer as any
-  const address = order.address as any
+  const quotation = Array.isArray(order.quotation) ? order.quotation[0] : (order.quotation as any)
+  const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : (quotation?.inquiry as any)
+  const customer = Array.isArray(order.customer) ? order.customer[0] : (order.customer as any)
+  const address = Array.isArray(order.address) ? order.address[0] : (order.address as any)
 
   const formatCurrency = (amount: number) => {
     return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -101,7 +103,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* A4 Document Container */}
-      <div className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg print:shadow-none p-12 print:p-0 relative text-slate-900">
+      <div className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg print:shadow-none p-5 sm:p-8 md:p-12 print:p-0 relative text-slate-900 flex flex-col justify-between overflow-x-auto">
         
         {/* Print Button Script Workaround for Server Component */}
         <script dangerouslySetInnerHTML={{
@@ -276,7 +278,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Footer Notes */}
-        <div className="absolute bottom-12 left-12 right-12 text-center text-xs text-slate-500 border-t border-slate-200 pt-6">
+        <div className="mt-12 text-center text-xs text-slate-500 border-t border-slate-200 pt-6">
           <p>เอกสารนี้เป็นใบสรุปรายการจากระบบ ไม่ใช่ใบกำกับภาษี</p>
           <p className="mt-1">
             {hasLegalIdentity

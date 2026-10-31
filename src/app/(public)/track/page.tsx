@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -49,9 +49,9 @@ export default function TrackOrder() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!trackingNumber.trim()) return
+  const executeSearch = async (rawQuery: string) => {
+    const searchRaw = rawQuery.trim()
+    if (!searchRaw) return
 
     setLoading(true)
     setError("")
@@ -59,7 +59,6 @@ export default function TrackOrder() {
     setPackageInfo(null)
 
     try {
-      const searchRaw = trackingNumber.trim()
       let searchClean = searchRaw.toUpperCase()
       if (!searchClean.startsWith("ORD-") && /^\d+$/.test(searchClean)) {
         searchClean = `ORD-${searchClean}`
@@ -174,6 +173,19 @@ export default function TrackOrder() {
       setLoading(false)
     }
   }
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await executeSearch(trackingNumber)
+  }
+
+  useEffect(() => {
+    const idParam = new URLSearchParams(window.location.search).get("id")?.trim()
+    if (idParam) {
+      setTrackingNumber(idParam)
+      executeSearch(idParam)
+    }
+  }, [])
 
   const stepLabels = [
     { title: t.trackStep1 || "สั่งซื้อสำเร็จ", icon: Package },

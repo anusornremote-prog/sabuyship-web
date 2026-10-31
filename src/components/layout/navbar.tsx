@@ -87,7 +87,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-blue-100/70 bg-white/82 shadow-[0_8px_35px_rgba(30,58,138,0.055)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/72">
+    <header className="sticky top-0 z-[60] w-full border-b border-blue-100/70 bg-white/82 shadow-[0_8px_35px_rgba(30,58,138,0.055)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/72">
       <div className="site-container flex h-[4.75rem] items-center justify-between sm:h-20">
         {/* 1. Left: Logo */}
         <div className="flex items-center shrink-0">
@@ -218,7 +218,7 @@ export function Navbar() {
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="relative z-[60] max-h-[calc(100vh-5rem)] space-y-4 overflow-y-auto border-b border-blue-100 bg-white/96 px-4 py-5 pb-8 shadow-2xl shadow-blue-950/10 backdrop-blur-xl animate-in slide-in-from-top duration-200 xl:hidden">
+        <div className="relative z-[60] max-h-[calc(100dvh-4.75rem)] space-y-4 overflow-y-auto overscroll-contain touch-pan-y border-b border-blue-100 bg-white/96 px-4 py-5 pb-28 shadow-2xl shadow-blue-950/10 backdrop-blur-xl animate-in slide-in-from-top duration-200 xl:hidden">
           <Link href="/dashboard/orders" onClick={() => setIsOpen(false)}>
             <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
               <Package className="w-5 h-5 mr-2" />

@@ -119,7 +119,7 @@ export function QuickRmbCalculator() {
 
       {/* 2. Modal & Mobile Bottom Sheet */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
@@ -127,7 +127,7 @@ export function QuickRmbCalculator() {
           />
 
           {/* Dialog Container */}
-          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200/80 z-10 overflow-hidden flex flex-col max-h-[90vh] animate-bottom-sheet sm:animate-in sm:zoom-in-95 duration-200">
+          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200/80 z-10 overflow-hidden flex flex-col max-h-[90dvh] animate-bottom-sheet sm:animate-in sm:zoom-in-95 duration-200">
             
             {/* Mobile Drag Indicator */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-1 sm:hidden" />
@@ -195,7 +195,7 @@ export function QuickRmbCalculator() {
             </div>
 
             {/* Body */}
-            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-slate-800">
+            <div className="p-4 sm:p-5 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0 space-y-4 text-slate-800">
               {activeTab === "convert" ? (
                 /* TAB 1: Simple Dual Converter */
                 <div className="space-y-4">
@@ -356,7 +356,7 @@ export function QuickRmbCalculator() {
             </div>
 
             {/* Footer Action */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 shrink-0">
+            <div className="p-4 pb-[max(env(safe-area-inset-bottom),1rem)] bg-slate-50 border-t border-slate-100 shrink-0">
               <button
                 type="button"
                 onClick={handleGoToInquiry}

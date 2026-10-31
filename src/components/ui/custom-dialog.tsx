@@ -54,7 +54,7 @@ export function Dialog({ open, onOpenChange, children, className }: DialogProps)
 
 export function DialogContent({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[92dvh] flex flex-col", className)}>
+    <div className={cn("p-5 sm:p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0", className)}>
       {children}
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
 import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle, X, AlertTriangle, ZoomIn, ExternalLink } from "lucide-react"
@@ -256,26 +257,27 @@ export function PaymentApprovalModal({
         </DialogContent>
       </Dialog>
 
-      {/* Full-Screen Slip Lightbox Modal */}
-      {isImageExpanded && signedSlipUrl && (
+      {/* Full-Screen Slip Lightbox Modal (Portaled above Dialog z-[100]) */}
+      {isImageExpanded && signedSlipUrl && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setIsImageExpanded(false)}
-          className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+          className="fixed inset-0 z-[150] bg-black/90 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
         >
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <span className="text-white text-xs bg-black/50 px-3 py-1.5 rounded-full font-mono">
               แตะที่ใดก็ได้เพื่อปิด
             </span>
-            <button className="p-2 bg-white/20 hover:bg-white/40 text-white rounded-full">
+            <button type="button" className="p-2 bg-white/20 hover:bg-white/40 text-white rounded-full cursor-pointer">
               <X className="w-6 h-6" />
             </button>
           </div>
           <img 
             src={signedSlipUrl}
             alt="Payment Slip Full View" 
-            className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" 
+            className="max-w-full max-h-[85dvh] object-contain rounded-xl shadow-2xl" 
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

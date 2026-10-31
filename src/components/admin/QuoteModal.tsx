@@ -35,7 +35,7 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
         ...item,
         inputCost: round === 2 ? (item.shipping_cost_cn_th || "") : (item.shipping_cost_th_th || ""),
         inputWoodenCrateCost: round === 2 && item.wooden_crate ? (item.wooden_crate_cost || "") : "",
-        inputTrackingCN: round === 2 ? (item.tracking_cn_cn || "") : ""
+        inputTrackingCN: round === 2 ? (item.tracking_cn_cn || item.china_tracking_number || "") : ""
       }))
       setItems(initializedItems)
       
@@ -103,7 +103,9 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
             ? { 
                 shipping_cost_cn_th: costVal, 
                 wooden_crate_cost: woodenCostVal, 
-                tracking_cn_cn: item.inputTrackingCN 
+                tracking_cn_cn: item.inputTrackingCN,
+                china_tracking_number: item.inputTrackingCN,
+                tracking_numbers_cn: String(item.inputTrackingCN || "").split(/[\n,]+/).map((s: string) => s.trim()).filter(Boolean)
               } 
             : { 
                 shipping_cost_th_th: costVal 
@@ -202,7 +204,7 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
                 )}
               </div>
               
-              <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
+              <div className="space-y-3">
                 {items.map((item, idx) => (
                   <div key={idx} className="flex flex-col sm:flex-row gap-3 bg-white p-3 rounded border border-slate-100 items-start sm:items-center">
                     {item.image_url && (

@@ -69,12 +69,16 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
           const options = {
             maxSizeMB: 0.1, // ~100KB limit
             maxWidthOrHeight: 800,
-            useWebWorker: true,
+            useWebWorker: false,
             initialQuality: 0.5
           }
           let fileToUpload = item.file
           try {
-            fileToUpload = await imageCompression(item.file, options)
+            const compressionPromise = imageCompression(item.file, options)
+            const timeoutPromise = new Promise<File>((resolve) =>
+              setTimeout(() => resolve(item.file!), 6000)
+            )
+            fileToUpload = await Promise.race([compressionPromise, timeoutPromise])
           } catch (error) {
             console.error("Compression error:", error)
             // Fallback to original if compression fails

@@ -3,6 +3,8 @@
 import { Package, Truck, Home, AlertTriangle } from "lucide-react"
 import { PaymentSection } from "./PaymentSection"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface PaymentStepperProps {
   orderId: string
@@ -17,6 +19,7 @@ interface PaymentStepperProps {
   initialShippingMethod: string
   rejectionReason?: string | null
   chinaTrackingNumber?: string | null
+  isAdminView?: boolean
 }
 
 export function PaymentStepper({ 
@@ -31,9 +34,10 @@ export function PaymentStepper({
   shippingCostThTh,
   initialShippingMethod,
   rejectionReason,
-  chinaTrackingNumber
+  chinaTrackingNumber,
+  isAdminView = false
 }: PaymentStepperProps) {
-  
+  const router = useRouter()
   const [shippingMethod, setShippingMethod] = useState<string>(initialShippingMethod)
   const [savedMethod, setSavedMethod] = useState<string>(initialShippingMethod)
   const [isUpdatingMethod, setIsUpdatingMethod] = useState(false)
@@ -54,8 +58,11 @@ export function PaymentStepper({
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "ไม่สามารถบันทึกวิธีจัดส่งได้")
       setSavedMethod(shippingMethod)
-    } catch (e) {
+      toast.success("บันทึกวิธีจัดส่งในไทยเรียบร้อยแล้ว")
+      router.refresh()
+    } catch (e: any) {
       console.error(e)
+      toast.error(e.message || "ไม่สามารถบันทึกวิธีจัดส่งได้")
     } finally {
       setIsUpdatingMethod(false)
     }
@@ -105,7 +112,7 @@ export function PaymentStepper({
           : paymentRound3Status === 'REJECTED' 
             ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" 
             : (status === 'THAILAND_WAREHOUSE' 
-                ? (shippingCostThTh > 0 ? "รอการชำระเงิน" : "รอแอดมินประเมินค่าจัดส่ง") 
+                ? (shippingCostThTh > 0 ? "รอการชำระเงิน" : savedMethod === "รับสินค้าด้วยตัวเองที่โกดัง" ? "เลือก: รับสินค้าด้วยตัวเองที่โกดัง (รอแอดมินยืนยันนัดรับ)" : "รอแอดมินประเมินค่าจัดส่ง") 
                 : (status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED' ? "ชำระเงินแล้ว" : "รอสินค้าถึงโกดังไทย")),
       amount: shippingCostThTh,
       isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
@@ -188,8 +195,8 @@ export function PaymentStepper({
                     </div>
                   )}
                   
-                  {/* Render Payment Button/Section if Active */}
-                  {step.isActive && (
+                  {/* Render Payment Button/Section if Active (Customer View Only) */}
+                  {!isAdminView && step.isActive && (
                     <div className="mt-3 text-center md:text-left">
                       {step.round === 3 && status === 'THAILAND_WAREHOUSE' && paymentRound3Status !== 'PAID' && paymentRound3Status !== 'UPLOADED' && (
                         <div className="mb-3 text-sm">
@@ -239,8 +246,8 @@ export function PaymentStepper({
         </div>
       </div>
 
-      {/* Sticky Mobile Floating Pay Pill (Appears only on mobile when payment is required) */}
-      {(() => {
+      {/* Sticky Mobile Floating Pay Pill (Appears only on mobile for customers when payment is required) */}
+      {!isAdminView && (() => {
         const activePayStep = steps.find(
           s => s.isActive && s.amount > 0 && s.status !== 'UPLOADED' && (s.round !== 3 || savedMethod)
         )

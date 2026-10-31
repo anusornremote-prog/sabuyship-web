@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
+import { sendAdminNotification } from "@/lib/notify"
 
 export async function POST(request: Request) {
   try {
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
     const parent = orders.find((order) => order.id === parentId)
     const children = orders.filter((order) => childIds.includes(order.id))
     const canConsolidate = (order: (typeof orders)[number]) =>
-      order.status === "THAILAND_WAREHOUSE" &&
+      (order.status === "THAILAND_WAREHOUSE" || order.status === "PAYMENT_REJECTED") &&
       !order.consolidated_into_id &&
       order.payment_round_3_status !== "PAID" &&
       order.payment_round_3_status !== "UPLOADED"
@@ -46,6 +47,19 @@ export async function POST(request: Request) {
     if (!parent || !canConsolidate(parent) || children.some((order) => !canConsolidate(order))) {
       return NextResponse.json(
         { error: "Only unpaid orders at the Thailand warehouse can be consolidated" },
+        { status: 409 },
+      )
+    }
+
+    // Prevent chained consolidation: ensure none of the childIds are already parents of other orders
+    const { data: existingSubChildren } = await adminClient
+      .from("orders")
+      .select("id")
+      .in("consolidated_into_id", childIds)
+      .limit(1)
+    if (existingSubChildren && existingSubChildren.length > 0) {
+      return NextResponse.json(
+        { error: "Cannot consolidate an order that already has other orders consolidated into it" },
         { status: 409 },
       )
     }
@@ -66,10 +80,17 @@ export async function POST(request: Request) {
       .eq("id", parentId)
       .eq("customer_id", user.id)
     if (parentUpdateError) {
-      await adminClient
-        .from("orders")
-        .update({ consolidated_into_id: null, payment_round_3_status: null })
-        .in("id", childIds)
+      await Promise.all(
+        children.map((child) =>
+          adminClient
+            .from("orders")
+            .update({
+              consolidated_into_id: null,
+              payment_round_3_status: child.payment_round_3_status,
+            })
+            .eq("id", child.id)
+        )
+      )
       throw parentUpdateError
     }
 
@@ -89,6 +110,10 @@ export async function POST(request: Request) {
     ]
     const { error: logError } = await adminClient.from("tracking_logs").insert(logs)
     if (logError) throw logError
+
+    await sendAdminNotification(
+      `📦 ลูกค้ากดรวมพัสดุเพื่อจัดส่งในไทย!\nออเดอร์หลัก: ${parent.order_number}\nรวมกับออเดอร์: ${children.map((c) => c.order_number).join(", ")}\nกรุณาประเมินค่าจัดส่งรอบที่ 3 ที่ออเดอร์หลัก`
+    ).catch((err) => console.error("Failed to send admin notification for consolidation:", err))
 
     return NextResponse.json({ success: true })
   } catch (error: unknown) {

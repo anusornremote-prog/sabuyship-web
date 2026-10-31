@@ -189,6 +189,11 @@ export function NotificationBell() {
           icon: CreditCard,
           bg: 'bg-amber-100 text-amber-700 border-amber-200',
         }
+      case 'PAYMENT_APPROVED':
+        return {
+          icon: Check,
+          bg: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        }
       case 'QUOTATION':
         return {
           icon: FileText,

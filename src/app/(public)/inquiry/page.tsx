@@ -46,7 +46,7 @@ export default function InquiryForm() {
   const [copied, setCopied] = useState(false)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string; line_id?: string } | null>(null)
   const [serviceType, setServiceType] = useState<'BUY_AND_IMPORT' | 'IMPORT_ONLY'>('BUY_AND_IMPORT')
-  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; wooden_crate?: boolean; china_tracking_number?: string }[]>([
+  const [items, setItems] = useState<{ url: string; quantity: number | string; remark: string; file: File | null; previewUrl?: string; wooden_crate?: boolean; china_tracking_number?: string }[]>([
     { url: '', quantity: 1, remark: '', file: null, wooden_crate: false, china_tracking_number: '' }
   ])
 
@@ -71,14 +71,14 @@ export default function InquiryForm() {
           setIsLoggedIn(true)
           const { data } = await supabase
             .from("profiles")
-            .select("full_name, phone, line_uid")
+            .select("full_name, phone, line_id")
             .eq("id", user.id)
             .maybeSingle()
           if (data) {
             setProfile({
               full_name: data.full_name || '',
               phone: data.phone || '',
-              line_id: ''
+              line_id: data.line_id || ''
             })
           }
         }
@@ -143,7 +143,7 @@ export default function InquiryForm() {
 
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items]
-    newItems[index] = { ...newItems[index], [field]: value }
+    newItems[index] = { ...newItems[index], [field]: value, ...(field === 'file' ? { previewUrl: value instanceof File ? URL.createObjectURL(value) : undefined } : {}) }
     setItems(newItems)
   }
 
@@ -621,15 +621,15 @@ export default function InquiryForm() {
                               <input 
                                 type="file" 
                                 accept="image/*"
-                                onChange={(e) => handleItemChange(index, 'file', e.target.files?.[0] || null)}
-                                className="hidden"
+                                onChange={(e) => { handleItemChange(index, 'file', e.target.files?.[0] || null); e.target.value = "" }}
+                                className="sr-only"
                               />
                             </label>
                           ) : (
                             <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in duration-200">
                               <div className="flex items-center gap-2.5 min-w-0">
                                 <img 
-                                  src={URL.createObjectURL(item.file)} 
+                                  src={item.previewUrl || ""} 
                                   alt="Product preview" 
                                   className="w-11 h-11 object-cover rounded-lg border border-slate-200 shrink-0" 
                                 />
@@ -737,7 +737,7 @@ export default function InquiryForm() {
                   {locale === 'en' ? '4. Contact Details for Quotation' : locale === 'zh' ? '4. 接收报价的联系方式' : '4. ข้อมูลสำหรับรับใบเสนอราคา'}
                 </label>
 
-                <div className="grid sm:grid-cols-3 gap-3.5">
+                <div key={profile ? 'profile-loaded' : 'guest'} className="grid sm:grid-cols-3 gap-3.5">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 block">
                       {locale === 'en' ? 'Full Name *' : locale === 'zh' ? '您的姓名 *' : 'ชื่อ-นามสกุลของคุณ *'}

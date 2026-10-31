@@ -7,27 +7,28 @@ export async function GET() {
     if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
     const supabase = auth.supabase
 
-    // 1. Get Pending Inquiries Count
+    // 1. Get Pending Inquiries Count (excluding archived)
     const { count: inquiriesCount, error: inquiriesError } = await supabase
       .from("inquiries")
-      .select("*", { count: 'exact', head: true })
+      .select("*", { count: "exact", head: true })
       .eq("status", "PENDING")
+      .is("archived_at", null)
 
     if (inquiriesError) throw inquiriesError
 
     // 2. Payments that need an administrator review.
     const { count: paymentsCount, error: ordersError } = await supabase
       .from("payments")
-      .select("*", { count: 'exact', head: true })
+      .select("*", { count: "exact", head: true })
       .eq("status", "PENDING")
 
     if (ordersError) throw ordersError
 
-    // 3. Get Tracking Needs Action Count (ORDERED or SHIPPING)
+    // 3. Get Tracking Needs Action Count (ORDERED, CHINA_WAREHOUSE, SHIPPING, THAILAND_WAREHOUSE)
     const { count: trackingCount, error: trackingError } = await supabase
       .from("orders")
-      .select("*", { count: 'exact', head: true })
-      .in("status", ["ORDERED", "SHIPPING"])
+      .select("*", { count: "exact", head: true })
+      .in("status", ["ORDERED", "CHINA_WAREHOUSE", "SHIPPING", "THAILAND_WAREHOUSE"])
 
     if (trackingError) throw trackingError
 

@@ -30,6 +30,7 @@ export function ExcelUploadModal({
       setErrorMsg("")
       setParsedData([])
       parseExcel(selectedFile)
+      e.target.value = ""
     }
   }
 
@@ -149,7 +150,7 @@ export function ExcelUploadModal({
                 <div className="flex gap-2">
                   <Input 
                     type="file" 
-                    accept=".xlsx, .xls, .csv" 
+                    accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" 
                     onChange={handleFileChange}
                     disabled={loading || uploading}
                   />
