@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, Home, CircleDollarSign, ShieldCheck, Bell, FileSpreadsheet, ExternalLink } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import { PhoneSetupModal } from "@/components/dashboard/PhoneSetupModal"
 import { useEffect, useRef, useState } from "react"
 
 export default function AdminLayout({
@@ -243,6 +244,7 @@ export default function AdminLayout({
         </nav>
 
         <main className="flex-1 p-3 sm:p-4 md:p-8 overflow-x-hidden">
+          <PhoneSetupModal autoCheck />
           {children}
         </main>
       </div>

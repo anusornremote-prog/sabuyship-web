@@ -244,6 +244,9 @@ Never replace production environment values with staging values. Do not place an
 - `src/app/admin/tracking/TrackingUpdateModal.tsx`
 - `src/app/admin/tracking/ExcelUploadModal.tsx`
 - `src/app/admin/customers/AdminCreateInquiryModal.tsx`
+- `src/components/dashboard/PhoneSetupModal.tsx`
+- `src/lib/supabase/middleware.ts`
+- `src/app/(auth)/register/page.tsx`
 - `docs/ai/TASKS.md`
 - `docs/ai/HANDOFF.md`
 - `docs/ai/CHECKPOINT.md`

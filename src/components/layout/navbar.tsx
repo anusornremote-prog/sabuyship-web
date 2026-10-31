@@ -8,6 +8,7 @@ import { Ship, Menu, X, ChevronDown, User, Package, MapPin, FileText, FileQuesti
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { NotificationBell } from "./NotificationBell"
+import { PhoneSetupModal } from "@/components/dashboard/PhoneSetupModal"
 import { useRouter } from "next/navigation"
 import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 
@@ -332,6 +333,7 @@ export function Navbar() {
           )}
         </div>
       )}
+      {user && <PhoneSetupModal autoCheck />}
     </header>
   )
 }

@@ -32,7 +32,6 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let role = 'CUSTOMER'
-  let hasPhone = false
   let isActive = true
   
   // Only query the profile role if we need to make a routing decision based on it
@@ -48,7 +47,6 @@ export async function updateSession(request: NextRequest) {
     }
     
     role = profile?.role || 'CUSTOMER'
-    hasPhone = !!profile?.phone && profile.phone.trim().length >= 9
     isActive = profile?.is_active !== false
   }
 
@@ -65,9 +63,6 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       return createRedirectResponse('/login')
     }
-    if (!hasPhone) {
-      return createRedirectResponse('/complete-profile')
-    }
   }
 
   if (pathname.startsWith('/admin')) {
@@ -77,26 +72,19 @@ export async function updateSession(request: NextRequest) {
     if (role !== 'ADMIN' || !isActive) {
       return createRedirectResponse('/dashboard')
     }
-    if (!hasPhone) {
-      return createRedirectResponse('/complete-profile')
-    }
   }
 
   if (pathname === '/complete-profile') {
     if (!user) {
       return createRedirectResponse('/login')
     }
-    if (hasPhone) {
-      const dest = role === 'ADMIN' ? '/admin' : '/dashboard'
-      return createRedirectResponse(dest)
-    }
+    // Redirect to dashboard where the mandatory PhoneSetupModal popup is displayed
+    const dest = role === 'ADMIN' ? '/admin' : '/dashboard'
+    return createRedirectResponse(dest)
   }
 
   if (pathname === '/login' || pathname === '/register') {
     if (user) {
-      if (!hasPhone) {
-        return createRedirectResponse('/complete-profile')
-      }
       const dest = role === 'ADMIN' ? '/admin' : '/dashboard'
       return createRedirectResponse(dest)
     }

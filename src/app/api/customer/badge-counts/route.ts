@@ -48,10 +48,11 @@ export async function GET() {
       }).length
     }
 
+    const cleanPhone = (profile?.phone || "").replace(/\D/g, "")
     return NextResponse.json({
       inquiriesCount: inquiriesCount || 0,
       ordersCount: ordersCount || 0,
-      hasPhone: !!profile?.phone && profile.phone.trim().length >= 9
+      hasPhone: cleanPhone.length >= 9 && cleanPhone.length <= 10 && cleanPhone.startsWith("0")
     }, { status: 200 })
 
   } catch (error: any) {

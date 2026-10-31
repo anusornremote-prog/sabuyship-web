@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         }
 
         if (!hasPhone) {
-          return NextResponse.redirect(`${origin}/complete-profile`)
+          return NextResponse.redirect(`${origin}/dashboard`)
         }
       }
 

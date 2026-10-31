@@ -108,12 +108,12 @@ export default function Login() {
             customer_code: customerCode
           })
 
-          router.push("/complete-profile")
+          router.push("/dashboard")
           return
         }
 
         if (!profile.phone || profile.phone.trim().length < 9) {
-          router.push("/complete-profile")
+          router.push("/dashboard")
           return
         }
 

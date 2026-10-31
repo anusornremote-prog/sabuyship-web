@@ -269,7 +269,7 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      <PhoneSetupModal isOpen={showPhoneModal} onSuccess={() => setShowPhoneModal(false)} />
+      <PhoneSetupModal isOpen={showPhoneModal} autoCheck onSuccess={() => setShowPhoneModal(false)} />
     </div>
   )
 }
