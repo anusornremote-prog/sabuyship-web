@@ -7,24 +7,17 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Phone, User, MessageCircle, ShieldAlert, LogOut, Loader2 } from "lucide-react"
+import {
+  normalizeThaiPhone,
+  isValidThaiPhone,
+  isPlaceholderProfileName,
+  generateCustomerCode,
+} from "@/lib/phone"
 
 interface PhoneSetupModalProps {
   isOpen?: boolean
   autoCheck?: boolean
   onSuccess?: () => void
-}
-
-function isValidThaiPhone(value: string | null | undefined): boolean {
-  const digits = (value || "").replace(/\D/g, "")
-  return digits.length >= 9 && digits.length <= 10 && digits.startsWith("0")
-}
-
-function isPlaceholderName(name: string | null | undefined): boolean {
-  if (!name || !name.trim()) return true
-  const trimmed = name.trim()
-  if (trimmed === "Member" || trimmed === "Google User" || trimmed === "LINE User") return true
-  if (/^U[0-9a-f]{32}$/i.test(trimmed)) return true
-  return false
 }
 
 export function PhoneSetupModal({
@@ -68,10 +61,10 @@ export function PhoneSetupModal({
 
         const hasPhone = isValidThaiPhone(profile?.phone)
         if (!hasPhone || isOpen) {
-          const missingName = isPlaceholderName(profile?.full_name)
+          const missingName = isPlaceholderProfileName(profile?.full_name)
           setNeedsName(missingName)
           setFullName(missingName ? "" : (profile?.full_name || ""))
-          setPhone(profile?.phone ? profile.phone.replace(/\D/g, "") : "")
+          setPhone(normalizeThaiPhone(profile?.phone))
           setLineId(profile?.line_id || "")
           setCustomerCode(profile?.customer_code || null)
           if (!hasPhone) {
@@ -139,8 +132,7 @@ export function PhoneSetupModal({
       const finalName = trimmedName || existingProfile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "ลูกค้า SabuyShip"
 
       if (!existingProfile) {
-        const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase()
-        const generatedCode = `SB${randomChars}`
+        const generatedCode = generateCustomerCode()
         const { error: insertError } = await supabase
           .from("profiles")
           .insert({

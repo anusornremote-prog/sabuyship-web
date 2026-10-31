@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { buildAuthErrorRedirectUrl } from '@/lib/auth-errors'
+import { isValidThaiPhone, generateCustomerCode } from '@/lib/phone'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -44,13 +45,11 @@ export async function GET(request: Request) {
           .eq('id', user.id)
           .maybeSingle()
 
-        const cleanPhone = (profile?.phone || '').replace(/\D/g, '')
-        let hasPhone = cleanPhone.length >= 9 && cleanPhone.length <= 10
+        let hasPhone = isValidThaiPhone(profile?.phone)
 
         if (!profile) {
           // Auto-generate customer code for new OAuth users
-          const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase()
-          const customerCode = `SB${randomChars}`
+          const customerCode = generateCustomerCode()
           
           await supabase.from('profiles').insert({
             id: user.id,

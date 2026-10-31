@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { isValidThaiPhone } from "@/lib/phone"
 
 export async function GET() {
   try {
@@ -48,11 +49,10 @@ export async function GET() {
       }).length
     }
 
-    const cleanPhone = (profile?.phone || "").replace(/\D/g, "")
     return NextResponse.json({
       inquiriesCount: inquiriesCount || 0,
       ordersCount: ordersCount || 0,
-      hasPhone: cleanPhone.length >= 9 && cleanPhone.length <= 10 && cleanPhone.startsWith("0")
+      hasPhone: isValidThaiPhone(profile?.phone)
     }, { status: 200 })
 
   } catch (error: any) {

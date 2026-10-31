@@ -10,3 +10,25 @@ Every time you finish making code changes or implementing a feature, you MUST ru
 - Do NOT use ask_question tool for routine preferences.
 - When the user gives a request or feature, execute it directly from start to finish, verify with build, auto-commit, and report the result.
 <!-- END:direct-execution-rule -->
+
+<!-- BEGIN:professional-engineering-standards -->
+# Professional Software Engineering Standards (มาตรฐานโค้ดระดับมืออาชีพ)
+Every code modification MUST adhere to the following senior-engineer standards:
+
+1. **Single Source of Truth (DRY Principle):**
+   - Put shared validators, constants, and helpers in `src/lib/` (e.g., `src/lib/phone.ts`, `src/lib/constants.ts`, `src/lib/product-link.ts`, `src/lib/auth-errors.ts`).
+   - Never duplicate business rules, regexes, or magic strings (such as LINE OA IDs or order status strings) across multiple components or API routes.
+
+2. **Clean Architecture & Separation of Concerns:**
+   - **API Routes (`src/app/api/**`):** Always enforce authentication/authorization (`requireAdmin` or `getAuthenticatedUser`) at the top of the handler, validate and sanitize request payloads (`Number.isFinite`, `.trim()`), record state transitions in `tracking_logs`, and return structured JSON responses with appropriate HTTP status codes.
+   - **UI Components (`src/components/**`):** Keep components modular, accessible, and mobile-first. Render modals/dropdowns that overlay fixed headers using `createPortal(..., document.body)` with proper `z-index` layering and touch-scroll (`overscroll-contain`, `touch-pan-y`) support.
+   - **Database Queries:** Always use `snake_case` column names matching the PostgreSQL schema, and guard against `null` or array/object variations in Supabase foreign-key joins.
+
+3. **Strict TypeScript & Error Handling:**
+   - Ensure `npm run typecheck` passes with zero errors before every commit.
+   - Never expose raw English database/provider error messages or stack traces to end users; translate user-facing errors into clear, polite Thai messages.
+
+4. **Repository Hygiene:**
+   - Never leave temporary debug scripts, unused files, or hardcoded credentials in the repository.
+   - Use Conventional Commit messages (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`).
+<!-- END:professional-engineering-standards -->
