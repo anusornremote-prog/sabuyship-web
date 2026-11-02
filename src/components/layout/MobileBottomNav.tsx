@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Package, Plus, MessageCircle, User, Search, ShoppingBag } from "lucide-react"
+import { Home, Package, Plus, MessageCircle, User } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 

@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Phone, Mail, MapPin, MessageCircle } from "lucide-react"
+import { Mail, MapPin, MessageCircle } from "lucide-react"
 import { Facebook, LineIcon } from "@/components/ui/icons"
 import { useTranslation } from "@/components/providers/language-provider"
 import { useState } from "react"

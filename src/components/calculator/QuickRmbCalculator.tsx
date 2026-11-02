@@ -6,17 +6,11 @@ import {
   Calculator, 
   ArrowRightLeft, 
   X, 
-  Sparkles, 
-  Truck, 
-  ShoppingBag, 
   TrendingUp, 
-  ChevronRight,
-  Package,
-  RotateCcw
+  ChevronRight
 } from "lucide-react"
 import { vibrateTap, vibrateSuccess } from "@/lib/haptics"
 import { fetchExchangeRate } from "@/lib/exchange-rate"
-import { toast } from "sonner"
 
 export function QuickRmbCalculator() {
   const router = useRouter()

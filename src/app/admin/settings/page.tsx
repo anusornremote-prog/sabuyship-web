@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, AlertTriangle, Settings, Coins } from "lucide-react"
+import { Loader2, CheckCircle2, AlertTriangle, Coins } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 export default function SettingsPage() {

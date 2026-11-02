@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, ShieldCheck, Scale, Clock, CreditCard, Box, AlertTriangle, CheckCircle, Info } from 'lucide-react'
 import { hasLegalIdentity, publicBusinessConfig } from '@/lib/public-business-config'
 

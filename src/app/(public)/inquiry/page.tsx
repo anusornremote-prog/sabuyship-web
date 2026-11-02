@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+
 import Link from "next/link"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+
 import { useTranslation } from "@/components/providers/language-provider"
 import { 
   ShoppingCart, 
@@ -15,18 +15,18 @@ import {
   Plus, 
   Minus,
   Trash2, 
-  Upload, 
+
   CheckCircle2, 
   Copy, 
   Check, 
   Sparkles, 
-  Globe, 
-  ShieldCheck,
-  ArrowRight,
+
+
+
   Package,
   Search,
   Camera,
-  Image as ImageIcon,
+
   Clipboard
 } from "lucide-react"
 import { toast } from "sonner"
@@ -36,8 +36,8 @@ import { extractProductUrl } from "@/lib/product-link"
 import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 
 export default function InquiryForm() {
-  const router = useRouter()
-  const { t, locale } = useTranslation()
+
+  const { locale } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [createdInquiryNumber, setCreatedInquiryNumber] = useState<string | null>(null)

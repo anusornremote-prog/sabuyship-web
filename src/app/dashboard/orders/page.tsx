@@ -7,7 +7,6 @@ export default async function MyOrders() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let orders: any[] = []
   let unifiedItems: any[] = []
   
   if (user) {

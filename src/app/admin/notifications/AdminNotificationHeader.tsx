@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { Send, CheckCircle2, AlertCircle, Loader2, Users, Save, HelpCircle, ShieldCheck, UserPlus, Check } from "lucide-react"
+import { Send, Loader2, CheckCircle2, AlertCircle, Users, Save, HelpCircle, UserPlus, Check } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
@@ -18,7 +18,6 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
   const [savingSettings, setSavingSettings] = useState(false)
   const [recipientCount, setRecipientCount] = useState<number>(1)
   const [customUserIds, setCustomUserIds] = useState<string>("")
-  const [adminsList, setAdminsList] = useState<any[]>([])
   const [lineConnectedUsers, setLineConnectedUsers] = useState<any[]>([])
   const router = useRouter()
 
@@ -33,7 +32,6 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
       if (data.success) {
         setRecipientCount(data.totalActiveRecipients || 1)
         setCustomUserIds(data.settingUserIds || "")
-        setAdminsList(data.admins || [])
         setLineConnectedUsers(data.lineConnectedUsers || [])
       }
     } catch (err) {
@@ -204,11 +202,10 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
                       <div className="space-y-0.5 min-w-0">
                         <div className="font-bold text-slate-800 flex flex-wrap items-center gap-1.5">
                           <span className="truncate">{u.fullName}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold shrink-0 ${
-                            u.role === "ADMIN"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-slate-200 text-slate-600"
-                          }`}>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold shrink-0 ${u.role === "ADMIN"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-slate-200 text-slate-600"
+                            }`}>
                             {u.role === "ADMIN" ? "แอดมินเว็บ" : "สมาชิกทั่วไป / ทีมงาน"}
                           </span>
                         </div>
@@ -228,11 +225,10 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
                             size="sm"
                             variant={active ? "default" : "outline"}
                             onClick={() => toggleUserUidInCustomList(u.lineUid)}
-                            className={`h-8 w-full sm:w-auto px-2.5 text-xs font-bold cursor-pointer ${
-                              active
-                                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                : "border-blue-200 text-primary hover:bg-blue-50"
-                            }`}
+                            className={`h-8 w-full sm:w-auto px-2.5 text-xs font-bold cursor-pointer ${active
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : "border-blue-200 text-primary hover:bg-blue-50"
+                              }`}
                           >
                             {active ? (
                               <>

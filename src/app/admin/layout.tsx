@@ -6,7 +6,7 @@ import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings,
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { PhoneSetupModal } from "@/components/dashboard/PhoneSetupModal"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function AdminLayout({
   children,

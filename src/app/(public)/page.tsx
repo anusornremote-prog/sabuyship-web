@@ -10,7 +10,6 @@ import {
   Box,
   Check,
   CheckCircle2,
-  Clock3,
   Copy,
   CreditCard,
   FileText,

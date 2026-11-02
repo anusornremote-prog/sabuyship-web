@@ -9,7 +9,6 @@ import {
   Calculator, 
   CreditCard, 
   Truck, 
-  Ship, 
   PackageCheck, 
   CheckCircle2, 
   Layers, 
@@ -17,7 +16,6 @@ import {
   Bell, 
   HelpCircle, 
   ChevronDown, 
-  ArrowRight,
   Sparkles,
   PackagePlus,
   RefreshCw

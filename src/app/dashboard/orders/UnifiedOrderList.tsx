@@ -1,14 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Inbox, AlertTriangle, FileText, CheckCircle, CreditCard, Globe, ExternalLink, Package, Copy, Check, Sparkles } from "lucide-react"
+import { Eye, Inbox, AlertTriangle, FileText, CreditCard, Globe, ExternalLink, Package, Copy, Check, Sparkles } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { AddressSelectionModal } from "../inquiries/AddressSelectionModal"
-import { vibrateTap, vibrateSuccess } from "@/lib/haptics"
+import { AddressSelectionModal } from "./AddressSelectionModal"
+import { vibrateSuccess } from "@/lib/haptics"
 
 interface UnifiedOrderListProps {
   items: any[]
@@ -16,7 +15,6 @@ interface UnifiedOrderListProps {
 }
 
 export default function UnifiedOrderList({ items, customerId }: UnifiedOrderListProps) {
-  const router = useRouter()
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null)
@@ -102,8 +100,6 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
       if (!res.ok) {
         throw new Error(result.error || "Failed to create order")
       }
-
-      const order = result.data
 
       alert("ยืนยันคำสั่งซื้อสำเร็จ!")
       window.location.reload()

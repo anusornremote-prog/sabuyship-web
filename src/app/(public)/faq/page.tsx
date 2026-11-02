@@ -9,20 +9,12 @@ import {
   Sparkles, 
   CreditCard, 
   Truck, 
-  Package, 
   ShieldAlert, 
   RefreshCw, 
-  Phone, 
   MessageCircle, 
-  ArrowRight,
-  Layers,
-  ShieldCheck,
-  Building2,
-  Box
+  Layers
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useTranslation } from "@/components/providers/language-provider"
 
@@ -35,7 +27,7 @@ type FaqItem = {
 }
 
 export default function FaqPage() {
-  const { t, locale } = useTranslation()
+  const { locale } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({

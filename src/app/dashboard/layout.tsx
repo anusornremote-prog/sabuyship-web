@@ -8,12 +8,12 @@ import {
   LayoutDashboard, 
   Package, 
   LogOut, 
-  FileQuestion, 
+
   MapPin, 
   Home, 
   User, 
-  PlusCircle, 
-  ExternalLink,
+
+
   ShoppingCart
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"

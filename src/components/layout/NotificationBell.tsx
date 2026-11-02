@@ -7,13 +7,11 @@ import {
   Bell, 
   Check, 
   CheckCheck, 
-  Package, 
   CreditCard, 
   AlertTriangle, 
   FileText, 
   Clock, 
   Truck, 
-  Sparkles, 
   ChevronRight, 
   X,
   Inbox
@@ -31,7 +29,7 @@ export function NotificationBell() {
   const [desktopPos, setDesktopPos] = useState<{ top: number; right: number }>({ top: 64, right: 16 })
   const [notifications, setNotifications] = useState<CustomerNotification[]>([])
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'UNREAD' | 'TRACKING' | 'PAYMENT'>('ALL')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)

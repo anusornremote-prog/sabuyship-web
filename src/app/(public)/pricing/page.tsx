@@ -15,14 +15,10 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   Info, 
-  ArrowRight,
   Maximize2,
   Scale,
   Sparkles,
-  Zap,
-  Box,
   Gift,
-  ShieldCheck,
   Building2,
   Check
 } from "lucide-react"

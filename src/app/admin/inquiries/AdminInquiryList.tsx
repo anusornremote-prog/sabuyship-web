@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Phone, MessageCircle, Calculator, Sparkles, RefreshCw } from "lucide-react"
+import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Calculator } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { exportSpreadsheet } from "@/lib/spreadsheet"
 import {
@@ -60,7 +60,7 @@ export default function AdminInquiryList({
 
   const [exchangeRate, setExchangeRate] = useState<number>(5.1)
   const [productCostRMB, setProductCostRMB] = useState("")
-  const [shippingCostCnCnRMB, setShippingCostCnCnRMB] = useState("")
+  const [, setShippingCostCnCnRMB] = useState("")
   const [itemCostsRMB, setItemCostsRMB] = useState<Record<number, string>>({})
   const [itemShippingCostsRMB, setItemShippingCostsRMB] = useState<Record<number, string>>({})
 
