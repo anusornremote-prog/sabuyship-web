@@ -28,7 +28,9 @@ Every code modification MUST adhere to the following senior-engineer standards:
    - Ensure `npm run typecheck` passes with zero errors before every commit.
    - Never expose raw English database/provider error messages or stack traces to end users; translate user-facing errors into clear, polite Thai messages.
 
-4. **Repository Hygiene:**
+4. **Repository Hygiene & Automated Zero-Dead-Code Enforcement:**
+   - `tsconfig.json` enforces `"noUnusedLocals": true` and `npm run code:clean` (`scripts/check-dead-code.mjs`) runs automatically inside `npm run typecheck` and `npm run build`.
+   - Every time you edit or refactor a file, you MUST immediately remove any unused imports, unused variables, or orphaned component/utility files so that zero dead code ever accumulates.
    - Never leave temporary debug scripts, unused files, or hardcoded credentials in the repository.
    - Use Conventional Commit messages (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`).
 <!-- END:professional-engineering-standards -->

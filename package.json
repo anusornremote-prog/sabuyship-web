@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack --hostname 0.0.0.0",
-    "build": "npm run business:check && next build --webpack",
-    "typecheck": "tsc --noEmit",
+    "build": "npm run business:check && npm run code:clean && next build --webpack",
+    "typecheck": "tsc --noEmit && npm run code:clean",
+    "code:clean": "node scripts/check-dead-code.mjs",
     "verify": "npm run typecheck && npm run build",
     "schema:check": "node scripts/check_schema.js",
     "business:check": "node scripts/check-business-readiness.mjs",
