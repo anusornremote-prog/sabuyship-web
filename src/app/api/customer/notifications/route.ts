@@ -64,6 +64,7 @@ export async function GET() {
         payment_round_1_status,
         payment_round_2_status,
         payment_round_3_status,
+        consolidated_into_id,
         shipping_company,
         tracking_number,
         quotation:quotation_id (
@@ -208,6 +209,25 @@ export async function GET() {
             orderNumber: orderNum,
             round: 2,
             amount: round2Amount
+          })
+        }
+
+        // Arrived in Thailand (waiting for customer to select delivery method or admin quote)
+        if (order.status === 'THAILAND_WAREHOUSE' && !order.payment_round_3_status && !order.consolidated_into_id) {
+          notifications.push({
+            id: `th-arrived-${order.id}`,
+            type: 'PAYMENT_DUE',
+            title: order.shipping_company
+              ? '📦 สินค้าถึงโกดังไทยแล้ว (รอแอดมินแจ้งค่าส่งในไทย)'
+              : '🇹🇭 สินค้าถึงโกดังไทยแล้ว! กรุณาเลือกวิธีจัดส่งในไทย',
+            message: order.shipping_company
+              ? `ออเดอร์ ${orderNum} ถึงโกดังไทยแล้ว (คุณเลือก: ${order.shipping_company}) รอแอดมินประเมินค่าจัดส่งรอบที่ 3`
+              : `ออเดอร์ ${orderNum} เดินทางถึงโกดังไทยแล้ว กรุณาคลิกเพื่อเลือกวิธีจัดส่งในไทย (หรือรวมบิล) เพื่อให้แอดมินประเมินค่าจัดส่งรอบที่ 3`,
+            timestamp: order.updated_at || order.created_at,
+            link: `/dashboard/orders/${orderNum}#payment`,
+            orderNumber: orderNum,
+            round: 3,
+            amount: 0
           })
         }
 

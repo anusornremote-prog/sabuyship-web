@@ -29,7 +29,7 @@ export async function GET() {
         .is("archived_at", null),
       supabase
         .from("orders")
-        .select("status, payment_round_1_status, payment_round_2_status, payment_round_3_status, consolidated_into_id")
+        .select("status, shipping_company, payment_round_1_status, payment_round_2_status, payment_round_3_status, consolidated_into_id")
         .eq("customer_id", user.id)
         .in("status", ["WAITING_PAYMENT", "PAYMENT_REJECTED", "CHINA_WAREHOUSE", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY", "DELIVERED"])
     ])
@@ -45,7 +45,8 @@ export async function GET() {
         const r1 = (o.status === 'WAITING_PAYMENT' || o.status === 'PAYMENT_REJECTED') && (!o.payment_round_1_status || o.payment_round_1_status === 'PENDING' || o.payment_round_1_status === 'REJECTED')
         const r2 = (o.status === 'CHINA_WAREHOUSE' || o.status === 'THAILAND_WAREHOUSE' || o.status === 'DELIVERED' || o.status === 'PAYMENT_REJECTED') && (o.payment_round_2_status === 'PENDING' || o.payment_round_2_status === 'REJECTED')
         const r3 = (o.status === 'THAILAND_WAREHOUSE' || o.status === 'OUT_FOR_DELIVERY' || o.status === 'DELIVERED' || o.status === 'PAYMENT_REJECTED') && (o.payment_round_3_status === 'PENDING' || o.payment_round_3_status === 'REJECTED')
-        return r1 || r2 || r3
+        const needShippingChoice = o.status === 'THAILAND_WAREHOUSE' && !o.payment_round_3_status && !o.shipping_company
+        return r1 || r2 || r3 || needShippingChoice
       }).length
     }
 

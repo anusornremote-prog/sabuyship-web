@@ -371,6 +371,31 @@ export default function AdminOrders() {
     setOutOfStockModalOpen(true)
   }
 
+  const handleMarkArrivedInThailand = async (order: any) => {
+    if (!confirm(`ยืนยันอัปเดตสถานะออเดอร์ ${order.order_number} เป็น "สินค้าถึงไทยแล้ว" (โดยยังไม่ใส่ราคา เพื่อให้ลูกค้าเลือกวิธีจัดส่งในไทยก่อน)?`)) return
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/admin/orders/${order.id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "THAILAND_WAREHOUSE",
+          tracking_number: order.tracking_number || "",
+          shipping_company: order.shipping_company || "",
+          reason: "สินค้าเดินทางถึงโกดังไทยแล้ว กรุณาเข้าไปเลือกวิธีจัดส่งในไทยที่หน้ารายละเอียดคำสั่งซื้อ เพื่อให้แอดมินประเมินค่าจัดส่งรอบที่ 3",
+        }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "ไม่สามารถอัปเดตสถานะได้")
+      alert("อัปเดตสถานะเป็น 'สินค้าถึงไทยแล้ว' สำเร็จ!")
+      fetchOrders()
+    } catch (err: any) {
+      alert(err.message || "เกิดข้อผิดพลาดในการอัปเดตสถานะ")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleArrivedInThailand = async (order: any) => {
     if (order.shipping_company === "รับสินค้าด้วยตัวเองที่โกดัง") {
       if (!confirm(`ออเดอร์ ${order.order_number} เลือกร้านมารับเอง ยืนยันเปลี่ยนสถานะเป็นถึงโกดังไทย? (จะไม่มีการเรียกเก็บเงินรอบ 3)`)) return;
@@ -547,7 +572,7 @@ export default function AdminOrders() {
       case 'ORDERED': return 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
       case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน (รอคำนวณค่าขนส่ง)'
       case 'SHIPPING': return 'ชำระรอบ 2 แล้ว (กำลังส่งมาไทย)'
-      case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย (รอคำนวณค่าส่งในไทย)'
+      case 'THAILAND_WAREHOUSE': return order.shipping_company ? 'สินค้าถึงไทยแล้ว (เลือกขนส่งแล้ว รอแจ้งบิล)' : 'สินค้าถึงไทยแล้ว (รอเลือกขนส่ง/รอแจ้งบิล)'
       case 'OUT_FOR_DELIVERY': return 'ชำระครบถ้วน (กำลังนำส่งไปบ้านลูกค้า)'
       case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
       default: return status
@@ -813,13 +838,23 @@ export default function AdminOrders() {
                           </Button>
                         )}
 
-                        {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && !order.consolidated_into_id && (
+                        {order.status === 'SHIPPING' && !order.consolidated_into_id && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleMarkArrivedInThailand(order)}
+                            className="bg-teal-600 hover:bg-teal-700 text-white w-full max-w-[120px] mb-2 cursor-pointer"
+                          >
+                            สินค้าถึงไทยแล้ว
+                          </Button>
+                        )}
+
+                        {order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID' && !order.consolidated_into_id && (
                           <Button 
                             size="sm" 
                             onClick={() => handleArrivedInThailand(order)}
                             className="bg-blue-500 hover:bg-blue-600 w-full max-w-[120px] mb-2 cursor-pointer"
                           >
-                            {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "ถึงโกดังไทย (แจ้งบิล)"}
+                            {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "แจ้งค่าส่งไทย (รอบ 3)"}
                           </Button>
                         )}
 
@@ -976,9 +1011,14 @@ export default function AdminOrders() {
                         {order.payment_round_2_status ? "แก้ไขค่าส่งจีน" : "ถึงโกดังจีน (แจ้งบิล)"}
                       </Button>
                     )}
-                    {(order.status === 'SHIPPING' || (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID')) && !order.consolidated_into_id && (
+                    {order.status === 'SHIPPING' && !order.consolidated_into_id && (
+                      <Button size="sm" onClick={() => handleMarkArrivedInThailand(order)} className="bg-teal-600 hover:bg-teal-700 text-white min-h-[44px]">
+                        สินค้าถึงไทยแล้ว
+                      </Button>
+                    )}
+                    {order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID' && !order.consolidated_into_id && (
                       <Button size="sm" onClick={() => handleArrivedInThailand(order)} className="bg-blue-500 hover:bg-blue-600 min-h-[44px]">
-                        {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "ถึงโกดังไทย"}
+                        {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "แจ้งค่าส่งไทย (รอบ 3)"}
                       </Button>
                     )}
                     {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (

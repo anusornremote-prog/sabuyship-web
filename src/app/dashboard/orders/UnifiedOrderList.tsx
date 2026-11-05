@@ -185,7 +185,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         case 'ORDERED': return item.payment_round_1_status === 'NOT_APPLICABLE' ? 'กำลังจัดส่งไปโกดังจีน' : 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
         case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน (รอคำนวณค่าขนส่ง)'
         case 'SHIPPING': return 'ชำระรอบ 2 แล้ว (กำลังส่งมาไทย)'
-        case 'THAILAND_WAREHOUSE': return 'พัสดุถึงโกดังไทย (รอคำนวณค่าส่งในไทย)'
+        case 'THAILAND_WAREHOUSE': return item.shipping_company ? 'สินค้าถึงไทยแล้ว (รอแอดมินแจ้งค่าส่งในไทย)' : 'สินค้าถึงไทยแล้ว (กรุณาเลือกวิธีจัดส่งในไทย)'
         case 'OUT_FOR_DELIVERY': return 'ชำระครบถ้วน (กำลังนำส่งไปบ้านลูกค้า)'
         case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
         case 'CANCELED': return 'ยกเลิกคำสั่งซื้อ'

@@ -78,6 +78,32 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
     }
   }
 
+  const handleMarkThailandWarehouseOnly = async () => {
+    try {
+      setLoading(true)
+      setError("")
+      const res = await fetch(`/api/admin/orders/${order.id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "THAILAND_WAREHOUSE",
+          tracking_number: order.tracking_number || "",
+          shipping_company: order.shipping_company || "",
+          reason: "สินค้าเดินทางถึงโกดังไทยแล้ว กรุณาเข้าไปเลือกวิธีจัดส่งในไทยที่หน้ารายละเอียดคำสั่งซื้อ เพื่อให้แอดมินประเมินค่าจัดส่งรอบที่ 3",
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "ไม่สามารถอัปเดตสถานะได้")
+      toast.success("อัปเดตสถานะเป็น 'สินค้าถึงไทยแล้ว' สำเร็จ!")
+      onSuccess()
+      onClose()
+    } catch (err: any) {
+      setError(err.message || "เกิดข้อผิดพลาดในการอัปเดตสถานะ")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (cost === "" || isNaN(Number(cost)) || Number(cost) < 0) {
@@ -308,7 +334,19 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
 
           {error && <p className="text-sm text-red-500 bg-red-50 p-2 rounded">{error}</p>}
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
+            {round === 3 && order.status !== 'THAILAND_WAREHOUSE' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleMarkThailandWarehouseOnly}
+                disabled={loading}
+                className="border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 sm:mr-auto"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                อัปเดต &quot;สินค้าถึงไทยแล้ว&quot; (ยังไม่ใส่ราคา)
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               ยกเลิก
             </Button>
