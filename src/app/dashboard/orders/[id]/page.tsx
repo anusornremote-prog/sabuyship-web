@@ -552,14 +552,6 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                                     )}
                                     <span className="font-semibold text-slate-800 font-mono text-sm">{trackingNo}</span>
                                     <CopyTrackingButton trackingNumber={trackingNo} label="" />
-                                    <a
-                                      href={`https://t.17track.net/en#nums=${encodeURIComponent(trackingNo)}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-0.5 ml-auto"
-                                    >
-                                      เช็คแทร็ก ↗
-                                    </a>
                                   </div>
                                 ))}
                               </div>
