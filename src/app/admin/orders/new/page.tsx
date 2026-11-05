@@ -22,7 +22,7 @@ export default function AdminNewOrder() {
     { product_url: "", product_name: "", product_options: "", quantity: 1, unit_price: 0 }
   ])
   const [shippingRate, setShippingRate] = useState(0) // Admin fee or shipping config
-  const [status, setStatus] = useState("NEW")
+  const [status, setStatus] = useState("WAITING_PAYMENT")
   
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -139,7 +139,7 @@ export default function AdminNewOrder() {
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                   >
-                    <option value="NEW">NEW (รอดำเนินการ/รอจ่ายเงิน)</option>
+                    <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
                     <option value="PAID">PAID (ชำระเงินแล้ว - โอนตรง)</option>
                   </select>
                 </div>

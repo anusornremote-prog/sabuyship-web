@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const items = Array.isArray(body.items) ? body.items : []
-    if (!body.customer_id || items.length === 0 || !["NEW", "PAID"].includes(body.status)) {
+    if (!body.customer_id || items.length === 0 || !["WAITING_PAYMENT", "NEW", "PAID"].includes(body.status)) {
       return NextResponse.json({ error: "Invalid order details" }, { status: 400 })
     }
 

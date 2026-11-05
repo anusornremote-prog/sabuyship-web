@@ -500,7 +500,6 @@ export default function AdminOrders() {
             onChange={(e) => handleFilterChange(e.target.value)}
           >
             <option value="ALL">สถานะทั้งหมด</option>
-            <option value="NEW">NEW (รอชำระเงิน/อัปสลิป)</option>
             <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
             <option value="PAYMENT_REJECTED">PAYMENT_REJECTED (สลิปถูกปฏิเสธ)</option>
             <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
@@ -928,7 +927,6 @@ export default function AdminOrders() {
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
                   >
-                    <option value="NEW">NEW (รอชำระเงิน/อัปสลิป)</option>
                     <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
                     <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
                     <option value="ORDERED">ORDERED (ร้านจีนเตรียมจัดส่ง)</option>
