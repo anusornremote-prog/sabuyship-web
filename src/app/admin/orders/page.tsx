@@ -64,6 +64,58 @@ export default function AdminOrders() {
     return Array.from(new Set(trackings)) as string[]
   }
 
+  const getChinaShippingStatus = (order: any): { label: string; className: string } | null => {
+    if (order.status === 'CANCELED') return null
+
+    const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
+    const inquiry = Array.isArray(quotation?.inquiry) ? quotation.inquiry[0] : quotation?.inquiry
+    let items = inquiry?.items || []
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items) } catch { items = [] }
+    }
+
+    const activeItems = Array.isArray(items)
+      ? items.filter((it: any) => !it?.is_out_of_stock && !it?.out_of_stock)
+      : []
+
+    const totalItems = activeItems.length || 1
+    const shippedItems = activeItems.filter((it: any) => {
+      const tn = (it?.tracking_cn_cn || it?.china_tracking_number || "").toString().trim()
+      if (tn) return true
+      if (Array.isArray(it?.tracking_numbers_cn)) {
+        return it.tracking_numbers_cn.some((t: any) => String(t || "").trim().length > 0)
+      }
+      return false
+    }).length
+
+    const isPastChinaDispatch = [
+      'CHINA_WAREHOUSE',
+      'SHIPPING',
+      'THAILAND_WAREHOUSE',
+      'OUT_FOR_DELIVERY',
+      'DELIVERED',
+    ].includes(order.status)
+
+    if (isPastChinaDispatch || (shippedItems >= totalItems && totalItems > 0)) {
+      return {
+        label: "ร้านจัดส่งครบแล้ว",
+        className: "text-emerald-700 bg-emerald-50 border-emerald-200",
+      }
+    }
+
+    if (shippedItems > 0) {
+      return {
+        label: `ร้านจัดส่งบางส่วน (${shippedItems}/${totalItems})`,
+        className: "text-amber-700 bg-amber-50 border-amber-200",
+      }
+    }
+
+    return {
+      label: "รอจัดส่ง",
+      className: "text-rose-600 bg-rose-50 border-rose-200",
+    }
+  }
+
   const ITEMS_PER_PAGE = 20
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -551,6 +603,7 @@ export default function AdminOrders() {
                   filteredOrders.map((order) => {
                     const chinaTrackings = getChinaTrackings(order)
                     const hasChinaTracking = chinaTrackings.length > 0
+                    const chinaShippingStatus = getChinaShippingStatus(order)
 
                     return (
                     <tr key={order.id} className="border-b hover:bg-slate-50/50 transition-colors">
@@ -564,10 +617,10 @@ export default function AdminOrders() {
                       </td>
                       <td className="px-6 py-4 font-semibold text-primary">
                         <div>{order.order_number}</div>
-                        {hasChinaTracking && (
-                          <div className="flex items-center gap-1 text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded w-fit mt-1 font-normal" title="เลขแทร็กจีน">
-                            <Truck className="h-3 w-3 shrink-0 text-amber-600" />
-                            <span>จีน: {chinaTrackings.join(', ')}</span>
+                        {chinaShippingStatus && (
+                          <div className={`inline-flex items-center gap-1 text-[11px] font-semibold border px-2 py-0.5 rounded-md w-fit mt-1.5 ${chinaShippingStatus.className}`}>
+                            <Truck className="h-3 w-3 shrink-0" />
+                            <span>{chinaShippingStatus.label}</span>
                           </div>
                         )}
                       </td>
@@ -740,12 +793,16 @@ export default function AdminOrders() {
                     </span>
                   </div>
 
-                  {getChinaTrackings(order).length > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md w-fit">
-                      <Truck className="h-3.5 w-3.5 shrink-0 text-amber-600" />
-                      <span>แทร็กจีน: {getChinaTrackings(order).join(', ')}</span>
-                    </div>
-                  )}
+                  {(() => {
+                    const chinaShippingStatus = getChinaShippingStatus(order)
+                    if (!chinaShippingStatus) return null
+                    return (
+                      <div className={`inline-flex items-center gap-1.5 text-xs font-semibold border px-2.5 py-1 rounded-md w-fit ${chinaShippingStatus.className}`}>
+                        <Truck className="h-3.5 w-3.5 shrink-0" />
+                        <span>{chinaShippingStatus.label}</span>
+                      </div>
+                    )
+                  })()}
 
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1">
                     <p className="font-medium text-slate-900 text-sm">{order.customer?.full_name || '-'}</p>
