@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, Truck, Info, ExternalLink, Plus, Trash2 } from "lucide-react"
+import { Loader2, ExternalLink, Plus, Trash2, Package, Store, Tag } from "lucide-react"
 import { toast } from "sonner"
+import { getMarketplaceInfo } from "@/lib/product-link"
 
 interface ChinaTrackingModalProps {
   isOpen: boolean
@@ -31,8 +32,6 @@ export function ChinaTrackingModal({
   order,
   onSuccess,
 }: ChinaTrackingModalProps) {
-  const [trackingList, setTrackingList] = useState<string[]>([""])
-  const [usePerItem, setUsePerItem] = useState(false)
   const [items, setItems] = useState<any[]>([])
   const [notifyCustomer, setNotifyCustomer] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -41,13 +40,26 @@ export function ChinaTrackingModal({
   useEffect(() => {
     if (isOpen && order) {
       setError("")
-      let inquiryItems = order.quotation?.inquiry?.items || []
+      const inquiry = order.quotation?.inquiry
+      let inquiryItems = inquiry?.items || []
       if (typeof inquiryItems === "string") {
         try {
           inquiryItems = JSON.parse(inquiryItems)
         } catch {
           inquiryItems = []
         }
+      }
+
+      if (!Array.isArray(inquiryItems) || inquiryItems.length === 0) {
+        inquiryItems = [
+          {
+            url: inquiry?.product_url || "",
+            product_name: inquiry?.product_name || "",
+            remark: inquiry?.remark || "",
+            quantity: inquiry?.quantity || 1,
+            image_url: inquiry?.image_url || null,
+          },
+        ]
       }
 
       const parsedItems = inquiryItems.map((item: any) => {
@@ -61,52 +73,9 @@ export function ChinaTrackingModal({
       })
 
       setItems(parsedItems)
-
-      // Check if different items have different tracking lists
-      const itemJoinedStrings: string[] = parsedItems
-        .map((it: any) => it.trackingList.filter(Boolean).join(", "))
-        .filter((s: string) => s.length > 0)
-      const uniqueItemJoined = Array.from(new Set(itemJoinedStrings))
-
-      // Collect all unique tracking numbers across the order
-      const allTrackings = Array.from(
-        new Set(
-          parsedItems.flatMap((it: any) =>
-            it.trackingList.map((t: string) => t.trim()).filter(Boolean)
-          )
-        )
-      ) as string[]
-
-      if (parsedItems.length > 1 && uniqueItemJoined.length > 1) {
-        setUsePerItem(true)
-        setTrackingList(allTrackings.length > 0 ? allTrackings : [""])
-      } else {
-        setUsePerItem(false)
-        setTrackingList(allTrackings.length > 0 ? allTrackings : [""])
-      }
     }
   }, [isOpen, order])
 
-  // Handlers for general multi-tracking list
-  const handleTrackingRowChange = (index: number, value: string) => {
-    const next = [...trackingList]
-    next[index] = value
-    setTrackingList(next)
-  }
-
-  const handleAddTrackingRow = () => {
-    setTrackingList([...trackingList, ""])
-  }
-
-  const handleRemoveTrackingRow = (index: number) => {
-    if (trackingList.length <= 1) {
-      setTrackingList([""])
-      return
-    }
-    setTrackingList(trackingList.filter((_, i) => i !== index))
-  }
-
-  // Handlers for per-item multi-tracking list
   const handleItemTrackingChange = (itemIdx: number, trackIdx: number, value: string) => {
     const updated = [...items]
     const nextList = [...(updated[itemIdx].trackingList || [""])]
@@ -125,7 +94,8 @@ export function ChinaTrackingModal({
   const handleRemoveItemTrackingRow = (itemIdx: number, trackIdx: number) => {
     const updated = [...items]
     const currentList = updated[itemIdx].trackingList || [""]
-    const nextList = currentList.length <= 1 ? [""] : currentList.filter((_: any, i: number) => i !== trackIdx)
+    const nextList =
+      currentList.length <= 1 ? [""] : currentList.filter((_: any, i: number) => i !== trackIdx)
     updated[itemIdx] = { ...updated[itemIdx], trackingList: nextList }
     setItems(updated)
   }
@@ -133,40 +103,27 @@ export function ChinaTrackingModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const payload: any = {
-      notify_customer: notifyCustomer,
+    const cleanedPerItem = items.map((it) => {
+      const list = (it.trackingList || [])
+        .flatMap((s: string) => parseTrackingList(s))
+        .filter(Boolean)
+      const uniqueList = Array.from(new Set(list)) as string[]
+      const joined = uniqueList.join(", ")
+      return {
+        tracking_cn_cn: joined,
+        china_tracking_number: joined,
+        tracking_numbers_cn: uniqueList,
+      }
+    })
+
+    const hasAny = cleanedPerItem.some((it) => it.tracking_cn_cn.length > 0)
+    if (!hasAny && !confirm("คุณยังไม่ได้กรอกเลขแทร็กจีน ต้องการบันทึกเป็นค่าว่างใช่หรือไม่?")) {
+      return
     }
 
-    if (usePerItem) {
-      const cleanedPerItem = items.map((it) => {
-        const list = (it.trackingList || [])
-          .flatMap((s: string) => parseTrackingList(s))
-          .filter(Boolean)
-        const joined = Array.from(new Set(list)).join(", ")
-        return {
-          tracking_cn_cn: joined,
-          china_tracking_number: joined,
-          tracking_numbers_cn: Array.from(new Set(list)),
-        }
-      })
-      const hasAny = cleanedPerItem.some((it) => it.tracking_cn_cn.length > 0)
-      if (!hasAny && !confirm("คุณยังไม่ได้กรอกเลขแทร็กจีน ต้องการบันทึกเป็นค่าว่างใช่หรือไม่?")) {
-        return
-      }
-      payload.items = cleanedPerItem
-    } else {
-      const cleanedList = Array.from(
-        new Set(
-          trackingList
-            .flatMap((s) => parseTrackingList(s))
-            .filter(Boolean)
-        )
-      )
-      if (cleanedList.length === 0 && !confirm("คุณยังไม่ได้กรอกเลขแทร็กจีน ต้องการบันทึกเป็นค่าว่างใช่หรือไม่?")) {
-        return
-      }
-      payload.tracking_number = cleanedList.join(", ")
-      payload.tracking_numbers = cleanedList
+    const payload = {
+      notify_customer: notifyCustomer,
+      items: cleanedPerItem,
     }
 
     try {
@@ -201,31 +158,29 @@ export function ChinaTrackingModal({
 
   if (!order) return null
 
-  const activePreviewTrackings = !usePerItem
-    ? Array.from(new Set(trackingList.flatMap((s) => parseTrackingList(s)).filter(Boolean)))
-    : Array.from(
-        new Set(
-          items.flatMap((it) =>
-            (it.trackingList || []).flatMap((s: string) => parseTrackingList(s)).filter(Boolean)
-          )
-        )
+  const activePreviewTrackings = Array.from(
+    new Set(
+      items.flatMap((it) =>
+        (it.trackingList || []).flatMap((s: string) => parseTrackingList(s)).filter(Boolean)
       )
+    )
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[88dvh] flex flex-col p-0 gap-0 overflow-hidden">
-        <DialogHeader className="shrink-0 p-4 sm:p-6 pb-4 pr-10 border-b border-slate-100 bg-slate-50/50 text-left">
-          <div className="flex items-center gap-2">
+      <DialogContent className="max-w-xl max-h-[88dvh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="shrink-0 p-4 sm:p-5 pb-3.5 pr-10 border-b border-slate-100 bg-slate-50/50 text-left">
+          <div className="flex items-center gap-2.5">
             <span className="text-xl">🇨🇳</span>
             <div>
               <DialogTitle className="text-base sm:text-lg font-bold text-slate-900">
-                ใส่เลขแทร็กขนส่งจีน (รองรับหลายชิ้น/หลายกล่อง)
+                ใส่เลขแทร็กขนส่งจีน (แยกตามรายการสินค้า)
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-500 mt-0.5">
                 ออเดอร์: <span className="font-semibold text-slate-700">{order.order_number}</span>
-                {order.profiles?.customer_code && (
-                  <span className="ml-2 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded font-mono text-[11px]">
-                    {order.profiles.customer_code}
+                {(order.customer?.customer_code || order.profiles?.customer_code) && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded font-mono text-[11px] font-bold">
+                    {order.customer?.customer_code || order.profiles?.customer_code}
                   </span>
                 )}
               </DialogDescription>
@@ -234,175 +189,164 @@ export function ChinaTrackingModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="p-4 sm:p-6 space-y-5 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0">
-            {/* Workflow Info Box */}
-            <div className="bg-amber-50/80 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 space-y-1">
-              <div className="flex items-center gap-1.5 font-semibold text-amber-950">
-                <Info className="h-4 w-4 shrink-0 text-amber-600" />
-                <span>รองรับการใส่หลายเลขแทร็ก (กรณีมีสินค้าหลายชิ้นหรือร้านจีนแยกส่งหลายกล่อง):</span>
-              </div>
-              <p className="leading-relaxed pl-5">
-                กดปุ่ม <strong>&quot;+ เพิ่มช่องใส่เลขแทร็ก&quot;</strong> เพื่อเพิ่มเลขพัสดุได้ไม่จำกัด ลูกค้าจะเห็นเลขแทร็กครบทุกชิ้นทันที
-              </p>
-            </div>
-
+          <div className="p-4 sm:p-5 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0">
             {error && (
-              <div className="p-3 bg-rose-50 text-rose-700 text-xs rounded-lg border border-rose-200">
+              <div className="p-3 bg-rose-50 text-rose-700 text-xs rounded-lg border border-rose-200 font-medium">
                 {error}
               </div>
             )}
 
-            {/* Toggle per item if multiple items exist */}
-            {items.length > 1 && (
-              <div className="flex items-center justify-between bg-slate-100/70 p-2.5 rounded-lg border border-slate-200">
-                <span className="text-xs font-medium text-slate-700">รูปแบบการกรอกเลขแทร็ก</span>
-                <div className="flex gap-1 bg-white p-0.5 rounded border border-slate-200 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setUsePerItem(false)}
-                    className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
-                      !usePerItem
-                        ? "bg-primary text-white font-medium"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    รวมทั้งออเดอร์ (เพิ่มได้หลายเลข)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUsePerItem(true)}
-                    className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
-                      usePerItem
-                        ? "bg-primary text-white font-medium"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    แยกตามลิงก์สินค้า ({items.length} รายการ)
-                  </button>
-                </div>
-              </div>
-            )}
+            <div className="space-y-3.5">
+              {items.map((item, itemIdx) => {
+                const rowList: string[] = item.trackingList || [""]
+                const itemUrl = item.url || item.product_url || ""
+                const market = getMarketplaceInfo(itemUrl)
+                const itemDesc = [item.product_name, item.product_options, item.remark, item.note, item.color]
+                  .map((v) => (typeof v === "string" ? v.trim() : ""))
+                  .filter(Boolean)
+                  .filter((v, idx, arr) => arr.indexOf(v) === idx)
+                  .join(" • ")
 
-            {!usePerItem ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                    <Truck className="h-3.5 w-3.5 text-primary" />
-                    หมายเลขพัสดุจีน ({trackingList.length} ช่อง)
-                  </label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddTrackingRow}
-                    className="h-7 px-2.5 text-xs font-bold text-primary border-blue-200 hover:bg-blue-50 cursor-pointer"
+                return (
+                  <div
+                    key={itemIdx}
+                    className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs"
                   >
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                    เพิ่มช่องใส่เลขแทร็ก
-                  </Button>
-                </div>
+                    {/* Header: Item number + Add Tracking button */}
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/70">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-md bg-slate-800 text-white text-xs font-bold">
+                          รายการที่ {itemIdx + 1}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-bold ${market.badgeClass}`}>
+                          <Store className="w-3 h-3" />
+                          {market.platform}
+                        </span>
+                        {market.itemId && (
+                          <span className="text-[11px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                            ID: {market.itemId}
+                          </span>
+                        )}
+                      </div>
 
-                <div className="space-y-2">
-                  {trackingList.map((tn, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-lg shrink-0 min-w-[72px] text-center">
-                        ชิ้นที่ {index + 1}
-                      </span>
-                      <Input
-                        value={tn}
-                        onChange={(e) => handleTrackingRowChange(index, e.target.value)}
-                        placeholder={`เลขแทร็กจีนชิ้นที่ ${index + 1} (เช่น YT7732189498274)`}
-                        className="font-mono text-sm uppercase tracking-wide bg-white flex-1"
-                        autoFocus={index === trackingList.length - 1}
-                      />
                       <Button
                         type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveTrackingRow(index)}
-                        className="h-9 w-9 text-rose-500 hover:text-rose-700 hover:bg-rose-50 shrink-0 cursor-pointer"
-                        title="ลบช่องนี้"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddItemTrackingRow(itemIdx)}
+                        className="h-7 px-2.5 text-[11px] font-bold text-primary border-blue-200 bg-white hover:bg-blue-50 shrink-0 cursor-pointer"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Plus className="h-3 w-3 mr-1" /> เพิ่มเลขแทร็ก
                       </Button>
                     </div>
-                  ))}
-                </div>
 
-                <button
-                  type="button"
-                  onClick={handleAddTrackingRow}
-                  className="w-full py-2.5 border-2 border-dashed border-blue-200 hover:border-primary bg-blue-50/30 hover:bg-blue-50/70 text-primary rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>เพิ่มเลขแทร็กขนส่งจีนอีก 1 ชิ้น / กล่อง</span>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <label className="text-xs font-semibold text-slate-700 block">
-                  ระบุเลขพัสดุจีนสำหรับแต่ละรายการสินค้า (แต่ละรายการเพิ่มได้หลายเลข)
-                </label>
-                <div className="space-y-3">
-                  {items.map((item, itemIdx) => {
-                    const rowList: string[] = item.trackingList || [""]
-                    return (
-                      <div
-                        key={itemIdx}
-                        className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-800">
-                            รายการสินค้าที่ {itemIdx + 1}
-                            {item.quantity ? ` (จำนวน ${item.quantity} ชิ้น)` : ""}
+                    {/* Product Info Row: Thumbnail + Details/Remark + Link */}
+                    <div className="flex items-start gap-3 bg-white p-2.5 rounded-xl border border-slate-200/80">
+                      {item.image_url ? (
+                        <a
+                          href={item.image_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 group relative block"
+                          title="คลิกเพื่อดูรูปสินค้าขนาดเต็ม"
+                        >
+                          <img
+                            src={item.image_url}
+                            alt={`สินค้าชิ้นที่ ${itemIdx + 1}`}
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-slate-200 group-hover:opacity-90 transition-opacity"
+                          />
+                        </a>
+                      ) : (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 shrink-0">
+                          <Package className="w-5 h-5 mb-0.5" />
+                          <span className="text-[9px] font-medium">ไม่มีรูป</span>
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        {/* Product Remark / Options / Color / Size */}
+                        {itemDesc ? (
+                          <div className="flex items-start gap-1.5 text-xs sm:text-sm font-bold text-slate-900 bg-amber-50/90 border border-amber-200/80 px-2.5 py-1.5 rounded-lg">
+                            <Tag className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                            <span className="break-words leading-snug">{itemDesc}</span>
+                          </div>
+                        ) : (
+                          <div className="text-xs font-medium text-slate-500 italic">
+                            ไม่ได้ระบุชื่อหรือตัวเลือกสินค้า (ดูได้จากรูปหรือลิงก์สินค้า)
+                          </div>
+                        )}
+
+                        {/* Quantity & Quoted Price info */}
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+                          <span>
+                            จำนวน: <strong className="text-slate-900">{item.quantity || 1} ชิ้น</strong>
                           </span>
+                          {item.quoted_price !== undefined && Number(item.quoted_price) > 0 && (
+                            <span>
+                              ค่าสินค้า:{" "}
+                              <strong className="text-primary">
+                                ฿{Number(item.quoted_price).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </strong>
+                            </span>
+                          )}
+                          {item.quoted_shipping_cn_cn !== undefined && Number(item.quoted_shipping_cn_cn) > 0 && (
+                            <span>
+                              ค่าส่งจีน:{" "}
+                              <strong className="text-slate-800">
+                                ฿{Number(item.quoted_shipping_cn_cn).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </strong>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Clickable Product Link */}
+                        {itemUrl && (
+                          <div className="pt-0.5">
+                            <a
+                              href={itemUrl.startsWith("http") ? itemUrl : `https://${itemUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline max-w-full"
+                              title={itemUrl}
+                            >
+                              <ExternalLink className="w-3 h-3 shrink-0" />
+                              <span className="truncate">เปิดดูหน้าสินค้าใน {market.platform}</span>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tracking Inputs for this Item */}
+                    <div className="space-y-1.5 pt-0.5">
+                      {rowList.map((tn: string, trackIdx: number) => (
+                        <div key={trackIdx} className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg shrink-0 min-w-[36px] text-center">
+                            #{trackIdx + 1}
+                          </span>
+                          <Input
+                            value={tn}
+                            onChange={(e) => handleItemTrackingChange(itemIdx, trackIdx, e.target.value)}
+                            placeholder={`กรอกเลขแทร็กจีน #${trackIdx + 1} ของรายการที่ ${itemIdx + 1}`}
+                            className="font-mono text-xs sm:text-sm uppercase bg-white h-9 flex-1"
+                          />
                           <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddItemTrackingRow(itemIdx)}
-                            className="h-6 px-2 text-[11px] font-bold text-primary border-blue-200 hover:bg-blue-50 cursor-pointer"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveItemTrackingRow(itemIdx, trackIdx)}
+                            className="h-9 w-9 text-rose-500 hover:text-rose-700 hover:bg-rose-50 shrink-0 cursor-pointer"
+                            title="ลบเลขแทร็กนี้"
                           >
-                            <Plus className="h-3 w-3 mr-1" /> เพิ่มเลขแทร็ก
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        {item.url && (
-                          <p className="text-[11px] text-slate-500 truncate" title={item.url}>
-                            {item.url}
-                          </p>
-                        )}
-                        <div className="space-y-1.5">
-                          {rowList.map((tn: string, trackIdx: number) => (
-                            <div key={trackIdx} className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-semibold text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded shrink-0">
-                                #{trackIdx + 1}
-                              </span>
-                              <Input
-                                value={tn}
-                                onChange={(e) => handleItemTrackingChange(itemIdx, trackIdx, e.target.value)}
-                                placeholder={`เลขแทร็กจีน #${trackIdx + 1} ของรายการนี้`}
-                                className="font-mono text-xs uppercase bg-white h-8 flex-1"
-                              />
-                              {rowList.length > 1 && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleRemoveItemTrackingRow(itemIdx, trackIdx)}
-                                  className="h-8 w-8 text-rose-500 hover:text-rose-700 hover:bg-rose-50 shrink-0 cursor-pointer"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
 
             {/* Quick 17Track verification link if tracking is entered */}
             {activePreviewTrackings.length > 0 && (
@@ -441,7 +385,7 @@ export function ChinaTrackingModal({
             </label>
           </div>
 
-          <DialogFooter className="p-4 px-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2">
+          <DialogFooter className="shrink-0 p-4 px-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"

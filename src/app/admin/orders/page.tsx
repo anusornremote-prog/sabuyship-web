@@ -107,6 +107,11 @@ export default function AdminOrders() {
             inquiry:inquiry_id (
               id,
               shipping_type,
+              product_url,
+              product_name,
+              remark,
+              quantity,
+              image_url,
               items
             )
           ),

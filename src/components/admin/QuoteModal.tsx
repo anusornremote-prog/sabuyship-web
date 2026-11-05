@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Globe } from "lucide-react"
 import { toast } from "sonner"
+import { getMarketplaceInfo } from "@/lib/product-link"
 
 interface QuoteModalProps {
   isOpen: boolean
@@ -205,19 +206,39 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
               </div>
               
               <div className="space-y-3">
-                {items.map((item, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row gap-3 bg-white p-3 rounded border border-slate-100 items-start sm:items-center">
+                {items.map((item, idx) => {
+                  const market = getMarketplaceInfo(item.url || item.product_url)
+                  const itemDesc = [item.product_name, item.product_options, item.remark, item.note, item.color]
+                    .map((v) => (typeof v === "string" ? v.trim() : ""))
+                    .filter(Boolean)
+                    .filter((v, i, arr) => arr.indexOf(v) === i)
+                    .join(" • ")
+                  return (
+                  <div key={idx} className="flex flex-col sm:flex-row gap-3 bg-white p-3 rounded-xl border border-slate-200 items-start sm:items-center">
                     {item.image_url && (
                       <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                        <img src={item.image_url} alt="Product" className="w-12 h-12 object-cover rounded border border-slate-200" />
+                        <img src={item.image_url} alt="Product" className="w-14 h-14 object-cover rounded-lg border border-slate-200" />
                       </a>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 text-xs truncate max-w-[200px] sm:max-w-[250px]">
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-bold bg-slate-800 text-white px-2 py-0.5 rounded">
+                          รายการที่ {idx + 1}
+                        </span>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${market.badgeClass}`}>
+                          {market.platform}
+                        </span>
+                      </div>
+                      {itemDesc && (
+                        <p className="text-xs font-bold text-slate-900 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
+                          {itemDesc}
+                        </p>
+                      )}
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline flex items-center gap-1 text-xs truncate max-w-[220px] sm:max-w-[280px]">
                         <Globe className="h-3 w-3 shrink-0" />
-                        <span className="truncate block">{item.url}</span>
+                        <span className="truncate block">เปิดดูหน้าสินค้า ({market.platform})</span>
                       </a>
-                      <p className="text-xs text-slate-500 mt-1">จำนวน: {item.quantity} ชิ้น</p>
+                      <p className="text-xs text-slate-500">จำนวน: <strong>{item.quantity} ชิ้น</strong></p>
                       {round === 2 && (
                         <div className="mt-2">
                           <Input
@@ -262,7 +283,7 @@ export function QuoteModal({ isOpen, onClose, order, round, onSuccess }: QuoteMo
                       )}
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
           )}
