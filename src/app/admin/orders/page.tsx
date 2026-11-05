@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus, Truck } from "lucide-react"
+import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus, Truck, Calendar } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -20,6 +20,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
+  const [dateFilter, setDateFilter] = useState("")
   
   // Status update modal states
   const [editingOrder, setEditingOrder] = useState<any | null>(null)
@@ -122,7 +123,48 @@ export default function AdminOrders() {
   
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
 
-  const fetchOrders = async (page = currentPage, search = searchQuery) => {
+  const parseSearchDateRange = (raw: string): { startIso: string; endIso: string } | null => {
+    const trimmed = raw.trim()
+    // Match DD/MM/YYYY or D/M/YYYY (supports both พ.ศ. e.g. 2569 and ค.ศ. e.g. 2026)
+    const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+    if (slashMatch) {
+      const day = Number(slashMatch[1])
+      const month = Number(slashMatch[2])
+      let year = Number(slashMatch[3])
+      if (year > 2400) year -= 543
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        const yyyy = String(year).padStart(4, "0")
+        const mm = String(month).padStart(2, "0")
+        const dd = String(day).padStart(2, "0")
+        return {
+          startIso: `${yyyy}-${mm}-${dd}T00:00:00+07:00`,
+          endIso: `${yyyy}-${mm}-${dd}T23:59:59.999+07:00`,
+        }
+      }
+    }
+
+    // Match YYYY-MM-DD
+    const dashMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+    if (dashMatch) {
+      let year = Number(dashMatch[1])
+      const month = Number(dashMatch[2])
+      const day = Number(dashMatch[3])
+      if (year > 2400) year -= 543
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        const yyyy = String(year).padStart(4, "0")
+        const mm = String(month).padStart(2, "0")
+        const dd = String(day).padStart(2, "0")
+        return {
+          startIso: `${yyyy}-${mm}-${dd}T00:00:00+07:00`,
+          endIso: `${yyyy}-${mm}-${dd}T23:59:59.999+07:00`,
+        }
+      }
+    }
+
+    return null
+  }
+
+  const fetchOrders = async (page = currentPage, search = searchQuery, orderDate = dateFilter) => {
     try {
       setLoading(true)
       setLoadError("")
@@ -134,6 +176,7 @@ export default function AdminOrders() {
           order_number,
           status,
           created_at,
+          updated_at,
           payment_round_1_status,
           payment_round_2_status,
           payment_round_3_status,
@@ -181,8 +224,36 @@ export default function AdminOrders() {
         query = query.eq("status", statusFilter)
       }
 
-      if (search) {
-        query = query.ilike("order_number", `%${search}%`)
+      if (orderDate) {
+        query = query
+          .gte("created_at", `${orderDate}T00:00:00+07:00`)
+          .lte("created_at", `${orderDate}T23:59:59.999+07:00`)
+      }
+
+      const cleanSearch = search.trim()
+      if (cleanSearch) {
+        const safeKeyword = cleanSearch.replace(/[,()]/g, " ").trim()
+        const orConditions: string[] = [`order_number.ilike.%${safeKeyword}%`]
+
+        const { data: matchedCustomers } = await supabase
+          .from("profiles")
+          .select("id")
+          .or(`customer_code.ilike.%${safeKeyword}%,full_name.ilike.%${safeKeyword}%,phone.ilike.%${safeKeyword}%`)
+          .limit(100)
+
+        if (matchedCustomers && matchedCustomers.length > 0) {
+          const ids = matchedCustomers.map((c) => c.id).join(",")
+          orConditions.push(`customer_id.in.(${ids})`)
+        }
+
+        const parsedDate = parseSearchDateRange(cleanSearch)
+        if (parsedDate) {
+          orConditions.push(
+            `and(created_at.gte.${parsedDate.startIso},created_at.lte.${parsedDate.endIso})`
+          )
+        }
+
+        query = query.or(orConditions.join(","))
       }
 
       const { data, count, error } = await query
@@ -200,11 +271,13 @@ export default function AdminOrders() {
     }
   }
 
-  // Re-fetch when page, search, or filter changes
+  // Re-fetch when page, status filter, or date filter changes, and debounce search query
   useEffect(() => {
-    fetchOrders()
-  }, [currentPage, statusFilter]) // We don't auto-fetch on searchQuery to avoid spam, we rely on a submit or debounce if needed. Wait, we should fetch on search. 
-  // Let's add a debounced search later, or just fetch on Enter/Search button. For now, fetch when search is applied.
+    const timer = setTimeout(() => {
+      fetchOrders(currentPage, searchQuery, dateFilter)
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [currentPage, statusFilter, dateFilter, searchQuery])
 
   useEffect(() => {
     const status = new URLSearchParams(window.location.search).get("status")
@@ -484,11 +557,16 @@ export default function AdminOrders() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setCurrentPage(1)
-    fetchOrders(1, searchQuery)
+    fetchOrders(1, searchQuery, dateFilter)
   }
 
   const handleFilterChange = (val: string) => {
     setStatusFilter(val)
+    setCurrentPage(1)
+  }
+
+  const handleDateFilterChange = (val: string) => {
+    setDateFilter(val)
     setCurrentPage(1)
   }
 
@@ -536,33 +614,72 @@ export default function AdminOrders() {
       </div>
 
       <Card className="shadow-sm">
-        <CardContent className="p-4 border-b bg-slate-50/50 flex flex-col sm:flex-row gap-4">
+        <CardContent className="p-4 border-b bg-slate-50/50 flex flex-col lg:flex-row gap-3">
           <form onSubmit={handleSearchSubmit} className="relative flex-1 flex">
              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
              <Input 
-               placeholder="ค้นหา Order ID... (กด Enter)" 
-               className="pl-9 w-full" 
+               placeholder="ค้นหา Order ID, รหัสลูกค้า (เช่น M-SA015), ชื่อลูกค้า, หรือวันที่สั่งซื้อ..." 
+               className="pl-9 pr-9 w-full bg-white" 
                value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
+               onChange={(e) => {
+                 setSearchQuery(e.target.value)
+                 setCurrentPage(1)
+               }}
              />
+             {searchQuery && (
+               <button
+                 type="button"
+                 onClick={() => {
+                   setSearchQuery("")
+                   setCurrentPage(1)
+                 }}
+                 className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
+                 title="ล้างคำค้นหา"
+               >
+                 <X className="h-4 w-4" />
+               </button>
+             )}
           </form>
-          <select 
-            className="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            value={statusFilter}
-            onChange={(e) => handleFilterChange(e.target.value)}
-          >
-            <option value="ALL">สถานะทั้งหมด</option>
-            <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
-            <option value="PAYMENT_REJECTED">PAYMENT_REJECTED (สลิปถูกปฏิเสธ)</option>
-            <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
-            <option value="ORDERED">ORDERED (ชำระรอบ 1 แล้ว/รอร้านจีนส่ง)</option>
-            <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
-            <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
-            <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
-            <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
-            <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
-            <option value="CANCELED">CANCELED (ยกเลิก)</option>
-          </select>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex items-center">
+              <Calendar className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+              <input
+                type="date"
+                aria-label="กรองตามวันที่สั่งซื้อ"
+                title="กรองตามวันที่สั่งซื้อ"
+                value={dateFilter}
+                onChange={(e) => handleDateFilterChange(e.target.value)}
+                className="flex h-10 w-full sm:w-44 rounded-md border border-input bg-white pl-9 pr-8 py-2 text-sm text-slate-700 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
+              {dateFilter && (
+                <button
+                  type="button"
+                  onClick={() => handleDateFilterChange("")}
+                  className="absolute right-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
+                  title="ล้างวันที่สั่งซื้อ"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <select 
+              className="flex h-10 w-full sm:w-56 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              value={statusFilter}
+              onChange={(e) => handleFilterChange(e.target.value)}
+            >
+              <option value="ALL">สถานะทั้งหมด</option>
+              <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
+              <option value="PAYMENT_REJECTED">PAYMENT_REJECTED (สลิปถูกปฏิเสธ)</option>
+              <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
+              <option value="ORDERED">ORDERED (ชำระรอบ 1 แล้ว/รอร้านจีนส่ง)</option>
+              <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
+              <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
+              <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
+              <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
+              <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
+              <option value="CANCELED">CANCELED (ยกเลิก)</option>
+            </select>
+          </div>
         </CardContent>
         {loadError && (
           <div className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
@@ -617,6 +734,9 @@ export default function AdminOrders() {
                       </td>
                       <td className="px-6 py-4 font-semibold text-primary">
                         <div>{order.order_number}</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                          สั่งซื้อ: {order.created_at ? new Date(order.created_at).toLocaleDateString('th-TH') : '-'}
+                        </div>
                         {chinaShippingStatus && (
                           <div className={`inline-flex items-center gap-1 text-[11px] font-semibold border px-2 py-0.5 rounded-md w-fit mt-1.5 ${chinaShippingStatus.className}`}>
                             <Truck className="h-3 w-3 shrink-0" />
@@ -654,7 +774,7 @@ export default function AdminOrders() {
                           {getStatusText(order.status, order)}
                         </span>
                         <p className="text-xs text-slate-500 mt-1">
-                          อัปเดต: {order.created_at ? new Date(order.created_at).toLocaleDateString('th-TH') : '-'}
+                          อัปเดต: {(order.updated_at || order.created_at) ? new Date(order.updated_at || order.created_at).toLocaleDateString('th-TH') : '-'}
                         </p>
                       </td>
                       <td className="px-6 py-4 text-right space-y-2">
@@ -786,7 +906,12 @@ export default function AdminOrders() {
                         onChange={() => handleSelectRow(order.id)} 
                         className="rounded border-slate-300 text-primary focus:ring-primary w-5 h-5"
                       />
-                      <span className="font-bold text-primary text-base">{order.order_number}</span>
+                      <div>
+                        <span className="font-bold text-primary text-base block">{order.order_number}</span>
+                        <span className="text-[11px] text-slate-500">
+                          สั่งซื้อ: {order.created_at ? new Date(order.created_at).toLocaleDateString('th-TH') : '-'}
+                        </span>
+                      </div>
                     </div>
                     <span className={`text-[10px] font-bold px-2 py-1 rounded ${getStatusBadge(order.status, order)}`}>
                       {getStatusText(order.status, order)}
