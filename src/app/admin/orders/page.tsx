@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, MapPin, X, Loader2, FileText, PackagePlus, Truck, Calendar } from "lucide-react"
+import { Calendar, ChevronDown, Eye, FileText, Loader2, MapPin, PackagePlus, PackageX, RotateCcw, Search, Truck, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -12,7 +12,16 @@ import { PaymentApprovalModal } from "@/components/admin/PaymentApprovalModal"
 import { QuoteModal } from "@/components/admin/QuoteModal"
 import { OutOfStockModal } from "@/components/admin/OutOfStockModal"
 import { ChinaTrackingModal } from "@/components/admin/ChinaTrackingModal"
-import { PackageX } from "lucide-react"
+
+const ADMIN_ORDER_QUICK_FILTERS = [
+  { value: "ALL", label: "ทั้งหมด" },
+  { value: "WAITING_PAYMENT", label: "รอชำระรอบ 1" },
+  { value: "ORDERED", label: "รอร้านจีนส่ง" },
+  { value: "CHINA_WAREHOUSE", label: "รอบิลขนส่งจีน" },
+  { value: "SHIPPING", label: "กำลังมาไทย" },
+  { value: "THAILAND_WAREHOUSE", label: "รอบิลขนส่งไทย" },
+  { value: "OUT_FOR_DELIVERY", label: "กำลังนำส่ง" },
+] as const
 
 export default function AdminOrders() {
   const supabase = createClient()
@@ -579,6 +588,40 @@ export default function AdminOrders() {
     }
   }
 
+  const getNextTask = (order: any): { label: string; hint: string; className: string } => {
+    if (order.payments?.some((payment: any) => payment.status === 'PENDING')) {
+      return { label: 'ตรวจสลิปลูกค้า', hint: 'มีหลักฐานชำระเงินรอตรวจสอบ', className: 'border-amber-200 bg-amber-50 text-amber-800' }
+    }
+    if (order.status === 'WAITING_PAYMENT') {
+      return { label: 'รอลูกค้าชำระรอบ 1', hint: 'ยังไม่มีงานที่แอดมินต้องทำ', className: 'border-slate-200 bg-slate-50 text-slate-700' }
+    }
+    if (order.status === 'PAID') {
+      return { label: 'สั่งสินค้ากับร้านจีน', hint: 'ลูกค้าชำระค่าสินค้าแล้ว', className: 'border-blue-200 bg-blue-50 text-blue-800' }
+    }
+    if (order.status === 'ORDERED') {
+      const hasTracking = getChinaTrackings(order).length > 0
+      return hasTracking
+        ? { label: 'ตรวจของเข้าโกดังจีน', hint: 'มีเลขพัสดุจีนแล้ว', className: 'border-violet-200 bg-violet-50 text-violet-800' }
+        : { label: 'ใส่เลขพัสดุจีน', hint: 'รอข้อมูลจัดส่งจากร้านจีน', className: 'border-amber-200 bg-amber-50 text-amber-800' }
+    }
+    if (order.status === 'CHINA_WAREHOUSE' && order.payment_round_2_status !== 'PAID') {
+      return { label: 'แจ้งบิลขนส่งรอบ 2', hint: 'สินค้าถึงโกดังจีนแล้ว', className: 'border-blue-200 bg-blue-50 text-blue-800' }
+    }
+    if (order.status === 'SHIPPING') {
+      return { label: 'ยืนยันเมื่อสินค้าถึงไทย', hint: 'กำลังขนส่งข้ามแดน', className: 'border-sky-200 bg-sky-50 text-sky-800' }
+    }
+    if (order.status === 'THAILAND_WAREHOUSE' && order.payment_round_3_status !== 'PAID') {
+      return { label: 'แจ้งบิลขนส่งรอบ 3', hint: 'สินค้าถึงโกดังไทยแล้ว', className: 'border-teal-200 bg-teal-50 text-teal-800' }
+    }
+    if (order.status === 'OUT_FOR_DELIVERY') {
+      return { label: 'ติดตามการนำส่ง', hint: 'รอลูกค้ายืนยันรับสินค้า', className: 'border-orange-200 bg-orange-50 text-orange-800' }
+    }
+    if (order.status === 'DELIVERED') {
+      return { label: 'งานเสร็จสมบูรณ์', hint: 'ลูกค้าได้รับสินค้าแล้ว', className: 'border-emerald-200 bg-emerald-50 text-emerald-800' }
+    }
+    return { label: 'ตรวจสอบรายละเอียด', hint: 'ดูสถานะและประวัติออเดอร์', className: 'border-slate-200 bg-slate-50 text-slate-700' }
+  }
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setCurrentPage(1)
@@ -594,6 +637,15 @@ export default function AdminOrders() {
     setDateFilter(val)
     setCurrentPage(1)
   }
+
+  const resetFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("ALL")
+    setDateFilter("")
+    setCurrentPage(1)
+  }
+
+  const hasActiveFilters = Boolean(searchQuery || dateFilter || statusFilter !== "ALL")
 
   // We no longer filter client-side because we have server-side pagination
   const filteredOrders = orders
@@ -621,8 +673,8 @@ export default function AdminOrders() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">จัดการคำสั่งซื้อ (Orders)</h1>
-          <p className="text-slate-600">ตรวจสอบและอัปเดตสถานะคำสั่งซื้อพัสดุทั้งหมด</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">จัดการคำสั่งซื้อ</h1>
+          <p className="text-sm text-slate-600">ดูงานที่ต้องทำต่อ ค้นหา และอัปเดตออเดอร์จากหน้าเดียว</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="border-slate-300 shadow-sm flex items-center gap-2" onClick={handleExport}>
@@ -692,18 +744,44 @@ export default function AdminOrders() {
               value={statusFilter}
               onChange={(e) => handleFilterChange(e.target.value)}
             >
-              <option value="ALL">สถานะทั้งหมด</option>
-              <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
-              <option value="PAYMENT_REJECTED">PAYMENT_REJECTED (สลิปถูกปฏิเสธ)</option>
-              <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
-              <option value="ORDERED">ORDERED (ชำระรอบ 1 แล้ว/รอร้านจีนส่ง)</option>
-              <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
-              <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
-              <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
-              <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
-              <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
-              <option value="CANCELED">CANCELED (ยกเลิก)</option>
+              <option value="ALL">ทุกสถานะ</option>
+              <option value="WAITING_PAYMENT">รอชำระเงิน / อัปสลิป</option>
+              <option value="PAYMENT_REJECTED">สลิปถูกปฏิเสธ</option>
+              <option value="PAID">ชำระแล้ว / รอสั่งของ</option>
+              <option value="ORDERED">รอร้านจีนจัดส่ง</option>
+              <option value="CHINA_WAREHOUSE">ถึงโกดังจีน / รอบิลรอบ 2</option>
+              <option value="SHIPPING">กำลังขนส่งมาไทย</option>
+              <option value="THAILAND_WAREHOUSE">ถึงโกดังไทย / รอบิลรอบ 3</option>
+              <option value="OUT_FOR_DELIVERY">กำลังนำส่งลูกค้า</option>
+              <option value="DELIVERED">จัดส่งสำเร็จ</option>
+              <option value="CANCELED">ยกเลิก</option>
             </select>
+          </div>
+        </CardContent>
+        <CardContent className="p-3 sm:p-4 border-b bg-white">
+          <div className="flex items-center justify-between gap-3 mb-2.5">
+            <p className="text-xs font-black text-slate-500 uppercase tracking-wider">กรองตามงานที่ต้องทำ</p>
+            {hasActiveFilters && (
+              <button type="button" onClick={resetFilters} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                <RotateCcw className="h-3.5 w-3.5" /> ล้างตัวกรอง
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {ADMIN_ORDER_QUICK_FILTERS.map((filter) => (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => handleFilterChange(filter.value)}
+                className={`shrink-0 rounded-full border px-3 py-2 text-xs font-bold transition-colors ${
+                  statusFilter === filter.value
+                    ? "border-primary bg-primary text-white shadow-sm"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-primary"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
         </CardContent>
         {loadError && (
@@ -798,6 +876,16 @@ export default function AdminOrders() {
                         <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(order.status, order)}`}>
                           {getStatusText(order.status, order)}
                         </span>
+                        {(() => {
+                          const nextTask = getNextTask(order)
+                          return (
+                            <div className={`mt-2 max-w-[220px] rounded-xl border px-3 py-2 ${nextTask.className}`}>
+                              <p className="text-[10px] font-black uppercase tracking-wider opacity-70">งานถัดไป</p>
+                              <p className="mt-0.5 text-xs font-black">{nextTask.label}</p>
+                              <p className="mt-0.5 text-[11px] opacity-75">{nextTask.hint}</p>
+                            </div>
+                          )
+                        })()}
                         <p className="text-xs text-slate-500 mt-1">
                           อัปเดต: {(order.updated_at || order.created_at) ? new Date(order.updated_at || order.created_at).toLocaleDateString('th-TH') : '-'}
                         </p>
@@ -858,36 +946,25 @@ export default function AdminOrders() {
                           </Button>
                         )}
 
-                        {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer w-full max-w-[120px] mb-2 text-xs"
-                            onClick={() => handleOpenOutOfStockModal(order)}
-                            title="แจ้งสินค้าหมด / ยกเลิกรายการ"
-                          >
-                            <PackageX className="h-3 w-3 mr-1" />
-                            สินค้าหมด
-                          </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-slate-400 hover:text-slate-600 cursor-pointer w-full max-w-[120px] mb-2 text-xs"
-                          onClick={() => handleOpenStatusModal(order)}
-                          title="แก้ไขสถานะแมนนวล (ฉุกเฉินเท่านั้น)"
-                        >
-                          <MapPin className="h-3 w-3 mr-1" />
-                          แก้แมนนวล
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleManualPayment(order)}
-                          className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer w-full max-w-[120px] mb-2"
-                        >
-                          ยืนยันรับเงิน
-                        </Button>
+                        <details className="group ml-auto w-full max-w-[140px] text-left">
+                          <summary className="flex min-h-9 cursor-pointer list-none items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                            เครื่องมือเพิ่มเติม
+                            <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
+                          </summary>
+                          <div className="mt-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm">
+                            {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (
+                              <Button size="sm" variant="outline" className="w-full text-xs text-rose-600 border-rose-200 hover:bg-rose-50" onClick={() => handleOpenOutOfStockModal(order)}>
+                                <PackageX className="h-3 w-3 mr-1" /> สินค้าหมด
+                              </Button>
+                            )}
+                            <Button size="sm" variant="outline" className="w-full text-xs text-slate-600" onClick={() => handleOpenStatusModal(order)} title="ใช้แก้สถานะฉุกเฉินเท่านั้น">
+                              แก้สถานะแมนนวล
+                            </Button>
+                            <Button size="sm" variant="outline" className="w-full text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50" onClick={() => handleManualPayment(order)}>
+                              ยืนยันรับเงินเอง
+                            </Button>
+                          </div>
+                        </details>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="icon" className="cursor-pointer" asChild>
                             <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank" title="เอกสาร Invoice/Receipt">
@@ -964,6 +1041,19 @@ export default function AdminOrders() {
                     )
                   })()}
 
+                  {(() => {
+                    const nextTask = getNextTask(order)
+                    return (
+                      <div className={`rounded-xl border px-3 py-2.5 ${nextTask.className}`}>
+                        <p className="text-[10px] font-black uppercase tracking-wider opacity-70">งานถัดไป</p>
+                        <div className="mt-0.5 flex items-start justify-between gap-3">
+                          <p className="text-sm font-black">{nextTask.label}</p>
+                          <span className="text-[11px] text-right opacity-75">{nextTask.hint}</span>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1">
                     <p className="font-medium text-slate-900 text-sm">{order.customer?.full_name || '-'}</p>
                     <p className="text-xs text-slate-500">
@@ -1021,22 +1111,25 @@ export default function AdminOrders() {
                         {order.payment_round_3_status ? "แก้ไขค่าส่งไทย" : "แจ้งค่าส่งไทย (รอบ 3)"}
                       </Button>
                     )}
-                    {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => handleOpenOutOfStockModal(order)} 
-                        className="text-rose-600 border-rose-200 hover:bg-rose-50 min-h-[44px]"
-                      >
-                        <PackageX className="h-4 w-4 mr-1" /> สินค้าหมด
-                      </Button>
-                    )}
-                    <Button size="sm" variant="ghost" className="text-slate-500 border border-slate-200 min-h-[44px]" onClick={() => handleOpenStatusModal(order)}>
-                      แก้แมนนวล
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-200 min-h-[44px]" onClick={() => handleManualPayment(order)}>
-                      ยืนยันรับเงิน
-                    </Button>
+                    <details className="group col-span-2">
+                      <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-600 [&::-webkit-details-marker]:hidden">
+                        เครื่องมือเพิ่มเติม
+                        <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                      </summary>
+                      <div className="mt-2 grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                        {order.status !== 'DELIVERED' && order.status !== 'CANCELED' && (
+                          <Button size="sm" variant="outline" onClick={() => handleOpenOutOfStockModal(order)} className="min-h-[44px] text-rose-600 border-rose-200 hover:bg-rose-50">
+                            <PackageX className="h-4 w-4 mr-1" /> สินค้าหมด
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" className="min-h-[44px] text-slate-600" onClick={() => handleOpenStatusModal(order)}>
+                          แก้แมนนวล
+                        </Button>
+                        <Button size="sm" variant="outline" className="col-span-2 min-h-[44px] text-emerald-700 border-emerald-200" onClick={() => handleManualPayment(order)}>
+                          ยืนยันรับเงินเอง
+                        </Button>
+                      </div>
+                    </details>
                     <div className="col-span-2 flex justify-between gap-2">
                       <Button variant="outline" className="flex-1 min-h-[44px]" asChild>
                         <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">

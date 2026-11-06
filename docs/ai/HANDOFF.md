@@ -16,6 +16,16 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Admin Order Workflow UX Simplification (2026-11-06)
+- Simplified the highest-frequency admin workspace at `/admin/orders` without changing order/payment business logic or database behavior.
+- Added one-tap Thai quick filters for the main operational stages: Round 1 payment, China dispatch, China warehouse/Round 2, cross-border shipping, Thailand warehouse/Round 3, and last-mile delivery.
+- Replaced raw status-code-heavy filter labels with plain Thai operational language and added a single clear-filter action.
+- Added a contextual `งานถัดไป` panel to every desktop row and mobile order card so staff can immediately see the recommended next step and why.
+- Kept normal workflow actions visible while moving exceptional actions—out-of-stock, manual status override, and manual payment confirmation—under `เครื่องมือเพิ่มเติม` to reduce accidental clicks.
+- Preserved the three-round payment workflow, current API calls, notifications, tracking logs, and Supabase queries.
+- Validation: auth safety PASS, mobile URL audit PASS (6/6), typecheck PASS, zero-dead-code PASS, business readiness READY, production build PASS (56/56 pages).
+- Authenticated visual walkthrough remains pending a safe staging admin account; production test data was not created.
+
 ### November 2026 Integration Checkpoint
 - Integrated and validated 26 commits after the October visual-refresh checkpoint (`c182d5a..02ae9f1`).
 - Hardened account recovery, mandatory phone/profile completion, Supabase session retention, and browser email remembering.

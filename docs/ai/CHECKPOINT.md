@@ -1,30 +1,25 @@
-# Checkpoint: October–November Production Hardening
+# Checkpoint: Admin Order Workflow UX
 
 Date: 2026-11-06 (Asia/Bangkok)
 Branch: `main`
-Owner: Integration / Codex
-Status: DEPLOYED, VALIDATED, DOCUMENTED
+Owner: Codex
+Status: READY FOR PRODUCTION DEPLOY
 
-## Scope
+## Objective
 
-This checkpoint covers 26 commits after the public-site visual refresh, from `25209ef` through `02ae9f1`. The work spans authentication, mobile payment UX, LINE notifications, China tracking, admin order operations, shared utilities, and repository hygiene.
+Make the admin order workspace faster and safer for daily staff use by reducing decision load, clarifying the next operational step, and separating routine actions from exceptional manual overrides.
 
 ## Delivered
 
-- Added explicit admin logout controls and a sticky desktop admin shell.
-- Prevented inactive-tab session kickouts and improved remembered-email behavior.
-- Enforced valid phone/profile completion across email, OAuth, dashboard, and admin flows.
-- Hardened forgot/reset-password recovery behavior.
-- Made payment dialogs mobile-safe and added a server multipart slip fallback.
-- Added multi-admin/LINE-group notifications, admin notification diagnostics, and webhook support.
-- Separated Chinese domestic tracking from Round 2 quoting and supported multiple tracking numbers per order/item.
-- Added EK/SEA transport selection and clearer warehouse/tracking presentation.
-- Improved admin order searching, status actions, Thailand-arrival handling, and Round 3 separation.
-- Removed obsolete external tracking and redundant order status UI.
-- Centralized constants, phone validation, URL extraction, and auth error translation.
-- Removed dead modules, unused assets, and one-off scripts; automated the zero-dead-code check.
+- Added one-tap quick filters using plain Thai workflow labels.
+- Added a clear-all-filters action and simplified the full status select labels.
+- Added a contextual `งานถัดไป` panel to each desktop row and mobile order card.
+- Kept routine workflow actions visible and easy to reach.
+- Grouped `สินค้าหมด`, manual status override, and manual payment confirmation under `เครื่องมือเพิ่มเติม`.
+- Preserved all existing APIs, Supabase queries, notifications, tracking logs, and the three-round payment workflow.
+- Added no dependency and made no schema change.
 
-## Verification (2026-11-06)
+## Verification
 
 | Check | Result |
 | --- | --- |
@@ -34,27 +29,22 @@ This checkpoint covers 26 commits after the public-site visual refresh, from `25
 | `npm.cmd run code:clean` | PASS (0 unused modules/assets) |
 | `npm.cmd run business:check` | PASS (READY) |
 | `npm.cmd run build` | PASS (56/56 generated) |
-| Git workspace | CLEAN, synchronized with `origin/main` before this documentation checkpoint |
-| Latest commit deployment | GitHub Vercel status `success` for `02ae9f1` |
 
-## Deployment Evidence
+## Changed Files
 
-- Latest production commit: `02ae9f1bc6ec5f91fea64190ccbfba0de878512a`
-- GitHub deployment context: `Vercel`
-- Deployment result: `success` — `Deployment has completed`
-- Status completed: 2026-11-05 17:04:59 Asia/Bangkok
-- Vercel dashboard target: `https://vercel.com/anusornremote-progs-projects/sabuyship/DHpkpbXZhqbRzUsh1rP7nuXLzBW8`
-- Direct Vercel CLI currently reports that a new interactive login is required; no unverified deployment ID is recorded.
+- `src/app/admin/orders/page.tsx`
+- `docs/ai/HANDOFF.md`
+- `docs/ai/TASKS.md`
+- `docs/ai/CHECKPOINT.md`
 
-## Remaining External Work
+## Risks and Follow-Up
 
-- Resume staging Supabase project `rhillakurearebtzjwyr`.
-- Run the authenticated customer/mobile regression suite against staging after safe credentials are available.
-- Continue collecting real-user mobile Web Vitals until at least 20 samples are available.
-- Add a dashboard aggregate RPC only if customer order volume makes current aggregation materially slow.
+- Authenticated visual/browser walkthrough is pending a safe staging admin account.
+- Staging Supabase project `rhillakurearebtzjwyr` remains inactive.
+- No production test account, order, payment, or customer data was created.
 
-## Safety Notes
+## Deployment
 
-- No production test accounts, fake orders, or financial transactions were created.
-- No Supabase environment values or secrets were changed.
-- The three-round payment workflow remains preserved.
+- Commit: pending
+- GitHub/Vercel status: pending
+- Production smoke test: pending
