@@ -17,6 +17,10 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Enforce mandatory phone number on registration | Antigravity | DONE | `main` | Enforced phone validation on signup, routed OAuth users without phone to complete-profile, and added middleware route guards. |
 | Fix payment modal scrolling & pinned confirm button | Antigravity | DONE | `main` | Refactored DialogContent to flex-col with max-h-[90dvh], scrollable body, and pinned sticky footer so confirm button is never cut off. |
 | Separate Chinese domestic tracking from Round 2 invoice | Antigravity | DONE | `main` | Added ChinaTrackingModal, tracking badges, tracking_logs event, and customer dashboard/stepper tracking visibility. |
+| October–November production hardening integration | Codex | DONE | `02ae9f1` | Validated 26 commits with auth safety, mobile audit, typecheck, zero-dead-code, business readiness, build, and GitHub Vercel success. |
+| Improve admin order search and dispatch visibility | Antigravity | DONE | `1a57545` | Added customer code/name/date filters and clearer China dispatch badges. |
+| Separate Thailand arrival from Round 3 quote | Antigravity | DONE | `8b4f91b` | Added a discrete Thailand-arrival state action and customer notification before Round 3 shipping quotation. |
+| Enforce zero-dead-code pipeline | Antigravity | DONE | `8a86738` | Typecheck and build now fail on unused modules or public assets. |
 | Update navbar top CTA to My Orders | Antigravity | DONE | `main` | Changed top right orange CTA button in desktop & mobile navbar to คำสั่งซื้อของฉัน (/dashboard/orders). |
 | Add EK/SEA transport mode toggle to China warehouse card | Antigravity | DONE | `main` | Added toggle between ทางรถ (EK) and ทางเรือ (SEA) with dynamic marks, Smart Paste, and consignee name. |
 | Fix admin LINE notification and add diagnostic test | Antigravity | DONE | `main` | Removed DEMO_MODE silent bypass in notify.ts, added error logging, unified contact form, and added test button in admin. |

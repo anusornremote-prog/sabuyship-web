@@ -1,19 +1,32 @@
 # Current Handoff
 
-Last updated: 2026-10-06 (Asia/Bangkok)
+Last updated: 2026-11-06 (Asia/Bangkok)
 
 ## Repository State
 
 - Active branch: `main`
 - Primary branch: `main`
 - Production domain: `https://www.sabuyship.com`
-- Verified production deployment: `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd`
+- Last recorded production deployment ID: `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd`
+- Latest production commit: `02ae9f1` (GitHub Vercel status: `success`, completed 2026-11-05)
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
 Never replace production environment values with staging values. Do not place any API keys in this document.
 
 ## Completed Work
+
+### November 2026 Integration Checkpoint
+- Integrated and validated 26 commits after the October visual-refresh checkpoint (`c182d5a..02ae9f1`).
+- Hardened account recovery, mandatory phone/profile completion, Supabase session retention, and browser email remembering.
+- Improved mobile payment UX with portal-based dialogs, scroll-safe modal bodies, persistent file inputs, pinned adaptive submit actions, and a server-side slip upload fallback.
+- Added multi-admin and LINE-group notification delivery, admin notification settings/testing, and a LINE webhook endpoint.
+- Separated Chinese domestic tracking from the Round 2 freight invoice, added multiple per-order/per-item China tracking numbers, and exposed clearer tracking state to admins and customers.
+- Added EK/SEA transport-mode selection and richer China warehouse information while removing the obsolete external tracking link.
+- Improved admin orders with customer-code/name/date filtering, clearer China dispatch badges, removal of the redundant `NEW` option, and a separate "arrived in Thailand" action before Round 3 quoting.
+- Centralized shared utilities, removed unused modules/assets/debug scripts, and added an automated zero-dead-code gate to typecheck and build.
+- Current validation on 2026-11-06: auth safety PASS, mobile URL audit PASS (6/6), typecheck PASS, zero-dead-code PASS, business readiness READY, production build PASS (56/56 pages).
+- GitHub reports Vercel deployment success for `02ae9f1`; direct Vercel CLI inspection currently requires a fresh interactive login.
 
 ### 0. Premium Public-Site Visual Refresh
 - Rebuilt the homepage around a premium logistics-concierge direction while preserving the established blue/orange brand palette and mascot.
@@ -106,7 +119,7 @@ Never replace production environment values with staging values. Do not place an
 - `node scripts/qa-mobile-audit.mjs` — passed all 6 test cases for URL extraction unit test suite.
 - `npm.cmd run schema:check` — passed (15 tables, RLS checks, auth admin, storage buckets verified).
 - `npm.cmd run business:check` — passed (READY).
-- `npm.cmd run build` — passed (54/54 static pages generated, webpack production build successful).
+- `npm.cmd run build` — passed (56/56 static pages generated, webpack production build successful on 2026-11-06).
 - Local mobile Lighthouse after image optimization: performance 69, FCP 1.6 s, LCP 5.4 s, TBT 410 ms, CLS 0.001, Speed Index 2.5 s, zero image-delivery savings, and zero unsized images. The LCP value includes a cold local image optimizer and requires production remeasurement.
 - Production mobile Lighthouse on `dpl_J4GVdPYL71bYRqC4712FvP7boTHm`: performance 69, FCP 1.2 s, LCP 4.4 s, TBT 270 ms, CLS 0, no image-delivery opportunity, zero unsized images, and 565 KiB total payload. The run's Speed Index was excluded because its observed navigation timing contained an inconsistent 19.4-second offset.
 - **Unauthenticated Mobile Browser Walkthrough (390x844)** — PASS. Executed on `http://localhost:3000`. Recording: `mobile_qa_walkthrough_1790231063711.webp`.
