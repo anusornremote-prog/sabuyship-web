@@ -3,7 +3,7 @@
 Date: 2026-11-06 (Asia/Bangkok)
 Branch: `main`
 Owner: Codex
-Status: READY FOR PRODUCTION DEPLOY
+Status: DEPLOYED AND VERIFIED
 
 ## Objective
 
@@ -45,6 +45,7 @@ Make the admin order workspace faster and safer for daily staff use by reducing 
 
 ## Deployment
 
-- Commit: pending
-- GitHub/Vercel status: pending
-- Production smoke test: pending
+- Commit: `d8cce69d309335d11af5a99c4fba9353f131e7b4`
+- GitHub/Vercel status: `success` — `Deployment has completed`
+- Vercel dashboard target: `https://vercel.com/anusornremote-progs-projects/sabuyship/68YHhH4YUwJxsmoESLJcqHjJq3qf`
+- Production smoke test: `/` and `/login` return 200; `/admin` and `/admin/orders` return 307 to `/login` when unauthenticated.

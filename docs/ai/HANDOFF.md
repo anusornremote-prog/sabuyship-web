@@ -25,6 +25,8 @@ Never replace production environment values with staging values. Do not place an
 - Preserved the three-round payment workflow, current API calls, notifications, tracking logs, and Supabase queries.
 - Validation: auth safety PASS, mobile URL audit PASS (6/6), typecheck PASS, zero-dead-code PASS, business readiness READY, production build PASS (56/56 pages).
 - Authenticated visual walkthrough remains pending a safe staging admin account; production test data was not created.
+- Released in commit `d8cce69`; GitHub reports Vercel deployment `success` (`68YHhH4YUwJxsmoESLJcqHjJq3qf`).
+- Production smoke tests pass: `/` and `/login` return 200; unauthenticated `/admin` and `/admin/orders` return 307 to `/login`.
 
 ### November 2026 Integration Checkpoint
 - Integrated and validated 26 commits after the October visual-refresh checkpoint (`c182d5a..02ae9f1`).

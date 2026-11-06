@@ -18,7 +18,7 @@ Status values: `BACKLOG`, `IN_PROGRESS`, `REVIEW`, `DONE`, `BLOCKED`.
 | Fix payment modal scrolling & pinned confirm button | Antigravity | DONE | `main` | Refactored DialogContent to flex-col with max-h-[90dvh], scrollable body, and pinned sticky footer so confirm button is never cut off. |
 | Separate Chinese domestic tracking from Round 2 invoice | Antigravity | DONE | `main` | Added ChinaTrackingModal, tracking badges, tracking_logs event, and customer dashboard/stepper tracking visibility. |
 | October–November production hardening integration | Codex | DONE | `02ae9f1` | Validated 26 commits with auth safety, mobile audit, typecheck, zero-dead-code, business readiness, build, and GitHub Vercel success. |
-| Simplify admin order workflow UX | Codex | REVIEW | pending checkpoint | Added Thai quick filters, per-order next-task guidance, and grouped exceptional tools; validation and build pass. |
+| Simplify admin order workflow UX | Codex | DONE | `d8cce69` | Added Thai quick filters, per-order next-task guidance, grouped exceptional tools, validation, and successful Production deployment. |
 | Improve admin order search and dispatch visibility | Antigravity | DONE | `1a57545` | Added customer code/name/date filters and clearer China dispatch badges. |
 | Separate Thailand arrival from Round 3 quote | Antigravity | DONE | `8b4f91b` | Added a discrete Thailand-arrival state action and customer notification before Round 3 shipping quotation. |
 | Enforce zero-dead-code pipeline | Antigravity | DONE | `8a86738` | Typecheck and build now fail on unused modules or public assets. |
