@@ -90,10 +90,25 @@ export function QuickRmbCalculator() {
     router.push("/inquiry")
   }
 
+  const hiddenFloatingRoutes = [
+    "/inquiry",
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/complete-profile",
+  ]
+  const shouldHideFloatingButton =
+    pathname.startsWith("/admin") ||
+    pathname.includes("/invoice") ||
+    hiddenFloatingRoutes.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`)
+    )
+
   return (
     <>
       {/* 1. Floating Action Pill Button (Bottom-Left Corner to balance with LINE button on Bottom-Right) */}
-      <div className={`${pathname === "/inquiry" ? "hidden" : ""} fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40`}>
+      <div className={`${shouldHideFloatingButton ? "hidden" : ""} fixed bottom-20 md:bottom-6 left-4 sm:left-6 z-40`}>
         <button
           type="button"
           onClick={handleOpen}

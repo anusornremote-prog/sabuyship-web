@@ -245,7 +245,6 @@ export function PhoneSetupModal({
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
               placeholder="08XXXXXXXX (ตัวเลข 10 หลัก)"
               required
-              autoFocus
               className="h-12 text-base sm:text-lg font-bold tracking-wider rounded-xl border-slate-300 focus:border-primary"
             />
             <p className="text-[11px] text-slate-500">

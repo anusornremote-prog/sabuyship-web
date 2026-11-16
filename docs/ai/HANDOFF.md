@@ -16,6 +16,12 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### UX/UI Roadmap Phase 1 — Critical Stability & Mobile Overlay Fixes (2026-11-16)
+- `UX-1.1`: Replaced raw Supabase error JSON and server stack traces in `src/app/dashboard/orders/[id]/page.tsx` and `src/app/admin/orders/[id]/page.tsx` with shared `OrderDetailErrorCard` (`src/components/orders/OrderDetailErrorCard.tsx`) and `unstable_rethrow()` for Next.js navigation signals; added `src/app/dashboard/error.tsx`.
+- `UX-1.2`: Hid `QuickRmbCalculator` floating trigger on auth routes, `/admin/*`, `/inquiry`, and `/invoice` (`src/components/calculator/QuickRmbCalculator.tsx`); adjusted `PaymentStepper` mobile floating pay pill to `bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)]`; updated `MobileBottomNav` center FAB on `/inquiry` to scroll-to-top with `aria-current="page"`; compacted mobile auth logo in `src/app/(auth)/layout.tsx`; removed nested `overflow-y-auto` scroll trap in `src/app/dashboard/layout.tsx`.
+- `UX-1.3`: Removed customer-facing `PhoneSetupModal` from `src/app/admin/layout.tsx` and removed `autoFocus` on mobile phone input in `src/components/dashboard/PhoneSetupModal.tsx`.
+- Validation: `npm run test:auth-safety` PASS, `npm run typecheck` PASS, `npm run code:clean` PASS, `npm run build` PASS (56/56 pages).
+
 ### LINE OAuth In-App Browser Fix & Callback Diagnostics (2026-11-16)
 - Diagnosed mobile `AuthFailed` (`การเข้าสู่ระบบผ่านผู้ให้บริการไม่สำเร็จ`) when LINE OAuth starts inside LINE In-App Browser or iOS non-Safari browsers and hands off back to Safari without the PKCE `code_verifier` cookie.
 - Added shared browser-environment detection (`src/lib/in-app-browser.ts`) and shared LINE OAuth launcher (`src/lib/line-oauth.ts`) to break out of LINE In-App Browser using `?openExternalBrowser=1` before initiating `signInWithOAuth`.

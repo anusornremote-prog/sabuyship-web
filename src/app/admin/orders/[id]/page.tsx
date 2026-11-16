@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Timeline, TimelineItem } from "@/components/ui/timeline"
 import { ArrowLeft, Globe, Truck, Printer } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { notFound, redirect } from "next/navigation"
+import { notFound, redirect, unstable_rethrow } from "next/navigation"
 import { PaymentStepper } from "@/components/orders/PaymentStepper"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
+import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
 import { AdminOrderActions } from "./AdminOrderActions"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -77,7 +78,12 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
 
   if (error) {
     console.error("ORDER FETCH ERROR:", error)
-    return <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-rose-700">โหลดรายละเอียดออเดอร์ไม่สำเร็จ กรุณากลับไปหน้ารายการแล้วลองใหม่</div>
+    return (
+      <OrderDetailErrorCard
+        backHref="/admin/orders"
+        backLabel="กลับไปหน้ารายการคำสั่งซื้อ (แอดมิน)"
+      />
+    )
   }
 
   if (!order) {
@@ -534,11 +540,13 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     </div>
     )
   } catch (err: any) {
+    unstable_rethrow(err)
+    console.error("Admin order detail error:", err)
     return (
-      <div className="p-8 bg-red-50 text-red-600 font-mono text-sm whitespace-pre-wrap">
-        <h2>Server Error: {err.message}</h2>
-        <p>{err.stack}</p>
-      </div>
+      <OrderDetailErrorCard
+        backHref="/admin/orders"
+        backLabel="กลับไปหน้ารายการคำสั่งซื้อ (แอดมิน)"
+      />
     )
   }
 }

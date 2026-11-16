@@ -95,19 +95,39 @@ export function MobileBottomNav() {
 
           {/* 3. Center Elevated FAB Button: Submit Link / Quote */}
           <div className="flex-1 flex flex-col items-center justify-center -mt-6">
-            <Link 
-              href="/inquiry"
-              className="relative group transition-transform active:scale-90"
-              title={labelSubmit}
-            >
-              {/* Outer soft glowing ring */}
-              <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-orange-600 to-amber-400 opacity-40 blur-sm transition-opacity group-hover:opacity-75" />
-              
-              {/* Main Button */}
-              <div className="relative flex h-13 w-13 items-center justify-center rounded-2xl border-2 border-white bg-gradient-to-tr from-orange-500 via-orange-600 to-amber-500 text-white shadow-lg shadow-orange-500/35 rotate-45">
-                <Plus className="h-7 w-7 -rotate-45 stroke-[3] transition-transform duration-300 group-hover:rotate-45" />
-              </div>
-            </Link>
+            {isInquiryActive ? (
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                aria-label={labelSubmit}
+                aria-current="page"
+                title={labelSubmit}
+                className="relative group transition-transform active:scale-90 cursor-pointer"
+              >
+                {/* Outer soft glowing ring */}
+                <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-orange-600 to-amber-400 opacity-65 blur-sm" />
+
+                {/* Main Button */}
+                <div className="relative flex h-13 w-13 items-center justify-center rounded-2xl border-2 border-white bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/35 ring-2 ring-orange-200 rotate-45">
+                  <Plus className="h-7 w-7 -rotate-45 stroke-[3]" aria-hidden="true" />
+                </div>
+              </button>
+            ) : (
+              <Link
+                href="/inquiry"
+                aria-label={labelSubmit}
+                className="relative group transition-transform active:scale-90"
+                title={labelSubmit}
+              >
+                {/* Outer soft glowing ring */}
+                <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-orange-600 to-amber-400 opacity-40 blur-sm transition-opacity group-hover:opacity-75" />
+
+                {/* Main Button */}
+                <div className="relative flex h-13 w-13 items-center justify-center rounded-2xl border-2 border-white bg-gradient-to-tr from-orange-500 via-orange-600 to-amber-500 text-white shadow-lg shadow-orange-500/35 rotate-45">
+                  <Plus className="h-7 w-7 -rotate-45 stroke-[3] transition-transform duration-300 group-hover:rotate-45" aria-hidden="true" />
+                </div>
+              </Link>
+            )}
             <span className={`text-[11px] tracking-tight font-black mt-1 ${isInquiryActive ? "text-orange-600" : "text-slate-700"}`}>
               {labelSubmit}
             </span>

@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge"
 import { Timeline, TimelineItem } from "@/components/ui/timeline"
 import { ArrowLeft, Globe, Truck, Printer, PackageX } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { notFound, redirect } from "next/navigation"
+import { notFound, redirect, unstable_rethrow } from "next/navigation"
 import { PaymentStepper } from "@/components/orders/PaymentStepper"
 import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
+import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -76,7 +77,12 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
 
   if (error) {
     console.error("ORDER FETCH ERROR:", error)
-    return <div className="p-8 text-red-500 font-mono">SUPABASE ERROR: {JSON.stringify(error)}</div>
+    return (
+      <OrderDetailErrorCard
+        backHref="/dashboard/orders"
+        backLabel="กลับไปหน้ารายการคำสั่งซื้อ"
+      />
+    )
   }
 
   // Fetch latest rejected payment to show rejection reason
@@ -638,11 +644,13 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     </div>
     )
   } catch (err: any) {
+    unstable_rethrow(err)
+    console.error("Customer order detail error:", err)
     return (
-      <div className="p-8 bg-red-50 text-red-600 font-mono text-sm whitespace-pre-wrap">
-        <h2>Server Error: {err.message}</h2>
-        <p>{err.stack}</p>
-      </div>
+      <OrderDetailErrorCard
+        backHref="/dashboard/orders"
+        backLabel="กลับไปหน้ารายการคำสั่งซื้อ"
+      />
     )
   }
 }

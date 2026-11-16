@@ -254,7 +254,7 @@ export function PaymentStepper({
         if (!activePayStep) return null
 
         return (
-          <div className="fixed bottom-[68px] left-3 right-3 z-40 block md:hidden animate-in slide-in-from-bottom-6 duration-300">
+          <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] left-3 right-3 z-40 block md:hidden animate-in slide-in-from-bottom-6 duration-300">
             <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 text-white p-3.5 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">

@@ -9,15 +9,15 @@
 
 | Phase | เป้าหมายหลัก | ความเร่งด่วน | ขอบเขตโดยย่อ |
 | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Quick Wins & Critical Stability** | `P0 Critical` | ปิดจุดหลุด Error Stack Trace, แก้ปุ่มลอยทับซ้อนบนมือถือ, แยก Modal ลูกค้าออกจาก Shell แอดมิน |
+| **Phase 1** | **Quick Wins & Critical Stability** | `P0 Critical` | **[DONE]** ปิดจุดหลุด Error Stack Trace, แก้ปุ่มลอยทับซ้อนบนมือถือ, แยก Modal ลูกค้าออกจาก Shell แอดมิน |
 | **Phase 2** | **3-Round Payment Clarity & Modern Feedback** | `P1 High` | ปรับ Stepper/ป้ายสถานะ 3 รอบให้ไม่งง, ลบโค้ดอังกฤษดิบ, เลิกใช้ `alert/confirm/prompt/reload` และอัปเกรดหน้า Admin/Charts |
 | **Phase 3** | **Design System, Touch Targets & A11y Polish** | `P2 Medium` | รวม Modal เป็น Radix มาตรฐานเดียว, ขยาย Touch Target ≥44px, ผูก Form Labels/ARIA, แก้ Token & i18n ให้ครบ |
 
 ---
 
-## Phase 1: Quick Wins & Critical Stability (`P0`)
+## Phase 1: Quick Wins & Critical Stability (`P0`) — `[DONE 2026-11-16]`
 
-### `UX-1.1` ปิดการแสดงผล Error JSON และ Stack Trace ดิบในหน้ารายละเอียดออเดอร์
+### [x] `UX-1.1` ปิดการแสดงผล Error JSON และ Stack Trace ดิบในหน้ารายละเอียดออเดอร์
 - **Priority:** `P0 Critical`
 - **UI/UX Pro Max Ref:** `#33 Interaction - Error Feedback`, `#6 Next.js - Handle errors with error.tsx`
 - **Target Files:**
@@ -31,7 +31,7 @@
   3. เพิ่ม `src/app/dashboard/error.tsx` เพื่อดัก error ของโซนลูกค้าแบบมีปุ่ม `reset()` เช่นเดียวกับฝั่ง Admin
 - **Definition of Done:** ไม่มี `err.stack` หรือ `JSON.stringify(error)` ใน JSX ของหน้าลูกค้าและแอดมิน
 
-### `UX-1.2` แก้ปัญหาปุ่มลอยทับซ้อนกันบนมือถือ (Mobile Overlay Collisions)
+### [x] `UX-1.2` แก้ปัญหาปุ่มลอยทับซ้อนกันบนมือถือ (Mobile Overlay Collisions)
 - **Priority:** `P0 Critical`
 - **UI/UX Pro Max Ref:** `#15 Layout - Z-Index Management`, `#100 Focus Not Obscured`, `Safe-Area Compliance`
 - **Target Files:**
@@ -54,7 +54,7 @@
   5. ปรับ scroll container ของ `DashboardLayout` ไม่ให้โดน `pb-24` ตัดพื้นที่ด้านล่างแบบแข็งทื่อ
 - **Definition of Done:** ตรวจดูบน Viewport `390x844` ใน `/login`, `/register`, `/inquiry`, `/dashboard/orders/[id]`, `/admin/orders` ไม่มีการซ้อนทับของปุ่มลอย
 
-### `UX-1.3` นำ `PhoneSetupModal` ออกจาก Admin Layout
+### [x] `UX-1.3` นำ `PhoneSetupModal` ออกจาก Admin Layout
 - **Priority:** `P0 Critical`
 - **UI/UX Pro Max Ref:** `Separation of Concerns / Role-Appropriate UI`
 - **Target Files:**
@@ -201,3 +201,4 @@
    - Virtual keyboard focus บนฟอร์มมือถือ (Login, Inquiry, Payment Slip Upload)
    - ไม่มีการล้นขอบแนวนอน (No horizontal overflow) และไม่มีปุ่มลอยซ้อนทับกัน
 4. อัปเดตสถานะในเอกสารนี้ (`[x]`) และ `docs/ai/HANDOFF.md` ทุกครั้งหลังส่งมอบ
+
