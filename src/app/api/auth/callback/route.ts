@@ -51,7 +51,7 @@ export async function GET(request: Request) {
           // Auto-generate customer code for new OAuth users
           const customerCode = generateCustomerCode()
           
-          await supabase.from('profiles').insert({
+          const { error: insertError } = await supabase.from('profiles').insert({
             id: user.id,
             full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Member',
             role: 'CUSTOMER',
@@ -59,10 +59,25 @@ export async function GET(request: Request) {
             is_active: true,
             line_uid: lineUid
           })
+          if (insertError) {
+            console.error("Auth callback profile insert error:", {
+              code: insertError.code,
+              message: insertError.message,
+            })
+          }
           hasPhone = false
         } else if (lineUid) {
           // Update existing profile with LINE UID if available
-          await supabase.from('profiles').update({ line_uid: lineUid }).eq('id', user.id)
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ line_uid: lineUid })
+            .eq('id', user.id)
+          if (updateError) {
+            console.error("Auth callback profile line_uid update error:", {
+              code: updateError.code,
+              message: updateError.message,
+            })
+          }
         }
 
         // Always allow password recovery to reach /reset-password first
@@ -78,7 +93,14 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`)
     }
     
-    console.error("Auth callback error:", authError)
+    console.error("Auth callback code exchange error:", {
+      message: authError?.message,
+      status: authError?.status,
+      code: authError?.code,
+      hasCode: Boolean(code),
+      hasTokenHash: Boolean(tokenHash),
+      isPasswordRecovery,
+    })
     if (isPasswordRecovery) {
       return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
     }
@@ -87,6 +109,11 @@ export async function GET(request: Request) {
 
   const providerError = searchParams.get('error')
   if (providerError) {
+    console.error("Auth callback provider error:", {
+      providerError,
+      errorCode: searchParams.get('error_code'),
+      isPasswordRecovery,
+    })
     if (isPasswordRecovery) {
       return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
     }
@@ -97,5 +124,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
   }
 
+  console.error("Auth callback invoked without code or error params", {
+    isPasswordRecovery,
+  })
   return NextResponse.redirect(buildAuthErrorRedirectUrl(origin))
 }

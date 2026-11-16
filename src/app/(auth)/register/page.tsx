@@ -9,7 +9,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { LineIcon } from "@/components/ui/icons"
+import { InAppBrowserNotice } from "@/components/auth/InAppBrowserNotice"
 import { canAcceptBusiness } from "@/lib/public-business-config"
+import { startLineOAuth } from "@/lib/line-oauth"
 
 export default function Register() {
   const [fullName, setFullName] = useState("")
@@ -162,18 +164,10 @@ export default function Register() {
   const handleLineRegister = async () => {
     setLoading(true)
     setError(null)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'custom:line' as any,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
-        queryParams: {
-          bot_prompt: 'aggressive'
-        }
-      }
-    })
-    
-    if (error) {
-      setError(error.message)
+    const { redirectedExternally, errorMessage } = await startLineOAuth(supabase)
+    if (redirectedExternally) return
+    if (errorMessage) {
+      setError(errorMessage)
       setLoading(false)
     }
   }
@@ -257,6 +251,7 @@ export default function Register() {
           </div>
 
           <div className="flex flex-col gap-2.5 w-full">
+            <InAppBrowserNotice />
             <Button 
               type="button" 
               variant="outline" 

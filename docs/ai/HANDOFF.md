@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-11-06 (Asia/Bangkok)
+Last updated: 2026-11-16 (Asia/Bangkok)
 
 ## Repository State
 
@@ -15,6 +15,14 @@ Last updated: 2026-11-06 (Asia/Bangkok)
 Never replace production environment values with staging values. Do not place any API keys in this document.
 
 ## Completed Work
+
+### LINE OAuth In-App Browser Fix & Callback Diagnostics (2026-11-16)
+- Diagnosed mobile `AuthFailed` (`การเข้าสู่ระบบผ่านผู้ให้บริการไม่สำเร็จ`) when LINE OAuth starts inside LINE In-App Browser or iOS non-Safari browsers and hands off back to Safari without the PKCE `code_verifier` cookie.
+- Added shared browser-environment detection (`src/lib/in-app-browser.ts`) and shared LINE OAuth launcher (`src/lib/line-oauth.ts`) to break out of LINE In-App Browser using `?openExternalBrowser=1` before initiating `signInWithOAuth`.
+- Added reusable `InAppBrowserNotice` banner (`src/components/auth/InAppBrowserNotice.tsx`) on `/login` and `/register` for LINE, social in-app browsers, and iOS alternative browsers with external-browser launch and 1-tap link copy.
+- Added safe PII-free server error logging in `src/app/api/auth/callback/route.ts` for code exchange errors, provider errors, missing params, and profile sync errors (preserving `qa-auth-safety` restrictions).
+- Extended `scripts/qa-auth-safety.mjs` with unit assertions for `in-app-browser.ts`.
+- Validation: `npm run test:auth-safety` PASS, `npm run typecheck` PASS, `npm run code:clean` PASS, `npm run build` PASS (56/56 pages).
 
 ### Admin Order Workflow UX Simplification (2026-11-06)
 - Simplified the highest-frequency admin workspace at `/admin/orders` without changing order/payment business logic or database behavior.
