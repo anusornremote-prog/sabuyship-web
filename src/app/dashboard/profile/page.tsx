@@ -110,35 +110,37 @@ export default function ProfilePage() {
         <CardContent className="p-6">
           <form onSubmit={handleSave} className="space-y-5">
             {errorMsg && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-lg flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
+              <div role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-lg flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>{errorMsg}</span>
               </div>
             )}
             
             {success && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold rounded-lg flex items-center gap-2 animate-in fade-in zoom-in duration-300">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <div role="status" className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold rounded-lg flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>บันทึกข้อมูลสำเร็จ</span>
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">รหัสสมาชิกลูกค้า (Logistics Account)</label>
-              <div className="h-10 px-3 py-2 bg-slate-100 rounded-md border border-slate-200 text-slate-600 font-bold flex items-center">
+              <p className="text-sm font-semibold text-slate-700">รหัสสมาชิกลูกค้า (Logistics Account)</p>
+              <div className="h-11 px-3 py-2 bg-slate-100 rounded-md border border-slate-200 text-slate-600 font-bold flex items-center">
                 {profile?.customer_code || "-"}
               </div>
               <p className="text-xs text-slate-500">รหัสนี้ใช้สำหรับระบุตัวตนของคุณเมื่อสั่งของลงโกดังจีน</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">ชื่อ-นามสกุล *</label>
+              <label htmlFor="profile-fullname" className="text-sm font-semibold text-slate-700">ชื่อ-นามสกุล *</label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" aria-hidden="true" />
                 <Input 
+                  id="profile-fullname"
+                  autoComplete="name"
                   required
                   placeholder="กรอกชื่อ-นามสกุลของคุณ" 
-                  className="pl-9"
+                  className="pl-9 h-11"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
@@ -146,13 +148,16 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">เบอร์โทรศัพท์ *</label>
+              <label htmlFor="profile-phone" className="text-sm font-semibold text-slate-700">เบอร์โทรศัพท์ *</label>
               <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Phone className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" aria-hidden="true" />
                 <Input 
+                  id="profile-phone"
+                  type="tel"
+                  autoComplete="tel"
                   required
                   placeholder="เบอร์โทรศัพท์สำหรับติดต่อ" 
-                  className="pl-9"
+                  className="pl-9 h-11"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />

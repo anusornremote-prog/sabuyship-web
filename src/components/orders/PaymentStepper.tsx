@@ -233,10 +233,14 @@ export function PaymentStepper({
                     <div className="mt-3 text-center md:text-left">
                       {step.round === 3 && status === 'THAILAND_WAREHOUSE' && paymentRound3Status !== 'PAID' && paymentRound3Status !== 'UPLOADED' && (
                         <div className="mb-3 text-sm">
-                          <p className="font-semibold text-slate-800 mb-1">เลือกวิธีจัดส่งในไทย (เพื่อให้แอดมินประเมินราคา):</p>
+                          <label htmlFor="domestic-shipping-method" className="block font-semibold text-slate-800 mb-1">
+                            เลือกวิธีจัดส่งในไทย (เพื่อให้แอดมินประเมินราคา):
+                          </label>
                           <div className="flex flex-col sm:flex-row gap-2">
                             <select 
-                              className="w-full text-sm p-2 rounded border border-slate-300 bg-white"
+                              id="domestic-shipping-method"
+                              aria-label="เลือกวิธีจัดส่งในไทย"
+                              className="w-full min-h-11 text-sm p-2 rounded border border-slate-300 bg-white"
                               onChange={(e) => setShippingMethod(e.target.value)}
                               value={shippingMethod}
                               disabled={isUpdatingMethod || paymentRound3Status === 'PAID'}
@@ -247,9 +251,10 @@ export function PaymentStepper({
                               <option value="จัดส่งโดยขนส่งภายในประเทศ">จัดส่งโดยขนส่งภายในประเทศ</option>
                             </select>
                             <button
+                              type="button"
                               onClick={handleUpdateShippingMethod}
                               disabled={isUpdatingMethod || !shippingMethod || shippingMethod === savedMethod || paymentRound3Status === 'PAID'}
-                              className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all"
+                              className="min-h-11 px-4 py-2 bg-primary text-white text-sm font-semibold rounded shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all cursor-pointer"
                             >
                               {isUpdatingMethod ? 'กำลังบันทึก...' : savedMethod ? 'อัปเดตวิธีจัดส่ง' : 'ยืนยันวิธีจัดส่ง'}
                             </button>

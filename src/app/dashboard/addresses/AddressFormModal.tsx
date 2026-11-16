@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { isValidThaiPhone, normalizeThaiPhone } from "@/lib/phone"
 import { getProvinces, getDistricts, getSubDistricts, getZipCode } from '@/lib/thai-address'
 
 interface AddressFormModalProps {
@@ -65,8 +66,13 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!fullName || !phone || !addressLine || !addressVal.province || !addressVal.postalCode) {
+    if (!fullName.trim() || !phone.trim() || !addressLine.trim() || !addressVal.province || !addressVal.postalCode) {
       setErrorMsg("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน")
+      return
+    }
+
+    if (!isValidThaiPhone(phone)) {
+      setErrorMsg("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (9-10 หลัก เช่น 0812345678)")
       return
     }
 
@@ -87,13 +93,13 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
 
       const payload = {
         customer_id: userData.user.id,
-        full_name: fullName,
-        phone: phone,
-        address_line: addressLine,
+        full_name: fullName.trim(),
+        phone: normalizeThaiPhone(phone),
+        address_line: addressLine.trim(),
         subdistrict: addressVal.subdistrict,
         district: addressVal.district,
         province: addressVal.province,
-        postal_code: addressVal.postalCode,
+        postal_code: addressVal.postalCode.trim(),
         is_default: isDefault
       }
 
@@ -130,7 +136,7 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
       onClose()
     } catch (error: any) {
       console.error("Error saving address:", error)
-      setErrorMsg(error.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล")
+      setErrorMsg("ไม่สามารถบันทึกที่อยู่ได้ กรุณาลองใหม่อีกครั้ง")
     } finally {
       setLoading(false)
     }
@@ -147,37 +153,46 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
         </DialogHeader>
 
         {errorMsg && (
-          <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-rose-100">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div role="alert" className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-rose-100">
+            <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
             <p>{errorMsg}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">ชื่อ-นามสกุลผู้รับ *</label>
+              <label htmlFor="addr-fullname" className="text-sm font-semibold text-slate-700">ชื่อ-นามสกุลผู้รับ *</label>
               <Input
+                id="addr-fullname"
+                autoComplete="name"
                 required
                 placeholder="ชื่อ-นามสกุล"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                className="h-11"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">เบอร์โทรศัพท์ *</label>
+              <label htmlFor="addr-phone" className="text-sm font-semibold text-slate-700">เบอร์โทรศัพท์ *</label>
               <Input
+                id="addr-phone"
+                type="tel"
+                autoComplete="tel"
                 required
                 placeholder="เช่น 0812345678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                className="h-11"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">รายละเอียดที่อยู่ (บ้านเลขที่, หมู่, ซอย, ถนน) *</label>
+            <label htmlFor="addr-line" className="text-sm font-semibold text-slate-700">รายละเอียดที่อยู่ (บ้านเลขที่, หมู่, ซอย, ถนน) *</label>
             <Textarea
+              id="addr-line"
+              autoComplete="street-address"
               required
               placeholder="123/45 ซอยสุขุมวิท 1 ถ.สุขุมวิท"
               rows={2}
@@ -186,11 +201,12 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">จังหวัด *</label>
+              <label htmlFor="addr-province" className="text-sm font-semibold text-slate-700">จังหวัด *</label>
               <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                id="addr-province"
+                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={addressVal.province}
                 onChange={(e) => {
                   const val = e.target.value
@@ -206,9 +222,10 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
             </div>
             
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">อำเภอ / เขต *</label>
+              <label htmlFor="addr-district" className="text-sm font-semibold text-slate-700">อำเภอ / เขต *</label>
               <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                id="addr-district"
+                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={addressVal.district}
                 onChange={(e) => {
                   const val = e.target.value
@@ -225,11 +242,12 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">ตำบล / แขวง *</label>
+              <label htmlFor="addr-subdistrict" className="text-sm font-semibold text-slate-700">ตำบล / แขวง *</label>
               <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                id="addr-subdistrict"
+                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={addressVal.subdistrict}
                 onChange={(e) => {
                   const val = e.target.value
@@ -247,13 +265,15 @@ export function AddressFormModal({ isOpen, onClose, address, onSuccess }: Addres
             </div>
             
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">รหัสไปรษณีย์ *</label>
+              <label htmlFor="addr-postal" className="text-sm font-semibold text-slate-700">รหัสไปรษณีย์ *</label>
               <Input
+                id="addr-postal"
+                autoComplete="postal-code"
                 required
                 placeholder="รหัสไปรษณีย์"
                 value={addressVal.postalCode}
                 onChange={(e) => setAddressVal(prev => ({ ...prev, postalCode: e.target.value }))}
-                className="bg-slate-50"
+                className="h-11 bg-slate-50"
               />
             </div>
           </div>

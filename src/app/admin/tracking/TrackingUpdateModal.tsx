@@ -97,9 +97,10 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">สถานะปัจจุบัน</label>
+            <label htmlFor="tracking-update-status" className="text-sm font-semibold text-slate-700">สถานะปัจจุบัน</label>
             <select
-              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              id="tracking-update-status"
+              className="flex h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               required
@@ -112,12 +113,14 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">บริษัทขนส่งในไทย (เช่น Kerry, Flash Express)</label>
+            <label htmlFor="tracking-update-company" className="text-sm font-semibold text-slate-700">บริษัทขนส่งในไทย (เช่น Kerry, Flash Express)</label>
             <Input
+              id="tracking-update-company"
               placeholder="ไม่ต้องระบุหากยังไม่ถึงไทย"
               value={shippingCompany}
               onChange={(e) => setShippingCompany(e.target.value)}
               list="shipping-companies"
+              className="h-11"
             />
             <datalist id="shipping-companies">
               <option value="Flash Express" />
@@ -130,21 +133,25 @@ export function TrackingUpdateModal({ isOpen, onClose, order, onSuccess }: Track
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">หมายเลขพัสดุ (Tracking Number)</label>
+            <label htmlFor="tracking-update-number" className="text-sm font-semibold text-slate-700">หมายเลขพัสดุ (Tracking Number)</label>
             <Input
+              id="tracking-update-number"
               placeholder="ระบุหมายเลขพัสดุ..."
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
+              className="h-11"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">บันทึกเพิ่มเติม (บันทึกลงใน Timeline ของลูกค้า)</label>
+            <label htmlFor="tracking-update-notes" className="text-sm font-semibold text-slate-700">บันทึกเพิ่มเติม (บันทึกลงใน Timeline ของลูกค้า)</label>
             <Input
+              id="tracking-update-notes"
               placeholder="ตัวอย่าง: สินค้าถึงโกดังไทย กำลังเตรียมจัดส่งให้ลูกค้า"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               required
+              className="h-11"
             />
           </div>
 

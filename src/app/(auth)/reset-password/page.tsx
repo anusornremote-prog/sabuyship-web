@@ -206,8 +206,8 @@ export default function ResetPassword() {
           </div>
         ) : linkExpired ? (
           <div className="space-y-4 text-center py-2">
-            <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium rounded-xl flex flex-col items-center gap-2 leading-relaxed">
-              <AlertTriangle className="h-6 w-6 text-rose-600" />
+            <div role="alert" className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium rounded-xl flex flex-col items-center gap-2 leading-relaxed">
+              <AlertTriangle className="h-6 w-6 text-rose-600" aria-hidden="true" />
               <span>{error || "ลิงก์ตั้งรหัสผ่านใหม่หมดอายุหรือไม่ถูกต้อง"}</span>
             </div>
             <Link href="/forgot-password" className="block">
@@ -226,38 +226,46 @@ export default function ResetPassword() {
             </p>
             
             {error && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium rounded-xl flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" />
+              <div role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium rounded-xl flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">รหัสผ่านใหม่ *</label>
+                <label htmlFor="reset-new-password" className="text-sm font-semibold text-slate-700">รหัสผ่านใหม่ *</label>
                 <div className="relative">
                   <Input 
+                    id="reset-new-password"
                     type={showPassword ? "text" : "password"} 
+                    autoComplete="new-password"
+                    minLength={6}
                     required 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร" 
-                    className="pr-10 h-11"
+                    className="pr-12 h-11"
                   />
                   <button 
                     type="button"
+                    aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                    aria-pressed={showPassword}
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 min-h-11 min-w-11 inline-flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                   </button>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">ยืนยันรหัสผ่านใหม่ *</label>
+                <label htmlFor="reset-confirm-password" className="text-sm font-semibold text-slate-700">ยืนยันรหัสผ่านใหม่ *</label>
                 <Input 
+                  id="reset-confirm-password"
                   type={showPassword ? "text" : "password"} 
+                  autoComplete="new-password"
+                  minLength={6}
                   required 
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
-import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Calculator } from "lucide-react"
+import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Calculator, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { exportSpreadsheet } from "@/lib/spreadsheet"
 import {
@@ -437,9 +437,9 @@ export default function AdminInquiryList({
   }
 
   const filtered = inquiries
-  const applyFilters = (nextStatus = statusFilter) => {
+  const applyFilters = (nextStatus = statusFilter, nextSearch = searchQuery) => {
     const params = new URLSearchParams()
-    if (searchQuery.trim()) params.set("q", searchQuery.trim())
+    if (nextSearch.trim()) params.set("q", nextSearch.trim())
     if (nextStatus !== "ALL") params.set("status", nextStatus)
     router.push(`/admin/inquiries${params.size ? `?${params.toString()}` : ""}`)
   }
@@ -457,15 +457,27 @@ export default function AdminInquiryList({
       <Card className="shadow-sm">
         <CardContent className="p-4 bg-white flex flex-col sm:flex-row gap-4">
           <form className="relative flex-1" onSubmit={(event) => { event.preventDefault(); applyFilters() }}>
-            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden="true" />
             <Input
+              aria-label="ค้นหาคำขอประเมินราคา"
               placeholder="ค้นหา รหัสคำขอ, ชื่อลูกค้า, เบอร์โทร..."
-              className="pl-9"
+              className="pl-9 pr-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                aria-label="ล้างคำค้นหา"
+                onClick={() => { setSearchQuery(""); applyFilters(statusFilter, "") }}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 min-h-9 min-w-9 inline-flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
           </form>
           <select
+            aria-label="กรองสถานะคำขอประเมินราคา"
             className="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none"
             value={statusFilter}
             onChange={(e) => { const value = e.target.value; setStatusFilter(value); applyFilters(value) }}
@@ -778,7 +790,7 @@ export default function AdminInquiryList({
                           {inq.items && inq.items.length === 1 ? (inq.items[0].remark || "-") : (inq.remark || "-")}
                         </p>
                         {((inq.items && inq.items.length === 1 && inq.items[0].image_url) || inq.image_url) && (
-                          <img src={inq.items && inq.items.length === 1 ? inq.items[0].image_url : inq.image_url} className="h-16 w-16 object-cover rounded border border-slate-200" />
+                          <img src={inq.items && inq.items.length === 1 ? inq.items[0].image_url : inq.image_url} alt="รูปภาพประกอบสินค้า" className="h-16 w-16 object-cover rounded border border-slate-200" />
                         )}
                         <p className="text-xs font-semibold">จำนวน: {inq.items && inq.items.length === 1 ? inq.items[0].quantity : inq.quantity} ชิ้น</p>
                       </div>

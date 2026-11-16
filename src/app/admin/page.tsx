@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { unstable_rethrow } from "next/navigation"
 import { Users, FileQuestion, FileText, Package, ArrowRight, Clock3, Warehouse, Ship, Truck, CheckCircle2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { DashboardChartsWrapper } from "@/components/admin/DashboardChartsWrapper"
+import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
 
 export default async function AdminOverview() {
   try {
@@ -305,7 +307,11 @@ export default async function AdminOverview() {
             <div className="space-y-4">
               {recentInquiries && recentInquiries.length > 0 ? (
                 recentInquiries.map((inq: any) => (
-                  <div key={inq.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                  <Link
+                    key={inq.id}
+                    href="/admin/inquiries"
+                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0 rounded-lg px-2 py-1 -mx-2 hover:bg-slate-50 transition-colors"
+                  >
                     <div className="flex-1 min-w-0 pr-4">
                       <p className="font-bold text-sm text-slate-900 truncate">{getProductSource(inq.product_url)}</p>
                       <p className="text-xs text-slate-500">ลูกค้า: {inq.customer?.full_name || '-'}</p>
@@ -318,7 +324,7 @@ export default async function AdminOverview() {
                         {new Date(inq.created_at).toLocaleDateString('th-TH')}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="text-center py-8">
@@ -344,7 +350,16 @@ export default async function AdminOverview() {
                 recentTracking.map((log: any) => (
                   <div key={log.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                     <div className="flex-1 min-w-0 pr-4">
-                      <p className="font-bold text-sm text-primary">{log.order?.order_number || 'ไม่พบเลขคำสั่งซื้อ'}</p>
+                      {log.order?.order_number ? (
+                        <Link
+                          href={`/admin/orders/${log.order.order_number}`}
+                          className="font-bold text-sm text-primary hover:underline inline-block"
+                        >
+                          {log.order.order_number}
+                        </Link>
+                      ) : (
+                        <p className="font-bold text-sm text-slate-500">ไม่พบเลขคำสั่งซื้อ</p>
+                      )}
                       <p className="text-xs text-slate-500 truncate">{log.notes || 'อัปเดตสถานะแล้ว'}</p>
                     </div>
                     <div className="text-right shrink-0">
@@ -374,11 +389,15 @@ export default async function AdminOverview() {
     </div>
   )
   } catch (err: any) {
+    unstable_rethrow(err)
+    console.error("Admin overview error:", err)
     return (
-      <div className="p-8 text-red-500 bg-red-50 rounded-lg">
-        <h1 className="text-2xl font-bold mb-4">🚨 เกิดข้อผิดพลาดในหน้า Admin (Production Error)</h1>
-        <p>ระบบยังไม่ได้แก้ไขข้อมูลใด ๆ กรุณากดลองใหม่หรือกลับเข้าหน้านี้อีกครั้ง</p>
-      </div>
+      <OrderDetailErrorCard
+        backHref="/admin/orders"
+        backLabel="ไปหน้าจัดการคำสั่งซื้อ"
+        title="ไม่สามารถโหลดข้อมูลภาพรวมระบบแอดมินได้"
+        description="ระบบขัดข้องชั่วคราว ข้อมูลในระบบไม่ได้รับผลกระทบ กรุณาลองใหม่อีกครั้ง"
+      />
     )
   }
 }

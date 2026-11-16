@@ -103,7 +103,7 @@ export default function AdminLayout({
           </Link>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+        <nav aria-label="เมนูผู้ดูแลระบบ" className="flex-1 overflow-y-auto p-4 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin')
             return (
@@ -210,8 +210,8 @@ export default function AdminLayout({
             <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 rounded-full">Admin</span>
           </Link>
           <div className="flex items-center gap-1.5">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white h-8 px-2 text-xs font-bold gap-1 cursor-pointer">
+            <Link href="/" target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white min-h-11 px-2.5 text-xs font-bold gap-1 cursor-pointer">
                 <Home className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">หน้าบ้าน</span>
               </Button>
@@ -220,7 +220,7 @@ export default function AdminLayout({
               variant="ghost" 
               size="sm" 
               onClick={handleLogout} 
-              className="text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 h-8 px-2.5 text-xs cursor-pointer font-bold flex items-center gap-1.5 border border-rose-900/40 rounded-lg"
+              className="text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 min-h-11 px-2.5 text-xs cursor-pointer font-bold flex items-center gap-1.5 border border-rose-900/40 rounded-lg"
             >
               <LogOut className="h-3.5 w-3.5 text-rose-400" />
               <span>ออกจากระบบ</span>
@@ -229,7 +229,7 @@ export default function AdminLayout({
         </header>
 
         {/* Mobile Quick Navigation Tabs (Sticky Strip with Pill Badges) */}
-        <nav className="flex md:hidden bg-slate-900 text-slate-300 border-b border-slate-800 overflow-x-auto scrollbar-none px-2 py-2 gap-1.5 sticky top-16 z-20 shadow-md shrink-0">
+        <nav aria-label="เมนูผู้ดูแลระบบบนมือถือ" className="flex md:hidden bg-slate-900 text-slate-300 border-b border-slate-800 overflow-x-auto scrollbar-none px-2 py-2 gap-1.5 sticky top-16 z-20 shadow-md shrink-0">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin')
             return (

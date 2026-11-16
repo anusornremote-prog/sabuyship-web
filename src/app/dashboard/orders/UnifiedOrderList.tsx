@@ -515,9 +515,12 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                     <span className="font-semibold text-slate-900">{formatCurrency(previewQuotationItem.quotations[0].other_fee)}</span>
                   </div>
                   <div className="flex justify-between pt-2 text-base font-bold">
-                    <span className="text-slate-900">ยอดสุทธิ (Grand Total)</span>
+                    <span className="text-slate-900">ยอดชำระรอบที่ 1 (ค่าสินค้า + ค่าส่งในจีน)</span>
                     <span className="text-primary text-lg">{formatCurrency(previewQuotationItem.quotations[0].total_price)}</span>
                   </div>
+                  <p className="text-xs text-slate-500 pt-1">
+                    * ค่าขนส่งจีน-ไทย (รอบที่ 2) และค่าจัดส่งในไทย (รอบที่ 3) จะคำนวณตามน้ำหนัก/ขนาดจริงเมื่อสินค้าถึงโกดัง
+                  </p>
                 </div>
               </div>
             </div>

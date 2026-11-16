@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { isValidThaiPhone, normalizeThaiPhone } from "@/lib/phone"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -36,18 +37,18 @@ export default function CompleteProfile() {
     setLoading(true)
     setError(null)
 
-    if (!fullName) {
+    if (!fullName.trim()) {
       setError("กรุณากรอกชื่อ-นามสกุล")
       setLoading(false)
       return
     }
 
-    const cleanPhone = phone.replace(/\D/g, '')
-    if (!cleanPhone || cleanPhone.length < 9 || cleanPhone.length > 10) {
+    if (!isValidThaiPhone(phone)) {
       setError("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (9-10 หลัก เช่น 0812345678)")
       setLoading(false)
       return
     }
+    const cleanPhone = normalizeThaiPhone(phone)
 
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -67,7 +68,7 @@ export default function CompleteProfile() {
       .eq('id', user.id)
 
     if (updateError) {
-      setError(updateError.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล")
+      setError("ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง")
       setLoading(false)
       return
     }
@@ -86,37 +87,45 @@ export default function CompleteProfile() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleCompleteProfile} className="space-y-4">
-          {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
+          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">ชื่อ-นามสกุล *</label>
+            <label htmlFor="complete-fullname" className="text-sm font-medium">ชื่อ-นามสกุล *</label>
             <Input 
+              id="complete-fullname"
               type="text" 
+              autoComplete="name"
               required 
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="กรุณากรอกชื่อและนามสกุล" 
+              className="h-11"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">เบอร์โทรศัพท์ *</label>
+            <label htmlFor="complete-phone" className="text-sm font-medium">เบอร์โทรศัพท์ *</label>
             <Input 
+              id="complete-phone"
               type="tel" 
+              autoComplete="tel"
               required 
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="เช่น 0812345678" 
+              className="h-11"
             />
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">LINE ID / WeChat ID (ไม่บังคับ)</label>
+            <label htmlFor="complete-lineid" className="text-sm font-medium">LINE ID / WeChat ID (ไม่บังคับ)</label>
             <Input 
+              id="complete-lineid"
               type="text" 
               value={lineId}
               onChange={(e) => setLineId(e.target.value)}
               placeholder="เช่น line_id_123" 
+              className="h-11"
             />
           </div>
           

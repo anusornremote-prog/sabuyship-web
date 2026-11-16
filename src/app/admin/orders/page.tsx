@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,7 +35,9 @@ const ADMIN_ORDER_QUICK_FILTERS = [
   { value: "OUT_FOR_DELIVERY", label: "กำลังนำส่ง" },
 ] as const
 
-export default function AdminOrders() {
+function AdminOrdersContent() {
+  const searchParams = useSearchParams()
+  const statusParam = searchParams.get("status")
   const supabase = createClient()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -305,12 +308,9 @@ export default function AdminOrders() {
   }, [currentPage, statusFilter, dateFilter, searchQuery])
 
   useEffect(() => {
-    const status = new URLSearchParams(window.location.search).get("status")
-    if (status) {
-      setStatusFilter(status)
-      setCurrentPage(1)
-    }
-  }, [])
+    setStatusFilter(statusParam || "ALL")
+    setCurrentPage(1)
+  }, [statusParam])
 
   const handleExport = async () => {
     if (selectedOrderIds.length === 0) {
@@ -735,6 +735,7 @@ export default function AdminOrders() {
               )}
             </div>
             <select 
+              aria-label="กรองสถานะคำสั่งซื้อ"
               className="flex h-10 w-full sm:w-56 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={statusFilter}
               onChange={(e) => handleFilterChange(e.target.value)}
@@ -965,8 +966,8 @@ export default function AdminOrders() {
                         </details>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="icon" className="cursor-pointer" asChild>
-                            <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank" title="เอกสาร Invoice/Receipt">
-                              <FileText className="h-4 w-4 text-blue-500" />
+                            <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank" rel="noopener noreferrer" aria-label={`เอกสาร Invoice/Receipt คำสั่งซื้อ ${order.order_number}`} title="เอกสาร Invoice/Receipt">
+                              <FileText className="h-4 w-4 text-blue-500" aria-hidden="true" />
                             </Link>
                           </Button>
                           <Button variant="ghost" size="icon" className="cursor-pointer" asChild>
@@ -1362,5 +1363,13 @@ export default function AdminOrders() {
         />
       )}
     </div>
+  )
+}
+
+export default function AdminOrders() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">กำลังโหลดรายการคำสั่งซื้อ...</div>}>
+      <AdminOrdersContent />
+    </Suspense>
   )
 }

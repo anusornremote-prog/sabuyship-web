@@ -73,19 +73,19 @@ export default function HowItWorks() {
       steps: [
         {
           stepNumber: "04",
-          title: "Transit to Thailand",
-          description: "Once items arrive at Guangzhou warehouse, staff inspect package condition, measure weight (KG) and volume (CBM), then load into containers (Road 5-7d / Sea 15-20d).",
-          icon: Truck,
-          iconBg: "bg-purple-100 text-purple-600",
-          tag: "International Freight"
-        },
-        {
-          stepNumber: "05",
-          title: "Arrived at TH Warehouse & Pay Round 2",
-          description: "Upon arrival at Thailand warehouse, the system calculates exact international freight and sends notification to settle Round 2.",
+          title: "Arrived at China Warehouse & Pay Round 2",
+          description: "Once items arrive at Guangzhou warehouse, staff inspect condition, measure exact weight (KG) and volume (CBM), and calculate international freight for your Round 2 payment.",
           icon: PackageCheck,
           iconBg: "bg-purple-100 text-purple-600",
           tag: "Round 2 Payment"
+        },
+        {
+          stepNumber: "05",
+          title: "Transit to Thailand & Arrival at TH Warehouse",
+          description: "After Round 2 is settled, parcels load into containers bound for Thailand (Road 5-7d / Sea 15-20d) and are checked into our Thailand warehouse ready for domestic dispatch.",
+          icon: Truck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "International Freight"
         }
       ]
     },
@@ -157,19 +157,19 @@ export default function HowItWorks() {
       steps: [
         {
           stepNumber: "04",
-          title: "入仓发往泰国",
-          description: "货物抵达广州仓库后，仓库验货、称重 (KG) 并测量立方 (CBM)，安排装柜发往泰国 (陆运5-7天 / 海运15-20天)。",
-          icon: Truck,
-          iconBg: "bg-purple-100 text-purple-600",
-          tag: "国际跨境物流"
-        },
-        {
-          stepNumber: "05",
-          title: "抵达泰国仓库并结算第2轮运费",
-          description: "货物安全抵达泰国仓库，系统按实际尺寸重量核算中泰国际运费并通知客户支付。",
+          title: "抵达广州仓称重并结算第2轮运费",
+          description: "货物抵达广州仓库后，仓库验货、按实际称重 (KG) 与测量立方 (CBM) 核算中泰国际运费，并通知客户在线支付第2轮运费。",
           icon: PackageCheck,
           iconBg: "bg-purple-100 text-purple-600",
           tag: "支付第二轮"
+        },
+        {
+          stepNumber: "05",
+          title: "装柜发往泰国并抵达泰国仓库",
+          description: "第2轮付款确认后安排装柜发往泰国 (陆运5-7天 / 海运15-20天)，货物安全抵达泰国仓库后即可安排本地派送与第3轮结算。",
+          icon: Truck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "国际跨境物流"
         }
       ]
     },
@@ -241,19 +241,19 @@ export default function HowItWorks() {
       steps: [
         {
           stepNumber: "04",
-          title: "สินค้าถึงโกดังจีน & ขนส่งมาไทย (Transit to Thailand)",
-          description: "เมื่อร้านจีนส่งของถึงโกดังจีน ทีมงานจะทำการตรวจสอบสภาพ ชั่งน้ำหนัก (KG) และวัดขนาดคิวบิกเมตร (CBM) จากนั้นนำเข้าตู้คอนเทนเนอร์ขนส่งมาไทย (ทางรถด่วน 5-7 วัน / ทางเรือประหยัด 15-20 วัน)",
-          icon: Truck,
-          iconBg: "bg-purple-100 text-purple-600",
-          tag: "ขนส่งระหว่างประเทศ"
-        },
-        {
-          stepNumber: "05",
-          title: "สินค้าถึงโกดังไทย & แจ้งบิลรอบ 2 (Payment Round 2)",
-          description: "เมื่อสินค้ามาถึงโกดังไทยอย่างปลอดภัย ระบบจะคำนวณค่าขนส่งจีน-ไทยตามจริง และแจ้งเตือนให้ลูกค้าชำระเงินค่าขนส่งรอบที่ 2 ผ่านระบบ",
+          title: "สินค้าถึงโกดังจีน & แจ้งบิลรอบ 2 (Payment Round 2)",
+          description: "เมื่อร้านจีนส่งของถึงโกดังจีน (กว่างโจว) ทีมงานจะตรวจสอบสภาพ ชั่งน้ำหนัก (KG) และวัดขนาดคิวบิกเมตร (CBM) ตามจริง พร้อมคำนวณค่าขนส่งจีน-ไทยและแจ้งให้ลูกค้าชำระเงินรอบที่ 2 ผ่านระบบ",
           icon: PackageCheck,
           iconBg: "bg-purple-100 text-purple-600",
           tag: "ชำระเงินรอบ 2"
+        },
+        {
+          stepNumber: "05",
+          title: "ส่งข้ามแดนมาไทย & ถึงโกดังไทย (Transit to Thailand)",
+          description: "หลังชำระรอบที่ 2 ทีมงานจะนำสินค้าขึ้นตู้คอนเทนเนอร์ขนส่งมาไทย (ทางรถด่วน 5-7 วัน / ทางเรือประหยัด 15-20 วัน) เมื่อสินค้าถึงโกดังไทยอย่างปลอดภัย ระบบจะแจ้งให้เลือกวิธีจัดส่งในไทย",
+          icon: Truck,
+          iconBg: "bg-purple-100 text-purple-600",
+          tag: "ขนส่งระหว่างประเทศ"
         }
       ]
     },
@@ -552,14 +552,17 @@ export default function HowItWorks() {
                 className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs transition-all"
               >
                 <button
+                  type="button"
                   onClick={() => toggleFaq(idx)}
+                  aria-expanded={openFaq === idx}
+                  aria-controls={`how-it-works-faq-${idx}`}
                   className="w-full p-5 text-left font-bold text-sm sm:text-base text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer"
                 >
                   <span>{faq.q}</span>
-                  <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${openFaq === idx ? "rotate-180 text-primary" : ""}`} />
+                  <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${openFaq === idx ? "rotate-180 text-primary" : ""}`} aria-hidden="true" />
                 </button>
                 {openFaq === idx && (
-                  <div className="p-5 pt-0 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30 whitespace-pre-line animate-in fade-in duration-200">
+                  <div id={`how-it-works-faq-${idx}`} className="p-5 pt-0 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30 whitespace-pre-line animate-in fade-in duration-200">
                     {faq.a}
                   </div>
                 )}

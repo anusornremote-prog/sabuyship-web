@@ -122,15 +122,16 @@ export default function SettingsPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">เรทเงิน 1 หยวน (THB) *</label>
+              <label htmlFor="admin-exchange-rate" className="text-sm font-semibold text-slate-700">เรทเงิน 1 หยวน (THB) *</label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-slate-500 font-bold">฿</span>
+                <span className="absolute left-3 top-2.5 text-slate-500 font-bold" aria-hidden="true">฿</span>
                 <Input 
+                  id="admin-exchange-rate"
                   required
                   type="number"
                   step="0.01"
                   min="0.1"
-                  className="pl-8 text-lg font-bold"
+                  className="pl-8 h-11 text-lg font-bold"
                   value={exchangeRate}
                   onChange={(e) => setExchangeRate(e.target.value)}
                 />
@@ -141,8 +142,10 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">เหตุผลการเปลี่ยนเรท</label>
+              <label htmlFor="admin-exchange-reason" className="text-sm font-semibold text-slate-700">เหตุผลการเปลี่ยนเรท</label>
               <Input
+                id="admin-exchange-reason"
+                className="h-11"
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
                 placeholder="เช่น ปรับตามเรทรับซื้อประจำวันที่..."

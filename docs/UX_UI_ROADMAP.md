@@ -191,6 +191,27 @@
 
 ---
 
+## Phase 4: Post-Audit P0–P1 Fixes (`P0` & `P1`) — `[DONE 2026-11-16]`
+
+### [x] `UX-4.1` แก้ไข Error Boundary Runtime Bug (`unstable_retry` -> `retry`) และ Error Fallback หน้า Overview
+- **Target Files:** `src/app/dashboard/error.tsx`, `src/app/admin/error.tsx`, `src/app/admin/page.tsx`
+- **สิ่งที่แก้ไข:** เปลี่ยน prop ของ Error Boundary จาก `unstable_retry` เป็น `retry` ตามสัญญา API จริงของ Next.js 16 และเพิ่ม `unstable_rethrow(err)` + `OrderDetailErrorCard` ใน `src/app/admin/page.tsx` รวมถึงทำรายการคำขอประเมินราคาล่าสุดและเลขคำสั่งซื้อในอัปเดตขนส่งให้กดเข้าลิงก์ปลายทางได้
+
+### [x] `UX-4.2` ปรับข้อมูลการชำระเงินรอบ 2 ในหน้า Public และ Modal ใบเสนอราคาให้ตรงตาม Business Logic 3 รอบ
+- **Target Files:** `src/app/(public)/how-it-works/page.tsx`, `src/app/(public)/faq/page.tsx`, `src/app/dashboard/orders/UnifiedOrderList.tsx`
+- **สิ่งที่แก้ไข:** แก้คำอธิบายทั้ง TH/EN/ZH ให้ระบุตรงกันว่ารอบ 2 คิดค่าขนส่งจีน-ไทยและแจ้งชำระเมื่อสินค้าถึง **โกดังจีน (กว่างโจว)** (ก่อนส่งเข้าไทย) และเปลี่ยนข้อความ `"ยอดสุทธิ (Grand Total)"` ใน Modal ดูใบเสนอราคาของลูกค้าเป็น `"ยอดชำระรอบที่ 1 (ค่าสินค้า + ค่าส่งในจีน)"` พร้อมหมายเหตุรอบ 2 และ 3
+
+### [x] `UX-4.3` แก้ไข Accessibility, Label Nesting, Form Validation (DRY) และ URL Query Syncing
+- **Target Files:** `src/app/(public)/contact/page.tsx`, `src/app/(auth)/complete-profile/page.tsx`, `src/app/(auth)/reset-password/page.tsx`, `src/app/dashboard/addresses/AddressFormModal.tsx`, `src/app/dashboard/profile/page.tsx`, `src/components/orders/PaymentStepper.tsx`, `src/app/admin/layout.tsx`, `src/app/admin/orders/page.tsx`, `src/app/admin/orders/new/page.tsx`, `src/app/admin/inquiries/AdminInquiryList.tsx`, `src/app/admin/settings/page.tsx`, `src/app/admin/tracking/TrackingUpdateModal.tsx`, `src/app/admin/tracking/page.tsx`, `src/app/admin/customers/page.tsx`
+- **สิ่งที่แก้ไข:**
+  - แยก `<Link href="/privacy">` ออกจาก `<label>` ใน `contact/page.tsx`
+  - ใช้ `isValidThaiPhone`/`normalizeThaiPhone` จาก `@/lib/phone` และซ่อนข้อความ error ดิบของ Supabase ใน `complete-profile/page.tsx` และ `AddressFormModal.tsx`
+  - เติม `htmlFor`/`id`/`autoComplete`, `role="alert"`/`role="status"`, `aria-label`, `alt` บนรูปภาพมือถือใน `AdminInquiryList.tsx`, และ `aria-expanded`/`aria-controls` บน FAQ Accordions
+  - ซิงค์ `?status=` ด้วย `useSearchParams` ภายใต้ `<Suspense>` ใน `admin/orders/page.tsx`
+  - แยก `aria-label` ของ `<nav>` เดสก์ท็อป/มือถือ, เพิ่ม `target="_blank" rel="noopener noreferrer"` และปุ่ม `min-h-11` บนมือถือใน `admin/layout.tsx`, แก้ `colSpan={7}` ใน `admin/tracking/page.tsx` และกันลิงก์ `href="tel:"` ว่างใน `admin/customers/page.tsx`
+
+---
+
 ## แนวทางการตรวจรับงานหลังแก้แต่ละ Phase
 
 ทุกครั้งที่ปิดงานแต่ละ Task/Phase ต้องผ่านขั้นตอนต่อไปนี้:

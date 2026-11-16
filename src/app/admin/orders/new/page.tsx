@@ -95,13 +95,13 @@ export default function AdminNewOrder() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
         <Link href="/admin/orders">
-          <Button variant="outline" size="icon" className="rounded-full">
-            <ArrowLeft className="w-4 h-4" />
+          <Button type="button" variant="outline" size="icon" aria-label="กลับไปหน้ารายการคำสั่งซื้อ" className="rounded-full min-h-11 min-w-11">
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           </Button>
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <PackagePlus className="w-6 h-6 text-primary" />
+            <PackagePlus className="w-6 h-6 text-primary" aria-hidden="true" />
             สร้างคำสั่งซื้อให้ลูกค้า (Manual)
           </h1>
           <p className="text-slate-500 mt-1">คีย์ข้อมูลออเดอร์สำหรับลูกค้าที่สั่งซื้อผ่านช่องทางอื่น</p>
@@ -110,15 +110,16 @@ export default function AdminNewOrder() {
 
       <Card className="shadow-sm border-blue-100">
         <form onSubmit={handleSubmit}>
-          <CardContent className="p-6 space-y-8">
+          <CardContent className="p-4 sm:p-6 space-y-8">
             
             {/* Section 1: Customer */}
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-slate-800 border-b pb-2">1. ข้อมูลลูกค้า</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">เลือกลูกค้า *</label>
+                  <label htmlFor="manual-order-customer" className="text-sm font-semibold text-slate-700">เลือกลูกค้า *</label>
                   <select 
+                    id="manual-order-customer"
                     required
                     className="flex h-11 w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     value={selectedCustomerId}
@@ -133,8 +134,9 @@ export default function AdminNewOrder() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">สถานะเริ่มต้นของออเดอร์ *</label>
+                  <label htmlFor="manual-order-status" className="text-sm font-semibold text-slate-700">สถานะเริ่มต้นของออเดอร์ *</label>
                   <select 
+                    id="manual-order-status"
                     required
                     className="flex h-11 w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     value={status}
@@ -151,8 +153,8 @@ export default function AdminNewOrder() {
             <div className="space-y-4">
               <div className="flex justify-between items-end border-b pb-2">
                 <h2 className="text-lg font-bold text-slate-800">2. รายการสินค้า</h2>
-                <Button type="button" size="sm" variant="outline" onClick={handleAddItem} className="gap-1">
-                  <Plus className="w-4 h-4" /> เพิ่มรายการ
+                <Button type="button" size="sm" variant="outline" onClick={handleAddItem} className="gap-1 min-h-10">
+                  <Plus className="w-4 h-4" aria-hidden="true" /> เพิ่มรายการ
                 </Button>
               </div>
               
@@ -161,17 +163,19 @@ export default function AdminNewOrder() {
                   {orderItems.length > 1 && (
                     <button 
                       type="button" 
+                      aria-label={`ลบรายการที่ ${index + 1}`}
                       onClick={() => handleRemoveItem(index)}
-                      className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"
+                      className="absolute top-2 right-2 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   )}
                   
-                  <div className="grid md:grid-cols-2 gap-4 pr-8">
+                  <div className="grid md:grid-cols-2 gap-4 pr-10">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700">ชื่อสินค้า / คำอธิบาย</label>
+                      <label htmlFor={`item-name-${index}`} className="text-xs font-semibold text-slate-700">ชื่อสินค้า / คำอธิบาย</label>
                       <Input 
+                        id={`item-name-${index}`}
                         required 
                         placeholder="ชื่อสินค้าที่ต้องการสั่ง" 
                         value={item.product_name}
@@ -179,34 +183,38 @@ export default function AdminNewOrder() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700">ลิงก์สินค้า (URL)</label>
+                      <label htmlFor={`item-url-${index}`} className="text-xs font-semibold text-slate-700">ลิงก์สินค้า (URL)</label>
                       <Input 
+                        id={`item-url-${index}`}
                         placeholder="https://taobao.com/..." 
                         value={item.product_url}
                         onChange={(e) => handleItemChange(index, 'product_url', e.target.value)}
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 pr-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:pr-10">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700">ตัวเลือก (สี/ไซส์)</label>
+                      <label htmlFor={`item-options-${index}`} className="text-xs font-semibold text-slate-700">ตัวเลือก (สี/ไซส์)</label>
                       <Input 
+                        id={`item-options-${index}`}
                         placeholder="เช่น สีแดง ไซส์ L" 
                         value={item.product_options}
                         onChange={(e) => handleItemChange(index, 'product_options', e.target.value)}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700">จำนวน</label>
+                      <label htmlFor={`item-qty-${index}`} className="text-xs font-semibold text-slate-700">จำนวน</label>
                       <Input 
+                        id={`item-qty-${index}`}
                         type="number" min="1" required 
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700">ราคาต่อชิ้น (บาท)</label>
+                      <label htmlFor={`item-price-${index}`} className="text-xs font-semibold text-slate-700">ราคาต่อชิ้น (บาท)</label>
                       <Input 
+                        id={`item-price-${index}`}
                         type="number" min="0" step="0.01" required 
                         value={item.unit_price}
                         onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
@@ -222,8 +230,9 @@ export default function AdminNewOrder() {
               <h2 className="text-lg font-bold text-slate-800 border-b pb-2">3. สรุปยอดเงิน</h2>
               <div className="grid md:grid-cols-2 gap-8 items-start">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">ค่าจัดส่งจีน / ค่าบริการอื่นๆ (บาท)</label>
+                  <label htmlFor="manual-order-shipping-rate" className="text-sm font-semibold text-slate-700">ค่าจัดส่งจีน / ค่าบริการอื่นๆ (บาท)</label>
                   <Input 
+                    id="manual-order-shipping-rate"
                     type="number" min="0" step="0.01" 
                     value={shippingRate}
                     onChange={(e) => setShippingRate(Number(e.target.value))}
@@ -247,12 +256,12 @@ export default function AdminNewOrder() {
               </div>
             </div>
 
-            <div className="pt-6 border-t flex justify-end gap-4">
-              <Link href="/admin/orders">
-                <Button type="button" variant="outline" className="w-32">ยกเลิก</Button>
+            <div className="pt-6 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-4">
+              <Link href="/admin/orders" className="w-full sm:w-auto">
+                <Button type="button" variant="outline" className="w-full sm:w-32 min-h-11">ยกเลิก</Button>
               </Link>
-              <Button type="submit" variant="orange" disabled={loading} className="w-48 text-base font-bold">
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              <Button type="submit" variant="orange" disabled={loading} className="w-full sm:w-48 min-h-11 text-base font-bold">
+                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />}
                 บันทึกสร้างออเดอร์
               </Button>
             </div>

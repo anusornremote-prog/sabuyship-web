@@ -121,14 +121,14 @@ export default function Contact() {
             <CardContent className="p-8">
               <h2 className="text-2xl font-semibold mb-6">{t.formTitle}</h2>
               {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                <div role="status" className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-500" aria-hidden="true" />
                   <p>ส่งข้อความเรียบร้อยแล้ว ทีมงานจะรีบติดต่อกลับโดยเร็วที่สุดครับ</p>
                 </div>
               )}
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500" />
+                <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500" aria-hidden="true" />
                   <p>{error}</p>
                 </div>
               )}
@@ -137,6 +137,7 @@ export default function Contact() {
                   <label htmlFor="name" className="text-sm font-medium">{t.formName}</label>
                   <Input 
                     id="name" 
+                    autoComplete="name"
                     placeholder={t.formNamePlaceholder} 
                     required 
                     value={formData.name}
@@ -149,6 +150,7 @@ export default function Contact() {
                   <Input 
                     id="email" 
                     type="email" 
+                    autoComplete="email"
                     placeholder={t.formEmailPlaceholder} 
                     required 
                     value={formData.email}
@@ -160,6 +162,8 @@ export default function Contact() {
                   <label htmlFor="phone" className="text-sm font-medium">{t.formPhone}</label>
                   <Input 
                     id="phone" 
+                    type="tel"
+                    autoComplete="tel"
                     placeholder={t.formPhonePlaceholder} 
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
@@ -178,10 +182,27 @@ export default function Contact() {
                     disabled={loading}
                   ></textarea>
                 </div>
-                <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-                  <input type="checkbox" required checked={privacyAcknowledged} onChange={(event) => setPrivacyAcknowledged(event.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-600" />
-                  <span>ฉันรับทราบ <Link href="/privacy" target="_blank" className="font-bold text-primary underline">ประกาศความเป็นส่วนตัว</Link> และการส่งข้อความนี้ไปยังทีมบริการผ่าน LINE</span>
-                </label>
+                <div className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+                  <input
+                    id="contact-privacy-ack"
+                    type="checkbox"
+                    required
+                    checked={privacyAcknowledged}
+                    onChange={(event) => setPrivacyAcknowledged(event.target.checked)}
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-blue-600 cursor-pointer"
+                  />
+                  <span>
+                    <label htmlFor="contact-privacy-ack" className="cursor-pointer">
+                      ฉันรับทราบข้อมูลตาม{" "}
+                    </label>
+                    <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">
+                      ประกาศความเป็นส่วนตัว
+                    </Link>{" "}
+                    <label htmlFor="contact-privacy-ack" className="cursor-pointer">
+                      และการส่งข้อความนี้ไปยังทีมบริการผ่าน LINE
+                    </label>
+                  </span>
+                </div>
                 {!hasLegalIdentity && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950">แบบฟอร์มยังไม่เปิดรับข้อมูลจริง กรุณาติดต่อผ่าน LINE หรืออีเมลโดยตรง</p>}
                 <Button type="submit" className="w-full h-12 text-lg cursor-pointer" disabled={loading || !privacyAcknowledged || !hasLegalIdentity}>
                   {loading ? (

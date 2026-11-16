@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 
 export default function DashboardError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string }
-  unstable_retry: () => void
+  retry: () => void
 }) {
   useEffect(() => {
     console.error("Dashboard page error", error)
@@ -22,7 +22,7 @@ export default function DashboardError({
         ข้อมูลของคุณไม่ได้ถูกเปลี่ยนแปลง กรุณาลองโหลดหน้านี้ใหม่อีกครั้ง
       </p>
       <div className="mt-5 flex flex-wrap justify-center gap-3">
-        <Button className="min-h-11" onClick={() => unstable_retry()}>
+        <Button type="button" className="min-h-11" onClick={() => retry()}>
           ลองใหม่
         </Button>
         <Link href="/dashboard">

@@ -181,7 +181,18 @@ export default function AdminCustomers() {
                   <div><div className="font-mono font-bold text-primary">{customer.customer_code || "-"}</div><div className="font-bold text-slate-900">{customer.full_name || "ไม่มีชื่อ"}</div></div>
                   <div className="text-right text-xs text-slate-500">{new Date(customer.created_at).toLocaleDateString("th-TH")}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm"><a className="rounded-lg border p-2 text-center" href={`tel:${customer.phone || ""}`}>โทร {customer.phone || "-"}</a><div className="rounded-lg border p-2 text-center">LINE {customer.line_id || "-"}</div></div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  {customer.phone ? (
+                    <a className="rounded-lg border p-2 text-center min-h-11 inline-flex items-center justify-center hover:bg-slate-50" href={`tel:${customer.phone}`}>
+                      โทร {customer.phone}
+                    </a>
+                  ) : (
+                    <div className="rounded-lg border p-2 text-center min-h-11 inline-flex items-center justify-center text-slate-400">
+                      โทร -
+                    </div>
+                  )}
+                  <div className="rounded-lg border p-2 text-center min-h-11 inline-flex items-center justify-center">LINE {customer.line_id || "-"}</div>
+                </div>
                 <Button className="w-full" variant="outline" onClick={() => { setSelectedCustomerForInquiry(customer); setIsCreateInquiryModalOpen(true) }}><PlusCircle className="mr-1 h-4 w-4" />สร้างคำขอประเมินราคา</Button>
               </div>
             ))}

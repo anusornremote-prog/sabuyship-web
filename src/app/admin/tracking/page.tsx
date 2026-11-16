@@ -257,7 +257,7 @@ export default function AdminTrackingPage() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                           <div className="flex flex-col items-center justify-center gap-2">
                             <Truck className="w-8 h-8 opacity-20" />
                             <p>ไม่พบรายการที่กำลังจัดส่ง</p>
@@ -343,7 +343,7 @@ export default function AdminTrackingPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                           <div className="flex flex-col items-center justify-center gap-2">
                             <Database className="w-8 h-8 opacity-20" />
                             <p>ไม่พบรายการพัสดุนำเข้า</p>

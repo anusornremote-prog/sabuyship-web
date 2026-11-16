@@ -59,7 +59,7 @@ export default function FaqPage() {
           id: "pay-1",
           category: "payment",
           question: "How does the 3-Round payment system work?",
-          answer: "• Round 1 (Item Cost): Total product price in RMB converted to THB based on daily real exchange rate + China domestic courier fee (if charged by shop).\n• Round 2 (China-to-TH Freight): Cross-border international shipping cost based on actual Weight (KG) or Volume (CBM) when goods arrive in Thailand.\n• Round 3 (Thai Domestic Delivery): Courier fee to your doorstep (Flash, Kerry, J&T) or FREE self-pickup at our Bangkok warehouse.",
+          answer: "• Round 1 (Item Cost): Total product price in RMB converted to THB based on daily real exchange rate + China domestic courier fee (if charged by shop).\n• Round 2 (China-to-TH Freight): Cross-border international shipping cost billed by actual Weight (KG) or Volume (CBM) when parcels arrive at our Guangzhou (China) warehouse.\n• Round 3 (Thai Domestic Delivery): Courier fee to your doorstep (Flash, Kerry, J&T) or FREE self-pickup at our Thailand warehouse.",
           tags: ["payment", "round 1", "round 2", "round 3", "exchange rate", "cost"]
         },
         {
@@ -146,7 +146,7 @@ export default function FaqPage() {
           id: "pay-1",
           category: "payment",
           question: "三阶段收费模式具体是如何运作的？",
-          answer: "• 第一轮（商品货款）：商品人民币原价按当日系统实时汇率折算泰铢 + 中国国内快递费（若卖家收取）。\n• 第二轮（中泰国际运费）：货物抵达泰国仓库后，按实际重量 (KG) 或体积 (CBM) 结算跨国运费。\n• 第三轮（泰国本地派送）：泰国本地快递费（Flash、Kerry、J&T 送货上门）或选择前往曼谷仓库免费自提 (0 泰铢)。",
+          answer: "• 第一轮（商品货款）：商品人民币原价按当日系统实时汇率折算泰铢 + 中国国内快递费（若卖家收取）。\n• 第二轮（中泰国际运费）：货物抵达中国广州仓库称重测量后，按实际重量 (KG) 或体积 (CBM) 结算跨国运费。\n• 第三轮（泰国本地派送）：货物抵达泰国仓库后结算本地快递费（Flash、Kerry、J&T 送货上门）或选择到泰国仓库免费自提 (0 泰铢)。",
           tags: ["支付", "第一轮", "第二轮", "第三轮", "汇率", "费用"]
         },
         {
@@ -233,7 +233,7 @@ export default function FaqPage() {
           id: "pay-1",
           category: "payment",
           question: "ระบบการชำระเงินแบบ 3 รอบ มีขั้นตอนและคิดเงินอย่างไร?",
-          answer: "• รอบที่ 1 (ค่าสินค้า): ราคาสินค้าจริงจากร้านจีนคิดตามเรทหยวนจริง ณ วันสั่งซื้อ + ค่าขนส่งในจีน (ถ้ามี)\n• รอบที่ 2 (ค่าขนส่งจีน-ไทย): ค่าขนส่งข้ามประเทศ คิดตามน้ำหนัก (KG) หรือ ปริมาตร (CBM) จริงเมื่อพัสดุมาถึงโกดังไทย\n• รอบที่ 3 (ค่าจัดส่งในไทย): ค่าจัดส่งจากโกดังไทยถึงหน้าบ้านคุณ (คิดตามจริงของ Flash, Kerry, J&T) หรือเลือก 'มารับเองที่โกดัง' ฟรี 0 บาท",
+          answer: "• รอบที่ 1 (ค่าสินค้า): ราคาสินค้าจริงจากร้านจีนคิดตามเรทหยวนจริง ณ วันสั่งซื้อ + ค่าขนส่งในจีน (ถ้ามี)\n• รอบที่ 2 (ค่าขนส่งจีน-ไทย): ค่าขนส่งข้ามประเทศ คิดตามน้ำหนัก (KG) หรือ ปริมาตร (CBM) จริงเมื่อพัสดุมาถึงโกดังจีน (กว่างโจว)\n• รอบที่ 3 (ค่าจัดส่งในไทย): ค่าจัดส่งจากโกดังไทยถึงหน้าบ้านคุณเมื่อสินค้าถึงไทย (คิดตามจริงของ Flash, Kerry, J&T) หรือเลือก 'มารับเองที่โกดัง' ฟรี 0 บาท",
           tags: ["การชำระเงิน", "รอบ 1", "รอบ 2", "รอบ 3", "ค่าขนส่ง", "เรทเงิน"]
         },
         {
@@ -354,9 +354,10 @@ export default function FaqPage() {
         <div className="space-y-6">
           {/* Live Search Bar */}
           <div className="max-w-2xl mx-auto relative">
-            <Search className="w-5 h-5 absolute left-4 top-4 text-slate-400" />
+            <Search className="w-5 h-5 absolute left-4 top-4.5 text-slate-400" aria-hidden="true" />
             <Input
               type="text"
+              aria-label={locale === 'en' ? "Search FAQ questions" : locale === 'zh' ? "搜索常见问题" : "ค้นหาคำถามที่พบบ่อย"}
               placeholder={
                 locale === 'en' 
                   ? "Search by keyword e.g. 3-Round, CBM, delivery, prohibited..." 
@@ -366,12 +367,14 @@ export default function FaqPage() {
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-14 pl-12 pr-10 text-base rounded-2xl border-slate-300 bg-white shadow-md focus:border-primary"
+              className="h-14 pl-12 pr-16 text-base rounded-2xl border-slate-300 bg-white shadow-md focus:border-primary"
             />
             {searchQuery && (
               <button
+                type="button"
+                aria-label={locale === 'en' ? "Clear search" : locale === 'zh' ? "清空搜索" : "ล้างคำค้นหา"}
                 onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-4.5 text-xs text-slate-400 hover:text-slate-600 font-bold"
+                className="absolute right-2 top-1/2 -translate-y-1/2 min-h-11 min-w-11 px-3 text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
               >
                 {locale === 'en' ? "Clear" : locale === 'zh' ? "清空" : "ล้าง"}
               </button>
@@ -416,7 +419,10 @@ export default function FaqPage() {
                   }`}
                 >
                   <button
+                    type="button"
                     onClick={() => toggleItem(faq.id)}
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-panel-${faq.id}`}
                     className="w-full p-5 sm:p-6 text-left flex justify-between items-center gap-4 hover:bg-slate-50/70 transition-colors cursor-pointer"
                   >
                     <span className={`font-black text-base sm:text-lg leading-snug ${isOpen ? "text-primary" : "text-slate-900"}`}>
@@ -424,13 +430,13 @@ export default function FaqPage() {
                     </span>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
                       isOpen ? "rotate-180 bg-blue-100 text-primary" : "bg-slate-100 text-slate-500"
-                    }`}>
+                    }`} aria-hidden="true">
                       <ChevronDown className="w-5 h-5" />
                     </div>
                   </button>
 
                   {isOpen && (
-                    <div className="p-5 sm:p-6 pt-0 border-t border-slate-100 bg-slate-50/40 text-sm text-slate-700 leading-relaxed whitespace-pre-line animate-in fade-in duration-200 space-y-3">
+                    <div id={`faq-panel-${faq.id}`} className="p-5 sm:p-6 pt-0 border-t border-slate-100 bg-slate-50/40 text-sm text-slate-700 leading-relaxed whitespace-pre-line animate-in fade-in duration-200 space-y-3">
                       <p>{faq.answer}</p>
                       
                       {/* Tags */}
