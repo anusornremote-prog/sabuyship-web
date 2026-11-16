@@ -12,6 +12,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { LineIcon } from "@/components/ui/icons"
 import { InAppBrowserNotice } from "@/components/auth/InAppBrowserNotice"
 import { getFriendlyAuthErrorMessage } from "@/lib/auth-errors"
+import { renderGoogleGsiButton } from "@/lib/google-gsi"
 import { startLineOAuth } from "@/lib/line-oauth"
 
 export default function Login() {
@@ -24,33 +25,19 @@ export default function Login() {
   const router = useRouter()
   const supabase = createClient()
   const googleButtonRef = useRef<HTMLDivElement>(null)
+  const googleCleanupRef = useRef<(() => void) | undefined>(undefined)
 
   const initGoogleLogin = () => {
-    if (typeof window !== "undefined" && (window as any).google && googleButtonRef.current) {
-      (window as any).google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "449039415658-57snl0en8sa78c0pp0l2ttc9ld54q89d.apps.googleusercontent.com",
-        callback: handleGoogleCallback,
-      });
-
-      const containerWidth = googleButtonRef.current.parentElement?.clientWidth || googleButtonRef.current.clientWidth || 380;
-      const targetWidth = Math.min(Math.max(containerWidth, 200), 400);
-
-      (window as any).google.accounts.id.renderButton(
-        googleButtonRef.current,
-        { 
-          theme: "outline", 
-          size: "large", 
-          text: "signin_with", 
-          shape: "rectangular",
-          width: targetWidth,
-          logo_alignment: "left"
-        }
-      );
-    }
+    googleCleanupRef.current?.()
+    googleCleanupRef.current = renderGoogleGsiButton({
+      container: googleButtonRef.current,
+      callback: handleGoogleCallback,
+      text: "signin_with",
+    })
   }
 
   useEffect(() => {
-    initGoogleLogin();
+    initGoogleLogin()
 
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
@@ -77,6 +64,10 @@ export default function Login() {
       } catch (e) {
         // LocalStorage disabled or unavailable
       }
+    }
+
+    return () => {
+      googleCleanupRef.current?.()
     }
   }, [])
 
@@ -195,15 +186,15 @@ export default function Login() {
   return (
     <>
       <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" onLoad={initGoogleLogin} />
-      <Card className="w-full max-w-md shadow-xl shadow-slate-200/50 border-slate-200/60 bg-white/95 backdrop-blur-sm relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">เข้าสู่ระบบ</CardTitle>
+      <Card className="w-full max-w-md shadow-xl shadow-slate-200/50 border-slate-200/70 bg-white/95 backdrop-blur-sm relative">
+      <CardHeader className="space-y-1 pb-4">
+        <CardTitle className="text-2xl font-bold text-center">เข้าสู่ระบบ</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleLogin} className="space-y-4">
-          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
+          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-xl">{error}</div>}
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">อีเมล *</label>
+            <label htmlFor="email" className="text-sm font-medium text-slate-700">อีเมล *</label>
             <Input 
               id="email"
               type="email"
@@ -221,12 +212,13 @@ export default function Login() {
                 } catch {}
               }}
               placeholder="เช่น user@email.com"
+              className="h-11 rounded-xl bg-white"
             />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium">รหัสผ่าน *</label>
-              <Link href="/forgot-password" className="inline-flex min-h-9 items-center text-sm text-primary hover:underline">
+              <label htmlFor="password" className="text-sm font-medium text-slate-700">รหัสผ่าน *</label>
+              <Link href="/forgot-password" className="inline-flex min-h-9 items-center text-sm font-medium text-primary hover:underline">
                 ลืมรหัสผ่าน?
               </Link>
             </div>
@@ -239,7 +231,7 @@ export default function Login() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pr-11"
+                className="h-11 rounded-xl bg-white pr-11"
               />
               <button
                 type="button"
@@ -278,7 +270,7 @@ export default function Login() {
               จำอีเมล
             </label>
           </div>
-          <Button type="submit" className="w-full h-11 cursor-pointer font-bold" disabled={loading}>
+          <Button type="submit" className="w-full h-11 rounded-full cursor-pointer font-semibold tracking-wide" disabled={loading}>
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </Button>
 
@@ -296,14 +288,14 @@ export default function Login() {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full min-h-11 h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
+              className="w-full min-h-11 h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-semibold tracking-wide cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-full text-sm transition-all"
               onClick={handleLineLogin}
               disabled={loading}
             >
               <LineIcon className="w-5 h-5 text-white" />
               <span>เข้าสู่ระบบด้วย LINE</span>
             </Button>
-            <div className="w-full flex justify-center [&>div]:!w-full [&_iframe]:!w-full [&_iframe]:!h-[40px] [&_iframe]:!rounded-md min-h-[40px]" ref={googleButtonRef}></div>
+            <div className="w-full flex justify-center min-h-[44px]" ref={googleButtonRef}></div>
           </div>
         </form>
       </CardContent>

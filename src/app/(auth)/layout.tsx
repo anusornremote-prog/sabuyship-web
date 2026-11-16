@@ -6,15 +6,15 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/50 to-orange-50/30 px-4 py-6 relative overflow-hidden">
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/50 to-orange-50/30 px-4 py-8 relative overflow-hidden">
       
       {/* Decorative blurred blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-accent/10 blur-[100px] pointer-events-none" />
       
       <div className="relative z-10 w-full flex flex-col items-center">
-        <Link href="/" className="flex justify-center mb-3 hover:opacity-90 transition-opacity -my-2 md:-my-6">
-          <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-28 sm:h-36 md:h-52 w-auto object-contain drop-shadow-sm" />
+        <Link href="/" className="flex justify-center mb-5 sm:mb-6 hover:opacity-90 transition-opacity">
+          <img src="/Sabuy_Ship_Express.png" alt="Sabuy Ship Express Logo" className="h-24 sm:h-28 md:h-36 w-auto object-contain drop-shadow-sm" />
         </Link>
         <div className="w-full max-w-md">
           {children}

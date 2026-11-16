@@ -16,6 +16,10 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Auth UI Consistency & Google Button Responsive Fix (2026-11-16)
+- Extracted shared Google Identity Services button renderer (`src/lib/google-gsi.ts`) using `ResizeObserver` + exact container width measurement and `shape: "pill"`, eliminating right-edge iframe clipping on `/login` and `/register`.
+- Unified `/login` and `/register` visual rhythm: aligned all stacked auth CTAs (`เข้าสู่ระบบ`/`สมัครสมาชิก`, LINE, and Google) to pill capsules (`rounded-full`, `h-11`), standardized form inputs to `h-11 rounded-xl bg-white`, removed `hover:-translate-y-1` from static auth form cards, and fixed top logo spacing (`-my-2 md:-my-6` removed) in `src/app/(auth)/layout.tsx`.
+
 ### Security & Anti-Scraping Hardening — Part 1 (2026-11-16)
 - Added `src/app/robots.txt/route.ts` to block major AI scraper/training crawlers (`GPTBot`, `ChatGPT-User`, `OAI-SearchBot`, `ClaudeBot`, `Claude-Web`, `anthropic-ai`, `Google-Extended`, `CCBot`, `Bytespider`, `PerplexityBot`, `Applebot-Extended`, `Amazonbot`, `Meta-ExternalAgent`, `Diffbot`, `Omgilibot`) and disallow indexing of `/admin/`, `/dashboard/`, `/api/`, `/complete-profile`, `/reset-password`, and `/forgot-password`.
 - Hardened `next.config.ts` response headers with `X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and `X-Robots-Tag: noindex, nofollow, noarchive` on private/API routes.

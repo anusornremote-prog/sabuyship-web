@@ -12,6 +12,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { LineIcon } from "@/components/ui/icons"
 import { InAppBrowserNotice } from "@/components/auth/InAppBrowserNotice"
 import { canAcceptBusiness } from "@/lib/public-business-config"
+import { renderGoogleGsiButton } from "@/lib/google-gsi"
 import { startLineOAuth } from "@/lib/line-oauth"
 
 export default function Register() {
@@ -28,37 +29,29 @@ export default function Register() {
   const router = useRouter()
   const supabase = createClient()
   const googleButtonRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (privacyAcknowledged) initGoogleLogin()
-  }, [privacyAcknowledged])
+  const googleCleanupRef = useRef<(() => void) | undefined>(undefined)
 
   const initGoogleLogin = () => {
-    if (typeof window !== "undefined" && (window as any).google && googleButtonRef.current) {
-      (window as any).google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "449039415658-57snl0en8sa78c0pp0l2ttc9ld54q89d.apps.googleusercontent.com",
-        callback: handleGoogleCallback,
-      });
-
-      const containerWidth = googleButtonRef.current.parentElement?.clientWidth || googleButtonRef.current.clientWidth || 380;
-      const targetWidth = Math.min(Math.max(containerWidth, 200), 400);
-
-      (window as any).google.accounts.id.renderButton(
-        googleButtonRef.current,
-        { 
-          theme: "outline", 
-          size: "large", 
-          text: "signup_with", 
-          shape: "rectangular",
-          width: targetWidth,
-          logo_alignment: "left"
-        }
-      );
-    }
+    googleCleanupRef.current?.()
+    googleCleanupRef.current = renderGoogleGsiButton({
+      container: googleButtonRef.current,
+      callback: handleGoogleCallback,
+      text: "signup_with",
+    })
   }
 
   useEffect(() => {
-    initGoogleLogin();
+    if (privacyAcknowledged) initGoogleLogin()
+    return () => {
+      googleCleanupRef.current?.()
+    }
+  }, [privacyAcknowledged])
+
+  useEffect(() => {
+    initGoogleLogin()
+    return () => {
+      googleCleanupRef.current?.()
+    }
   }, [])
 
   const handleGoogleCallback = async (response: any) => {
@@ -177,16 +170,16 @@ export default function Register() {
   return (
     <>
       <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" onLoad={initGoogleLogin} />
-      <Card className="w-full max-w-md shadow-xl shadow-slate-200/50 border-slate-200/60 bg-white/95 backdrop-blur-sm relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">สมัครสมาชิก</CardTitle>
+      <Card className="w-full max-w-md shadow-xl shadow-slate-200/50 border-slate-200/70 bg-white/95 backdrop-blur-sm relative">
+      <CardHeader className="space-y-1 pb-4">
+        <CardTitle className="text-2xl font-bold text-center">สมัครสมาชิก</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleRegister} className="space-y-4">
-          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
-          {success && <div role="status" className="p-3 bg-emerald-50 text-emerald-700 text-sm rounded-md">{success}</div>}
+          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-xl">{error}</div>}
+          {success && <div role="status" className="p-3 bg-emerald-50 text-emerald-700 text-sm rounded-xl">{success}</div>}
           <div className="space-y-2">
-            <label htmlFor="register-fullname" className="text-sm font-medium">ชื่อ - นามสกุล *</label>
+            <label htmlFor="register-fullname" className="text-sm font-medium text-slate-700">ชื่อ - นามสกุล *</label>
             <Input 
               id="register-fullname"
               name="fullName"
@@ -196,10 +189,11 @@ export default function Register() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="ชื่อของคุณ" 
+              className="h-11 rounded-xl bg-white"
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="register-phone" className="text-sm font-medium">เบอร์โทรศัพท์ *</label>
+            <label htmlFor="register-phone" className="text-sm font-medium text-slate-700">เบอร์โทรศัพท์ *</label>
             <Input 
               id="register-phone"
               name="phone"
@@ -209,10 +203,11 @@ export default function Register() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="เช่น 0812345678" 
+              className="h-11 rounded-xl bg-white"
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="register-line" className="text-sm font-medium">LINE ID / WeChat ID (ไม่บังคับ)</label>
+            <label htmlFor="register-line" className="text-sm font-medium text-slate-700">LINE ID / WeChat ID (ไม่บังคับ)</label>
             <Input 
               id="register-line"
               name="lineId"
@@ -220,10 +215,11 @@ export default function Register() {
               value={lineId}
               onChange={(e) => setLineId(e.target.value)}
               placeholder="เช่น line_id_123" 
+              className="h-11 rounded-xl bg-white"
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="register-email" className="text-sm font-medium">อีเมล *</label>
+            <label htmlFor="register-email" className="text-sm font-medium text-slate-700">อีเมล *</label>
             <Input 
               id="register-email"
               name="email"
@@ -233,10 +229,11 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@email.com" 
+              className="h-11 rounded-xl bg-white"
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="register-password" className="text-sm font-medium">รหัสผ่าน *</label>
+            <label htmlFor="register-password" className="text-sm font-medium text-slate-700">รหัสผ่าน *</label>
             <div className="relative">
               <Input 
                 id="register-password"
@@ -248,7 +245,7 @@ export default function Register() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="อย่างน้อย 6 ตัวอักษร"
-                className="pr-11"
+                className="h-11 rounded-xl bg-white pr-11"
               />
               <button
                 type="button"
@@ -283,7 +280,7 @@ export default function Register() {
             </div>
           </div>
           {!canAcceptBusiness && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950">ยังไม่เปิดสมัครสมาชิกจริงจนกว่าจะตั้งค่าข้อมูลผู้ประกอบการและช่วงดำเนินกิจการครบ</p>}
-          <Button type="submit" className="w-full h-11" disabled={loading || !privacyAcknowledged || !canAcceptBusiness}>
+          <Button type="submit" className="w-full h-11 rounded-full cursor-pointer font-semibold tracking-wide" disabled={loading || !privacyAcknowledged || !canAcceptBusiness}>
             {loading ? "กำลังสมัครสมาชิก..." : "สมัครสมาชิก"}
           </Button>
 
@@ -301,7 +298,7 @@ export default function Register() {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full min-h-11 h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
+              className="w-full min-h-11 h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-semibold tracking-wide cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-full text-sm transition-all"
               onClick={handleLineRegister}
               disabled={loading || !privacyAcknowledged || !canAcceptBusiness}
             >
@@ -309,9 +306,9 @@ export default function Register() {
               <span>สมัครสมาชิกด้วย LINE</span>
             </Button>
             {privacyAcknowledged && canAcceptBusiness ? (
-              <div className="w-full flex justify-center [&>div]:!w-full [&_iframe]:!w-full [&_iframe]:!h-[40px] [&_iframe]:!rounded-md min-h-[40px]" ref={googleButtonRef}></div>
+              <div className="w-full flex justify-center min-h-[44px]" ref={googleButtonRef}></div>
             ) : (
-              <div className="flex h-10 items-center justify-center rounded-md border bg-slate-100 text-sm font-semibold text-slate-400">กรุณารับทราบประกาศก่อนสมัครด้วย Google</div>
+              <div className="flex h-11 items-center justify-center rounded-full border bg-slate-100 text-sm font-semibold text-slate-500">กรุณารับทราบประกาศก่อนสมัครด้วย Google</div>
             )}
           </div>
         </form>
