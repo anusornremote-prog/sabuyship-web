@@ -188,12 +188,22 @@ export default function Home() {
           </div>
 
           <div className="relative mx-auto w-full max-w-xl">
-            <div className="absolute inset-[8%] rounded-full bg-gradient-to-br from-blue-600 via-indigo-500 to-orange-400 opacity-90 blur-[1px]" />
-            <div className="absolute inset-[3%] animate-orbit-soft rounded-full border border-dashed border-blue-300/80" />
-            <div className="absolute left-0 top-[18%] z-20 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-xl backdrop-blur animate-float-soft"><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">China → Thailand</p><p className="mt-1 flex items-center gap-2 text-sm font-black text-slate-800"><PackageCheck className="h-4 w-4 text-emerald-500" /> ดูแลครบทุกช่วง</p></div>
-            <div className="absolute bottom-[12%] right-0 z-20 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-xl backdrop-blur"><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Transparent</p><p className="mt-1 flex items-center gap-2 text-sm font-black text-slate-800"><ShieldCheck className="h-4 w-4 text-blue-600" /> จ่ายตามจริง 3 รอบ</p></div>
-            <div className="relative z-10 mx-auto aspect-square w-[84%] animate-float-soft">
-              <Image src="/mascod.webp" alt="Sabuy Ship mascot" fill priority sizes="(max-width: 768px) 84vw, 520px" className="object-contain drop-shadow-[0_32px_35px_rgba(15,23,42,0.2)]" />
+            <div className="relative mx-auto aspect-square w-[82%] sm:w-[74%]">
+              <div className="pointer-events-none absolute inset-[2%] rounded-full bg-gradient-to-br from-blue-600 via-indigo-500 to-orange-400 opacity-90 blur-[1px]" />
+              <div className="pointer-events-none absolute -inset-[4%] animate-orbit-soft rounded-full border border-dashed border-blue-300/80" />
+              <div className="relative z-10 h-full w-full animate-float-soft">
+                <Image src="/mascod.webp" alt="Sabuy Ship mascot" fill priority sizes="(max-width: 768px) 82vw, 460px" className="object-contain drop-shadow-[0_32px_35px_rgba(15,23,42,0.2)]" />
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2.5 sm:static sm:mt-0">
+              <div className="rounded-2xl border border-blue-100/80 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur sm:absolute sm:left-0 sm:top-[6%] sm:z-20 sm:border-white/80 sm:bg-white/90 sm:px-4 sm:py-3 sm:shadow-xl sm:animate-float-soft">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">China → Thailand</p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs font-black text-slate-800 sm:gap-2 sm:text-sm"><PackageCheck className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" /> ดูแลครบทุกช่วง</p>
+              </div>
+              <div className="rounded-2xl border border-blue-100/80 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur sm:absolute sm:bottom-[6%] sm:right-0 sm:z-20 sm:border-white/80 sm:bg-white/90 sm:px-4 sm:py-3 sm:shadow-xl">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Transparent</p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs font-black text-slate-800 sm:gap-2 sm:text-sm"><ShieldCheck className="h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" /> จ่ายตามจริง 3 รอบ</p>
+              </div>
             </div>
           </div>
         </div>
