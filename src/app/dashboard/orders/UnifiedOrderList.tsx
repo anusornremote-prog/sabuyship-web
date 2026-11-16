@@ -2,12 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Eye, Inbox, AlertTriangle, FileText, CreditCard, Globe, ExternalLink, Package, Copy, Check, Sparkles } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { AddressSelectionModal } from "./AddressSelectionModal"
 import { vibrateSuccess } from "@/lib/haptics"
+import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
 
 interface UnifiedOrderListProps {
   items: any[]
@@ -15,6 +19,7 @@ interface UnifiedOrderListProps {
 }
 
 export default function UnifiedOrderList({ items, customerId }: UnifiedOrderListProps) {
+  const router = useRouter()
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null)
@@ -23,6 +28,7 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [previewQuotationItem, setPreviewQuotationItem] = useState<any>(null)
   const [selectedConsolidationIds, setSelectedConsolidationIds] = useState<string[]>([])
+  const [consolidateConfirmOpen, setConsolidateConfirmOpen] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const handleCopyNumber = (e: React.MouseEvent, num: string) => {
@@ -39,32 +45,37 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
     )
   }
 
-  const handleConsolidate = async () => {
+  const handleConsolidate = () => {
     if (selectedConsolidationIds.length < 2) return
-    if (!confirm(`ยืนยันการรวมบิลจัดส่งในไทยสำหรับออเดอร์ที่เลือกจำนวน ${selectedConsolidationIds.length} รายการ?\n\n*ระบบจะคิดค่าส่งรอบ 3 รวมกันเป็นบิลเดียว*`)) return
-    
+    setConsolidateConfirmOpen(true)
+  }
+
+  const executeConsolidate = async () => {
+    if (selectedConsolidationIds.length < 2) return
+
     try {
       setProcessingId("consolidating")
       // The first selected ID will be the parent order
       const parent_id = selectedConsolidationIds[0]
       const child_ids = selectedConsolidationIds.slice(1)
-      
+
       const res = await fetch("/api/order/consolidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ parent_id, child_ids })
       })
-      
+
       if (!res.ok) {
         const result = await res.json()
-        throw new Error(result.error || "Failed to consolidate orders")
+        throw new Error(result.error || "ไม่สามารถรวมบิลจัดส่งได้")
       }
-      
-      alert("รวมบิลจัดส่งเรียบร้อยแล้ว แอดมินจะดำเนินการประเมินยอดส่งรวมให้ค่ะ")
+
+      toast.success("รวมบิลจัดส่งเรียบร้อยแล้ว แอดมินจะดำเนินการประเมินยอดส่งรวมให้ค่ะ")
       setSelectedConsolidationIds([])
-      window.location.reload()
+      setConsolidateConfirmOpen(false)
+      router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast.error(err.message || "เกิดข้อผิดพลาดในการรวมบิล")
     } finally {
       setProcessingId(null)
     }
@@ -101,96 +112,15 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         throw new Error(result.error || "Failed to create order")
       }
 
-      alert("ยืนยันคำสั่งซื้อสำเร็จ!")
-      window.location.reload()
+      toast.success("ยืนยันคำสั่งซื้อสำเร็จ!")
+      router.refresh()
     } catch (err: any) {
       console.error(err)
-      setErrorMsg(err.message || "เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ")
+      const message = err.message || "เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ"
+      setErrorMsg(message)
+      toast.error(message)
     } finally {
       setProcessingId(null)
-    }
-  }
-
-  const getStatusBadge = (status: string, item: any) => {
-    if (item.type === 'INQUIRY') {
-      switch (status) {
-        case 'PENDING': return 'bg-amber-100 text-amber-800'
-        case 'QUOTED': return 'bg-green-100 text-green-800'
-        case 'REJECTED': return 'bg-rose-100 text-rose-800'
-        default: return 'bg-slate-100 text-slate-800'
-      }
-    } else {
-      // Check Payment Round 1
-      if (item.payment_round_1_status === 'PENDING') return 'bg-amber-100 text-amber-800'
-      if (item.payment_round_1_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
-      
-      // Check Payment Round 2 (When in China Warehouse)
-      if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING' || status === 'THAILAND_WAREHOUSE' || status === 'DELIVERED') {
-        if (item.payment_round_2_status === 'PENDING') return 'bg-amber-100 text-amber-800'
-        if (item.payment_round_2_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
-      }
-      
-      // Check Payment Round 3 (When in Thai Warehouse)
-      if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED') {
-        if (item.payment_round_3_status === 'PENDING') return 'bg-amber-100 text-amber-800'
-        if (item.payment_round_3_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
-      }
-
-      // Base Statuses
-      switch (status) {
-        case 'ORDERED': return 'bg-blue-100 text-blue-800'
-        case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
-        case 'SHIPPING': return 'bg-sky-100 text-sky-800'
-        case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
-        case 'OUT_FOR_DELIVERY': return 'bg-orange-100 text-orange-800'
-        case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
-        case 'PAID': return 'bg-green-100 text-green-800'
-        case 'CANCELED': return 'bg-rose-100 text-rose-800 border-rose-200'
-        default: return 'bg-slate-100 text-slate-800'
-      }
-    }
-  }
-
-  const getStatusText = (status: string, item: any) => {
-    if (item.type === 'INQUIRY') {
-      switch (status) {
-        case 'PENDING': return 'รอแอดมินประเมินราคา'
-        case 'QUOTED': return 'แอดมินเสนอราคาแล้ว (รอยืนยันสั่งซื้อ)'
-        case 'REJECTED': return 'ยกเลิกคำขอ'
-        default: return status
-      }
-    } else {
-      // Payment Round 1
-      if (item.payment_round_1_status === 'PENDING') return 'รอชำระเงิน รอบ 1 (ค่าสินค้า)'
-      if (item.payment_round_1_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 1'
-      
-      // Payment Round 2
-      if (status === 'CHINA_WAREHOUSE' || status === 'SHIPPING') {
-         if (item.payment_round_2_status === 'PENDING') return 'รอชำระเงิน รอบ 2 (ค่าขนส่งจีน-ไทย)'
-         if (item.payment_round_2_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 2'
-      }
-      
-      // Payment Round 3
-      if (status === 'THAILAND_WAREHOUSE' || status === 'OUT_FOR_DELIVERY') {
-         if (item.consolidated_into_id) return 'รวมจัดส่ง (ชำระรอบ 3 ที่ออเดอร์หลัก)'
-         if (item.payment_round_3_status === 'PENDING') return 'รอชำระเงิน รอบ 3 (ค่าจัดส่งในไทย)'
-         if (item.payment_round_3_status === 'UPLOADED') return 'แอดมินกำลังตรวจสอบสลิป รอบ 3'
-      }
-
-      // Base Statuses
-      switch (status) {
-        case 'NEW': return 'รอดำเนินการ'
-        case 'WAITING_PAYMENT': return 'รอชำระเงิน'
-        case 'PAID': return 'ชำระรอบ 1 แล้ว (รอแอดมินสั่งของ)'
-        case 'ORDERED': return item.payment_round_1_status === 'NOT_APPLICABLE' ? 'กำลังจัดส่งไปโกดังจีน' : 'ชำระรอบ 1 แล้ว (ร้านจีนเตรียมจัดส่ง)'
-        case 'CHINA_WAREHOUSE': return 'พัสดุถึงโกดังจีน (รอคำนวณค่าขนส่ง)'
-        case 'SHIPPING': return 'ชำระรอบ 2 แล้ว (กำลังส่งมาไทย)'
-        case 'THAILAND_WAREHOUSE': return item.shipping_company ? 'สินค้าถึงไทยแล้ว (รอแอดมินแจ้งค่าส่งในไทย)' : 'สินค้าถึงไทยแล้ว (กรุณาเลือกวิธีจัดส่งในไทย)'
-        case 'OUT_FOR_DELIVERY': return 'ชำระครบถ้วน (กำลังนำส่งไปบ้านลูกค้า)'
-        case 'DELIVERED': return 'จัดส่งสำเร็จเรียบร้อย'
-        case 'CANCELED': return 'ยกเลิกคำสั่งซื้อ'
-        default: return status
-      }
     }
   }
 
@@ -298,8 +228,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                           : '-'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getStatusBadge(item.status, item)}`}>
-                          {getStatusText(item.status, item)}
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded ${getCustomerOrderStatusBadge(item.status, item)}`}>
+                          {getCustomerOrderStatusText(item.status, item)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -342,9 +272,14 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                 ) : (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
-                      <div className="flex flex-col items-center justify-center space-y-2">
-                        <Inbox className="h-10 w-10 text-slate-300" />
-                        <p className="text-slate-500">ยังไม่มีข้อมูลคำสั่งซื้อ</p>
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <Inbox className="h-10 w-10 text-slate-300" aria-hidden="true" />
+                        <p className="text-slate-600 font-medium">ยังไม่มีข้อมูลคำสั่งซื้อ</p>
+                        <Link href="/inquiry">
+                          <Button variant="orange" size="sm" className="min-h-11 rounded-xl font-bold">
+                            ขอใบเสนอราคาสินค้าใหม่
+                          </Button>
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -404,8 +339,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                         </div>
                       </div>
 
-                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg shrink-0 ${getStatusBadge(item.status, item)}`}>
-                        {getStatusText(item.status, item)}
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg shrink-0 ${getCustomerOrderStatusBadge(item.status, item)}`}>
+                        {getCustomerOrderStatusText(item.status, item)}
                       </span>
                     </div>
 
@@ -486,9 +421,14 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                 )
               })
             ) : (
-              <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-2 bg-white rounded-2xl border border-slate-200">
-                <Package className="h-8 w-8 text-slate-300" />
-                <p className="text-xs font-semibold">ไม่พบข้อมูลคำสั่งซื้อ</p>
+              <div className="p-10 text-center text-slate-500 flex flex-col items-center justify-center space-y-3 bg-white rounded-2xl border border-slate-200">
+                <Package className="h-8 w-8 text-slate-300" aria-hidden="true" />
+                <p className="text-sm font-semibold text-slate-600">ไม่พบข้อมูลคำสั่งซื้อ</p>
+                <Link href="/inquiry">
+                  <Button variant="orange" size="sm" className="min-h-11 rounded-xl font-bold">
+                    ขอใบเสนอราคาสินค้าใหม่
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
@@ -499,6 +439,16 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
         isOpen={addressModalOpen}
         onClose={() => setAddressModalOpen(false)}
         onConfirm={handleConfirmOrder}
+      />
+
+      <ConfirmDialog
+        open={consolidateConfirmOpen}
+        onOpenChange={setConsolidateConfirmOpen}
+        title="ยืนยันการรวมบิลจัดส่งในไทย"
+        description={`ยืนยันการรวมบิลจัดส่งในไทยสำหรับออเดอร์ที่เลือกจำนวน ${selectedConsolidationIds.length} รายการ?\n*ระบบจะคิดค่าส่งรอบ 3 รวมกันเป็นบิลเดียว*`}
+        confirmLabel="ยืนยันรวมบิล"
+        loading={processingId === "consolidating"}
+        onConfirm={executeConsolidate}
       />
 
       {/* Quotation Preview Modal */}

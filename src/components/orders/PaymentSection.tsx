@@ -268,7 +268,6 @@ export function PaymentSection({
       toast.success('แจ้งชำระเงินสำเร็จ! กรุณารอเจ้าหน้าที่ตรวจสอบ')
       setIsOpen(false)
       router.refresh()
-      window.location.reload()
     } catch (err: any) {
       console.error('Submit slip error:', err)
       toast.error('เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองอีกครั้ง'))

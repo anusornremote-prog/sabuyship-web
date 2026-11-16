@@ -5,6 +5,7 @@ import { Package, Truck, Clock, CheckCircle2, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { CustomerWarehouseCard } from "@/components/dashboard/CustomerWarehouseCard"
 import { redirect } from "next/navigation"
+import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
 
 export default async function DashboardOverview() {
   const supabase = await createClient()
@@ -48,40 +49,6 @@ export default async function DashboardOverview() {
     return r1 || r2 || r3
   }).length || 0
   const recentOrders = orders?.slice(0, 5) || []
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'NEW': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'PAYMENT_REJECTED': return 'bg-rose-100 text-rose-800 border-rose-200'
-      case 'PAID':
-      case 'ORDERED': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
-      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800 border-purple-200'
-      case 'SHIPPING': return 'bg-sky-100 text-sky-800 border-sky-200'
-      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800 border-teal-200'
-      case 'OUT_FOR_DELIVERY': return 'bg-indigo-100 text-indigo-800 border-indigo-200'
-      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
-      case 'CANCELED': return 'bg-slate-200 text-slate-600 border-slate-300'
-      default: return 'bg-slate-100 text-slate-800 border-slate-200'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'NEW': return 'รอดำเนินการ'
-      case 'WAITING_PAYMENT': return 'รอชำระเงิน'
-      case 'PAYMENT_REJECTED': return 'สลิปไม่ผ่าน/รอแนบใหม่'
-      case 'PAID': return 'ชำระเงินแล้ว'
-      case 'ORDERED': return 'สั่งซื้อสำเร็จ'
-      case 'CHINA_WAREHOUSE': return 'ถึงโกดังจีน'
-      case 'SHIPPING': return 'อยู่ระหว่างจัดส่ง'
-      case 'THAILAND_WAREHOUSE': return 'ถึงโกดังไทย'
-      case 'OUT_FOR_DELIVERY': return 'กำลังนำส่งลูกค้า'
-      case 'DELIVERED': return 'จัดส่งสำเร็จ'
-      case 'CANCELED': return 'ยกเลิกรายการ'
-      default: return status
-    }
-  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-10">
@@ -200,8 +167,8 @@ export default async function DashboardOverview() {
                           {new Date(order.created_at).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getStatusBadge(order.status)}`}>
-                            {getStatusText(order.status)}
+                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getCustomerOrderStatusBadge(order.status, order)}`}>
+                            {getCustomerOrderStatusText(order.status, order)}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">

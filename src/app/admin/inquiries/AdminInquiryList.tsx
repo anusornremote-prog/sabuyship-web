@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Search, PlusCircle, ExternalLink, Globe, FileText, CheckCircle2, XCircle, Calculator } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
@@ -96,6 +98,12 @@ export default function AdminInquiryList({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [archiveReason, setArchiveReason] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    type: "reject" | "approve-import" | "cleanup"
+    inquiryId?: string
+    inquiry?: any
+  } | null>(null)
+  const [confirmBusy, setConfirmBusy] = useState(false)
 
   // Form input fields
   const [productCost, setProductCost] = useState("")
@@ -291,67 +299,64 @@ export default function AdminInquiryList({
     }
   }
 
-  const handleRejectInquiry = async (inquiryId: string) => {
-    if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำขอประเมินราคานี้?")) return
-
-    try {
-      const response = await fetch("/api/inquiry/admin", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [inquiryId], reason: "ยกเลิกคำขอโดยแอดมิน" }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || "ไม่สามารถยกเลิกคำขอได้")
-      setInquiries((current) => current.filter((inquiry) => inquiry.id !== inquiryId))
-      router.refresh()
-    } catch (err) {
-      console.error(err)
-      alert("ไม่สามารถปฏิเสธคำขอราคาได้")
-    }
+  const handleRejectInquiry = (inquiryId: string) => {
+    setPendingConfirm({ type: "reject", inquiryId })
   }
 
-  const handleApproveImportOnly = async (inquiry: any) => {
-    if (!confirm("ยืนยันการรับเข้าโกดังจีนสำหรับรายการ 'นำเข้าอย่างเดียว' ?\n(ระบบจะสร้างออเดอร์ในสถานะ 'รอสินค้าเข้าโกดังจีน' และข้ามการเก็บเงินรอบ 1 ทันที)")) return
-    
-    try {
-      setIsSubmitting(true)
-      const res = await fetch("/api/inquiry/admin/approve-import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inquiry_id: inquiry.id })
-      })
+  const handleApproveImportOnly = (inquiry: any) => {
+    setPendingConfirm({ type: "approve-import", inquiry })
+  }
 
-      const result = await res.json()
-      if (!res.ok) {
-        throw new Error(result.error || "Failed to approve import only inquiry")
+  const handleCleanupImages = () => {
+    setPendingConfirm({ type: "cleanup" })
+  }
+
+  const executePendingConfirm = async () => {
+    if (!pendingConfirm) return
+
+    try {
+      setConfirmBusy(true)
+      if (pendingConfirm.type === "reject" && pendingConfirm.inquiryId) {
+        const inquiryId = pendingConfirm.inquiryId
+        const response = await fetch("/api/inquiry/admin", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: [inquiryId], reason: "ยกเลิกคำขอโดยแอดมิน" }),
+        })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || "ไม่สามารถยกเลิกคำขอได้")
+        setInquiries((current) => current.filter((inquiry) => inquiry.id !== inquiryId))
+        toast.success("ยกเลิกคำขอประเมินราคาเรียบร้อยแล้ว")
+        router.refresh()
+      } else if (pendingConfirm.type === "approve-import" && pendingConfirm.inquiry) {
+        setIsSubmitting(true)
+        const res = await fetch("/api/inquiry/admin/approve-import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inquiry_id: pendingConfirm.inquiry.id }),
+        })
+        const result = await res.json()
+        if (!res.ok) {
+          throw new Error(result.error || "ไม่สามารถอนุมัติรายการนำเข้าอย่างเดียวได้")
+        }
+        toast.success("สร้างออเดอร์สำเร็จ! สินค้าอยู่ในสถานะรอเข้าโกดังจีน")
+        router.refresh()
+      } else if (pendingConfirm.type === "cleanup") {
+        setIsCleaning(true)
+        const res = await fetch("/api/inquiry/cleanup", { method: "POST" })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "ล้างรูปภาพไม่สำเร็จ")
+        toast.success(`ล้างรูปภาพสำเร็จแล้ว ${data.count} รูปภาพ จากทั้งหมดที่เจอ ${data.totalFound || 0} รายการ`)
+        router.refresh()
       }
-      
-      alert("สร้างออเดอร์สำเร็จ! สินค้าอยู่ในสถานะรอเข้าโกดังจีน")
-      router.refresh()
-    } catch (err: any) {
-      console.error(err)
-      alert(err.message || "เกิดข้อผิดพลาดในการอนุมัติ")
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
-  const handleCleanupImages = async () => {
-    if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างรูปภาพเก่าที่เกิน 90 วันทิ้ง? (ข้อมูลข้อความยังอยู่ครบ แต่รูปจะถูกลบเพื่อคืนพื้นที่)")) return
-    
-    setIsCleaning(true)
-    try {
-      const res = await fetch("/api/inquiry/cleanup", { method: "POST" })
-      const data = await res.json()
-      
-      if (!res.ok) throw new Error(data.error || "Cleanup failed")
-      
-      alert(`ล้างรูปภาพสำเร็จแล้ว ${data.count} รูปภาพ จากทั้งหมดที่เจอ ${data.totalFound || 0} รายการ`)
-      router.refresh()
+      setPendingConfirm(null)
     } catch (err: any) {
       console.error(err)
-      alert("เกิดข้อผิดพลาด: " + err.message)
+      toast.error(err?.message || "เกิดข้อผิดพลาดในการดำเนินการ")
     } finally {
+      setConfirmBusy(false)
+      setIsSubmitting(false)
       setIsCleaning(false)
     }
   }
@@ -372,7 +377,7 @@ export default function AdminInquiryList({
 
   const handleDeleteSelected = async () => {
     if (!archiveReason.trim()) {
-      alert("กรุณาระบุเหตุผลที่เก็บรายการ")
+      toast.warning("กรุณาระบุเหตุผลที่เก็บรายการ")
       return
     }
 
@@ -386,7 +391,7 @@ export default function AdminInquiryList({
 
       if (!res.ok) {
         const result = await res.json()
-        throw new Error(result.error || "Failed to delete inquiries")
+        throw new Error(result.error || "ไม่สามารถเก็บรายการได้")
       }
 
       setInquiries(prev => prev.filter((inq: any) => !selectedIds.includes(inq.id)))
@@ -394,9 +399,9 @@ export default function AdminInquiryList({
       setIsDeleteModalOpen(false)
       setArchiveReason("")
       router.refresh()
-      alert("เก็บรายการที่เลือกออกจากงานปัจจุบันเรียบร้อยแล้ว โดยประวัติเดิมยังอยู่ครบ")
+      toast.success("เก็บรายการที่เลือกออกจากงานปัจจุบันเรียบร้อยแล้ว โดยประวัติเดิมยังอยู่ครบ")
     } catch (error: any) {
-      alert("เกิดข้อผิดพลาด: " + error.message)
+      toast.error("เกิดข้อผิดพลาด: " + error.message)
     } finally {
       setIsDeleting(false)
     }
@@ -424,10 +429,10 @@ export default function AdminInquiryList({
 
       const fileName = `sabuyship-inquiries-${new Date().toISOString().split('T')[0]}.xlsx`
       await exportSpreadsheet(exportData, "Inquiries", fileName)
-      
+      toast.success("ส่งออกไฟล์ Excel เรียบร้อยแล้ว")
     } catch (err) {
       console.error("Export error:", err)
-      alert("ไม่สามารถสร้างไฟล์ Excel ได้")
+      toast.error("ไม่สามารถสร้างไฟล์ Excel ได้")
     }
   }
 
@@ -1277,6 +1282,37 @@ export default function AdminInquiryList({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {pendingConfirm && (
+        <ConfirmDialog
+          open={Boolean(pendingConfirm)}
+          onOpenChange={(open) => !open && setPendingConfirm(null)}
+          title={
+            pendingConfirm.type === "reject"
+              ? "ยืนยันการยกเลิกคำขอประเมินราคา"
+              : pendingConfirm.type === "approve-import"
+                ? "ยืนยันการรับเข้าโกดังจีน (นำเข้าอย่างเดียว)"
+                : "ยืนยันล้างรูปภาพเก่าเกิน 90 วัน"
+          }
+          description={
+            pendingConfirm.type === "reject"
+              ? "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำขอประเมินราคานี้?"
+              : pendingConfirm.type === "approve-import"
+                ? "ระบบจะสร้างออเดอร์ในสถานะ 'รอสินค้าเข้าโกดังจีน' และข้ามการเก็บเงินรอบ 1 ทันที"
+                : "ข้อมูลข้อความยังอยู่ครบ แต่รูปภาพที่เกิน 90 วันจะถูกลบออกเพื่อคืนพื้นที่จัดเก็บ"
+          }
+          confirmLabel={
+            pendingConfirm.type === "reject"
+              ? "ยืนยันยกเลิกคำขอ"
+              : pendingConfirm.type === "cleanup"
+                ? "ล้างรูปภาพ"
+                : "ยืนยันสร้างออเดอร์"
+          }
+          variant={pendingConfirm.type === "approve-import" ? "default" : "destructive"}
+          loading={confirmBusy}
+          onConfirm={executePendingConfirm}
+        />
+      )}
     </div>
   )
 }

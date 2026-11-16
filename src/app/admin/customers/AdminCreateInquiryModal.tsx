@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
@@ -127,7 +128,7 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล")
 
-      alert(`สร้างคำขอประเมินราคาสำเร็จ! หมายเลข: ${data.inquiry_number}`)
+      toast.success(`สร้างคำขอประเมินราคาสำเร็จ! หมายเลข: ${data.inquiry_number}`)
       
       // Reset form
       setItems([{ url: "", quantity: 1, remark: "", file: null, wooden_crate: false }])

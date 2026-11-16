@@ -10,7 +10,7 @@
 | Phase | เป้าหมายหลัก | ความเร่งด่วน | ขอบเขตโดยย่อ |
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Quick Wins & Critical Stability** | `P0 Critical` | **[DONE]** ปิดจุดหลุด Error Stack Trace, แก้ปุ่มลอยทับซ้อนบนมือถือ, แยก Modal ลูกค้าออกจาก Shell แอดมิน |
-| **Phase 2** | **3-Round Payment Clarity & Modern Feedback** | `P1 High` | ปรับ Stepper/ป้ายสถานะ 3 รอบให้ไม่งง, ลบโค้ดอังกฤษดิบ, เลิกใช้ `alert/confirm/prompt/reload` และอัปเกรดหน้า Admin/Charts |
+| **Phase 2** | **3-Round Payment Clarity & Modern Feedback** | `P1 High` | **[DONE]** ปรับ Stepper/ป้ายสถานะ 3 รอบให้ไม่งง, ลบโค้ดอังกฤษดิบ, เลิกใช้ `alert/confirm/prompt/reload` และอัปเกรดหน้า Admin/Charts |
 | **Phase 3** | **Design System, Touch Targets & A11y Polish** | `P2 Medium` | รวม Modal เป็น Radix มาตรฐานเดียว, ขยาย Touch Target ≥44px, ผูก Form Labels/ARIA, แก้ Token & i18n ให้ครบ |
 
 ---
@@ -67,9 +67,9 @@
 
 ---
 
-## Phase 2: 3-Round Payment Clarity, Modern Dialogs & Admin Polish (`P1`)
+## Phase 2: 3-Round Payment Clarity, Modern Dialogs & Admin Polish (`P1`) — `[DONE 2026-11-16]`
 
-### `UX-2.1` ปรับความชัดเจนของสถานะการชำระเงิน 3 รอบฝั่งลูกค้า
+### [x] `UX-2.1` ปรับความชัดเจนของสถานะการชำระเงิน 3 รอบฝั่งลูกค้า
 - **Priority:** `P1 High`
 - **UI/UX Pro Max Ref:** `#49 Logistics`, `#166 Status Timeline`, `#113 Essential Text Truncation`
 - **Target Files:**
@@ -88,7 +88,7 @@
   3. รวมฟังก์ชัน `getCustomerOrderStatusLabel()` และสี Badge ไว้ใน `src/lib/constants.ts` (หรือ `src/lib/order-status.ts`) ที่เดียว ให้ `dashboard/page.tsx`, `UnifiedOrderList.tsx` และ `dashboard/orders/[id]/page.tsx` แสดงข้อความภาษาไทยตรงกัน 100% โดยตัดโค้ดอังกฤษวงเล็บท้ายออก
 - **Definition of Done:** ลูกค้าดูสถานะออเดอร์เดียวกันจากทุกหน้าได้ข้อความตรงกัน ไม่มีโค้ดอังกฤษ และไม่เข้าใจผิดว่าต้องโอนรอบ 2/3 ก่อนของถึงโกดัง
 
-### `UX-2.2` เปลี่ยน Browser Native Dialogs (`alert` / `confirm` / `prompt`) และ `window.location.reload()` เป็น UI มาตรฐาน
+### [x] `UX-2.2` เปลี่ยน Browser Native Dialogs (`alert` / `confirm` / `prompt`) และ `window.location.reload()` เป็น UI มาตรฐาน
 - **Priority:** `P1 High`
 - **UI/UX Pro Max Ref:** `#32 Loading Buttons`, `#35 Confirmation Dialogs`, `#42 AlertDialog for Confirms`
 - **Target Files:**
@@ -100,7 +100,7 @@
   2. เปลี่ยน `alert(...)` ทุกจุดเป็น `toast.success(...)` / `toast.error(...)` ของ Sonner
   3. เปลี่ยน `window.location.reload()` เป็น `router.refresh()` พร้อม state update ทันที
 
-### `UX-2.3` ยกระดับ Admin Imports, Dashboard Charts, Breadcrumbs และ Status Colors
+### [x] `UX-2.3` ยกระดับ Admin Imports, Dashboard Charts, Breadcrumbs และ Status Colors
 - **Priority:** `P1 High`
 - **UI/UX Pro Max Ref:** `#7 Analytics Dashboard`, `#102 Inventory/Warehouse`, `#112 Text Reflow`
 - **Target Files:**

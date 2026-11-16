@@ -10,6 +10,7 @@ import { PaymentStepper } from "@/components/orders/PaymentStepper"
 import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
+import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -106,53 +107,6 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
     .eq("order_id", order.id)
     .order("created_at", { ascending: false })
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'NEW': return 'bg-blue-100 text-blue-800 border-none'
-      case 'WAITING_PAYMENT': return 'bg-amber-100 text-amber-800 border-none'
-      case 'PAYMENT_REJECTED': return 'bg-rose-100 text-rose-800 border-none'
-      case 'PAID':
-      case 'ORDERED': return 'bg-green-100 text-green-800 border-none'
-      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800 border-none'
-      case 'SHIPPING': return 'bg-sky-100 text-sky-800 border-none'
-      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800 border-none'
-      case 'OUT_FOR_DELIVERY': return 'bg-indigo-100 text-indigo-800 border-none'
-      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800 border-none'
-      case 'CANCELED': return 'bg-slate-200 text-slate-700 border-none'
-      default: return 'bg-slate-100 text-slate-800 border-none'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'NEW': return 'รอดำเนินการ (NEW)'
-      case 'WAITING_PAYMENT': return 'รอชำระเงิน (WAITING PAYMENT)'
-      case 'PAID': return 'ชำระเงินแล้ว (PAID)'
-      case 'PAID_ROUND_1': return 'ชำระเงินรอบที่ 1 สำเร็จ (ค่าสินค้า)'
-      case 'UPLOADED_ROUND_1': return 'รอตรวจสอบการชำระเงิน รอบที่ 1'
-      case 'PAID_ROUND_2': return 'ชำระเงินรอบที่ 2 สำเร็จ (ค่าขนส่งจีน-ไทย)'
-      case 'UPLOADED_ROUND_2': return 'รอตรวจสอบการชำระเงิน รอบที่ 2'
-      case 'QUOTED_ROUND_2': return 'ประเมินค่าขนส่งจีน-ไทย (รอบที่ 2)'
-      case 'PAID_ROUND_3': return 'ชำระเงินรอบที่ 3 สำเร็จ (ค่าจัดส่งในไทย)'
-      case 'UPLOADED_ROUND_3': return 'รอตรวจสอบการชำระเงิน รอบที่ 3'
-      case 'QUOTED_ROUND_3': return 'ประเมินค่าจัดส่งในไทย (รอบที่ 3)'
-      case 'PAYMENT_REJECTED': return 'สลิปถูกปฏิเสธ (REJECTED)'
-      case 'ORDERED': return 'สั่งซื้อสำเร็จ (ORDERED)'
-      case 'CHINA_TRANSIT': return 'ร้านค้าจีนจัดส่งแล้ว (กำลังไปโกดังจีน)'
-      case 'CHINA_WAREHOUSE': return 'สินค้าถึงโกดังจีน (CHINA WAREHOUSE)'
-      case 'SHIPPING': return 'อยู่ระหว่างจัดส่งมาไทย (SHIPPING)'
-      case 'THAILAND_WAREHOUSE': return 'สินค้าถึงโกดังไทย (THAILAND WAREHOUSE)'
-      case 'CONSOLIDATION_PARENT': return 'รวมพัสดุเพื่อจัดส่งในไทย (ออเดอร์หลัก)'
-      case 'CONSOLIDATED': return 'รวมจัดส่งกับออเดอร์หลัก'
-      case 'OUT_FOR_DELIVERY': return 'อยู่ระหว่างนำจ่าย (OUT FOR DELIVERY)'
-      case 'DELIVERED': return 'จัดส่งสำเร็จ (DELIVERED)'
-      case 'ITEM_OUT_OF_STOCK': return 'สินค้าบางรายการหมดสต็อก'
-      case 'ORDER_CANCELED':
-      case 'CANCELED': return 'ยกเลิกรายการ (CANCELED)'
-      default: return status
-    }
-  }
-
   const formatCurrency = (amount: any) => {
     return `฿ ${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
@@ -195,8 +149,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           </div>
         </div>
         <div className="sm:ml-auto flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className={`text-sm px-3 py-1 font-bold ${getStatusBadge(order.status)}`}>
-            {getStatusText(order.status)}
+          <Badge variant="outline" className={`text-sm px-3 py-1 font-bold ${getCustomerOrderStatusBadge(order.status, order)}`}>
+            {getCustomerOrderStatusText(order.status, order)}
           </Badge>
           
           <Link href={`/dashboard/orders/${order.id}/invoice`} target="_blank">
@@ -493,9 +447,14 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between pt-2">
-                    <span className="font-bold text-lg text-slate-950">ยอดรวมสุทธิ</span>
-                    <span className="font-bold text-lg text-primary">{formatCurrency(quotation.total_price)}</span>
+                  <div className="pt-2 space-y-1">
+                    <div className="flex justify-between gap-2">
+                      <span className="font-bold text-base sm:text-lg text-slate-950">ยอดชำระรอบที่ 1 (ค่าสินค้า + ส่งในจีน)</span>
+                      <span className="font-bold text-base sm:text-lg text-primary shrink-0">{formatCurrency(quotation.total_price)}</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      * ค่าขนส่งจีน-ไทย (รอบ 2) และค่าจัดส่งในไทย (รอบ 3) จะแจ้งตามน้ำหนักและขนาดจริงเมื่อสินค้าถึงโกดัง
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -620,7 +579,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   trackingLogs.map((log: any, index: number) => (
                     <TimelineItem 
                       key={log.id}
-                      status={getStatusText(log.status)} 
+                      status={getCustomerOrderStatusText(log.status)} 
                       date={log.created_at ? new Date(log.created_at).toLocaleString('th-TH') : ''}
                       description={log.notes || undefined} 
                       isActive={index === 0}
@@ -629,7 +588,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                   ))
                 ) : (
                   <TimelineItem 
-                    status="รอดำเนินการ (NEW)" 
+                    status="รอดำเนินการ" 
                     date={order.created_at ? new Date(order.created_at).toLocaleString('th-TH') : ''}
                     description="สร้างคำสั่งซื้อเข้าระบบเรียบร้อยแล้ว" 
                     isActive={true}

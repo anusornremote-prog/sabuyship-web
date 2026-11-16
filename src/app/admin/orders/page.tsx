@@ -1,13 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Calendar, ChevronDown, Eye, FileText, Loader2, MapPin, PackagePlus, PackageX, RotateCcw, Search, Truck, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { exportSpreadsheet } from "@/lib/spreadsheet"
+import { getAdminOrderStageBadge } from "@/lib/order-status"
 import { PaymentApprovalModal } from "@/components/admin/PaymentApprovalModal"
 import { QuoteModal } from "@/components/admin/QuoteModal"
 import { OutOfStockModal } from "@/components/admin/OutOfStockModal"
@@ -33,6 +36,11 @@ export default function AdminOrders() {
   
   // Status update modal states
   const [editingOrder, setEditingOrder] = useState<any | null>(null)
+  const [pendingAction, setPendingAction] = useState<{
+    type: "mark-arrived" | "self-pickup" | "flat-rate" | "manual-payment"
+    order: any
+  } | null>(null)
+  const [actionSubmitting, setActionSubmitting] = useState(false)
   const [newStatus, setNewStatus] = useState("")
   const [trackingNumber, setTrackingNumber] = useState("")
   const [trackingNotes, setTrackingNotes] = useState("")
@@ -298,7 +306,7 @@ export default function AdminOrders() {
 
   const handleExport = async () => {
     if (selectedOrderIds.length === 0) {
-      alert("กรุณาติ๊กเลือกออเดอร์ที่ต้องการส่งออก (Export) อย่างน้อย 1 รายการ")
+      toast.warning("กรุณาติ๊กเลือกออเดอร์ที่ต้องการส่งออก (Export) อย่างน้อย 1 รายการ")
       return
     }
 
@@ -330,7 +338,7 @@ export default function AdminOrders() {
       if (error) throw error
 
       if (!data || data.length === 0) {
-        alert("ไม่มีข้อมูลสำหรับส่งออก")
+        toast.warning("ไม่มีข้อมูลสำหรับส่งออก")
         return
       }
 
@@ -356,10 +364,10 @@ export default function AdminOrders() {
 
       const fileName = `sabuyship-orders-${new Date().toISOString().split('T')[0]}.xlsx`
       await exportSpreadsheet(exportData, "Orders", fileName)
-      
+      toast.success("ส่งออกไฟล์ Excel เรียบร้อยแล้ว")
     } catch (err: any) {
       console.error("Export error:", err.message)
-      alert("เกิดข้อผิดพลาดในการส่งออกไฟล์")
+      toast.error("เกิดข้อผิดพลาดในการส่งออกไฟล์")
     }
   }
 
@@ -380,70 +388,18 @@ export default function AdminOrders() {
     setOutOfStockModalOpen(true)
   }
 
-  const handleMarkArrivedInThailand = async (order: any) => {
-    if (!confirm(`ยืนยันอัปเดตสถานะออเดอร์ ${order.order_number} เป็น "สินค้าถึงไทยแล้ว" (โดยยังไม่ใส่ราคา เพื่อให้ลูกค้าเลือกวิธีจัดส่งในไทยก่อน)?`)) return
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/admin/orders/${order.id}/status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "THAILAND_WAREHOUSE",
-          tracking_number: order.tracking_number || "",
-          shipping_company: order.shipping_company || "",
-          reason: "สินค้าเดินทางถึงโกดังไทยแล้ว กรุณาเข้าไปเลือกวิธีจัดส่งในไทยที่หน้ารายละเอียดคำสั่งซื้อ เพื่อให้แอดมินประเมินค่าจัดส่งรอบที่ 3",
-        }),
-      })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || "ไม่สามารถอัปเดตสถานะได้")
-      alert("อัปเดตสถานะเป็น 'สินค้าถึงไทยแล้ว' สำเร็จ!")
-      fetchOrders()
-    } catch (err: any) {
-      alert(err.message || "เกิดข้อผิดพลาดในการอัปเดตสถานะ")
-    } finally {
-      setLoading(false)
-    }
+  const handleMarkArrivedInThailand = (order: any) => {
+    setPendingAction({ type: "mark-arrived", order })
   }
 
-  const handleArrivedInThailand = async (order: any) => {
+  const handleArrivedInThailand = (order: any) => {
     if (order.shipping_company === "รับสินค้าด้วยตัวเองที่โกดัง") {
-      if (!confirm(`ออเดอร์ ${order.order_number} เลือกร้านมารับเอง ยืนยันเปลี่ยนสถานะเป็นถึงโกดังไทย? (จะไม่มีการเรียกเก็บเงินรอบ 3)`)) return;
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/order/${order.id}/quote-round-3`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ shipping_cost_th_th: 0 })
-        });
-        if (!res.ok) throw new Error("Failed to update status");
-        
-        alert("อัปเดตสถานะสำเร็จ");
-        fetchOrders();
-      } catch (err: any) {
-        alert(err.message);
-      } finally {
-        setLoading(false);
-      }
+      setPendingAction({ type: "self-pickup", order })
     } else if (order.shipping_company === "จัดส่งแบบเหมาจ่าย(เฉพาะกรุงเทพและปริมณฑล)") {
-      if (!confirm(`ออเดอร์ ${order.order_number} เลือกจัดส่งแบบเหมาจ่าย ยืนยันเปลี่ยนสถานะเป็นถึงโกดังไทยและคิดค่าจัดส่ง 200 บาท?`)) return;
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/order/${order.id}/quote-round-3`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ shipping_cost_th_th: 200 })
-        });
-        if (!res.ok) throw new Error("Failed to update status");
-        alert("อัปเดตค่าจัดส่งเหมาจ่ายสำเร็จ");
-        fetchOrders();
-      } catch (err: any) {
-        alert(err.message);
-      } finally {
-        setLoading(false);
-      }
+      setPendingAction({ type: "flat-rate", order })
     } else {
       // Default / Domestic carrier / Not selected
-      handleOpenQuoteModal(order, 3);
+      handleOpenQuoteModal(order, 3)
     }
   }
 
@@ -496,28 +452,66 @@ export default function AdminOrders() {
     }
   }
 
-  const handleManualPayment = async (order: any) => {
-    if (!confirm(`ยืนยันการรับชำระเงินสำหรับออเดอร์ ${order.order_number}?`)) return
+  const handleManualPayment = (order: any) => {
+    setPendingAction({ type: "manual-payment", order })
+  }
+
+  const executePendingOrderAction = async (values: Record<string, string>) => {
+    if (!pendingAction) return
+    const { type, order } = pendingAction
 
     try {
-      setLoading(true)
-      const reason = prompt("ระบุช่องทางหรือเหตุผลที่ยืนยันรับเงิน เช่น ตรวจ Statement ธนาคารแล้ว")?.trim()
-      if (!reason) return
-      const reference = prompt("เลขอ้างอิงการรับเงิน (ถ้ามี)")?.trim() || ""
-      const response = await fetch(`/api/admin/orders/${order.id}/manual-payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason, payment_reference: reference }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || "ไม่สามารถยืนยันรับเงินได้")
+      setActionSubmitting(true)
+      if (type === "mark-arrived") {
+        const res = await fetch(`/api/admin/orders/${order.id}/status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "THAILAND_WAREHOUSE",
+            tracking_number: order.tracking_number || "",
+            shipping_company: order.shipping_company || "",
+            reason: "สินค้าเดินทางถึงโกดังไทยแล้ว กรุณาเข้าไปเลือกวิธีจัดส่งในไทยที่หน้ารายละเอียดคำสั่งซื้อ เพื่อให้แอดมินประเมินค่าจัดส่งรอบที่ 3",
+          }),
+        })
+        const result = await res.json()
+        if (!res.ok) throw new Error(result.error || "ไม่สามารถอัปเดตสถานะได้")
+        toast.success("อัปเดตสถานะเป็น 'สินค้าถึงไทยแล้ว' สำเร็จ!")
+      } else if (type === "self-pickup") {
+        const res = await fetch(`/api/order/${order.id}/quote-round-3`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shipping_cost_th_th: 0 }),
+        })
+        if (!res.ok) throw new Error("ไม่สามารถอัปเดตสถานะได้")
+        toast.success("อัปเดตสถานะสำเร็จ")
+      } else if (type === "flat-rate") {
+        const res = await fetch(`/api/order/${order.id}/quote-round-3`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shipping_cost_th_th: 200 }),
+        })
+        if (!res.ok) throw new Error("ไม่สามารถอัปเดตสถานะได้")
+        toast.success("อัปเดตค่าจัดส่งเหมาจ่ายสำเร็จ")
+      } else if (type === "manual-payment") {
+        const response = await fetch(`/api/admin/orders/${order.id}/manual-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reason: values.reason || "",
+            payment_reference: values.payment_reference || "",
+          }),
+        })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || "ไม่สามารถยืนยันรับเงินได้")
+        toast.success("อัปเดตสถานะการชำระเงินสำเร็จ!")
+      }
 
-      alert("อัปเดตสถานะการชำระเงินสำเร็จ!")
+      setPendingAction(null)
       fetchOrders()
     } catch (err: any) {
-      alert(err.message || "เกิดข้อผิดพลาดในการอัปเดต")
+      toast.error(err.message || "เกิดข้อผิดพลาดในการดำเนินการ")
     } finally {
-      setLoading(false)
+      setActionSubmitting(false)
     }
   }
 
@@ -541,16 +535,7 @@ export default function AdminOrders() {
       if (order.payment_round_3_status === 'UPLOADED') return 'bg-amber-100 text-amber-800'
     }
 
-    switch (status) {
-      case 'ORDERED': return 'bg-blue-100 text-blue-800'
-      case 'CHINA_WAREHOUSE': return 'bg-purple-100 text-purple-800'
-      case 'SHIPPING': return 'bg-sky-100 text-sky-800'
-      case 'THAILAND_WAREHOUSE': return 'bg-teal-100 text-teal-800'
-      case 'OUT_FOR_DELIVERY': return 'bg-orange-100 text-orange-800'
-      case 'DELIVERED': return 'bg-emerald-100 text-emerald-800'
-      case 'PAID': return 'bg-green-100 text-green-800'
-      default: return 'bg-slate-100 text-slate-800'
-    }
+    return getAdminOrderStageBadge(status)
   }
 
   const getStatusText = (status: string, order: any) => {
@@ -1323,6 +1308,51 @@ export default function AdminOrders() {
           fetchOrders()
         }}
       />
+
+      {pendingAction && (
+        <ConfirmDialog
+          open={Boolean(pendingAction)}
+          onOpenChange={(open) => !open && setPendingAction(null)}
+          title={
+            pendingAction.type === "mark-arrived"
+              ? `ยืนยันสินค้าถึงไทย (${pendingAction.order.order_number})`
+              : pendingAction.type === "self-pickup"
+                ? `ยืนยันรับสินค้าเองที่โกดัง (${pendingAction.order.order_number})`
+                : pendingAction.type === "flat-rate"
+                  ? `ยืนยันค่าจัดส่งเหมาจ่าย 200 บาท (${pendingAction.order.order_number})`
+                  : `ยืนยันรับชำระเงินแมนนวล (${pendingAction.order.order_number})`
+          }
+          description={
+            pendingAction.type === "mark-arrived"
+              ? 'ยืนยันอัปเดตสถานะเป็น "สินค้าถึงไทยแล้ว" (โดยยังไม่ใส่ราคา เพื่อให้ลูกค้าเลือกวิธีจัดส่งในไทยก่อน)'
+              : pendingAction.type === "self-pickup"
+                ? "ลูกค้ารับสินค้าเองที่โกดัง ระบบจะเปลี่ยนสถานะเป็นถึงโกดังไทยโดยไม่มีค่าจัดส่งรอบ 3"
+                : pendingAction.type === "flat-rate"
+                  ? "ยืนยันเปลี่ยนสถานะเป็นถึงโกดังไทยและคิดค่าจัดส่งเหมาจ่าย 200 บาท"
+                  : "กรอกเหตุผลและเลขอ้างอิงการรับชำระเงินเพื่อบันทึกในระบบ"
+          }
+          confirmLabel={pendingAction.type === "manual-payment" ? "ยืนยันรับเงิน" : "ยืนยันอัปเดต"}
+          loading={actionSubmitting}
+          fields={
+            pendingAction.type === "manual-payment"
+              ? [
+                  {
+                    name: "reason",
+                    label: "ช่องทางหรือเหตุผลที่ยืนยันรับเงิน",
+                    placeholder: "เช่น ตรวจ Statement ธนาคารแล้ว",
+                    required: true,
+                  },
+                  {
+                    name: "payment_reference",
+                    label: "เลขอ้างอิงการรับเงิน (ถ้ามี)",
+                    placeholder: "เลขสลิป / หมายเลขอ้างอิง",
+                  },
+                ]
+              : undefined
+          }
+          onConfirm={executePendingOrderAction}
+        />
+      )}
     </div>
   )
 }

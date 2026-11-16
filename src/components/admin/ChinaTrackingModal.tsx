@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, ExternalLink, Plus, Trash2, Package, Store, Tag } from "lucide-react"
 import { toast } from "sonner"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { getMarketplaceInfo } from "@/lib/product-link"
 
 interface ChinaTrackingModalProps {
@@ -36,6 +37,8 @@ export function ChinaTrackingModal({
   const [notifyCustomer, setNotifyCustomer] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [confirmEmptyOpen, setConfirmEmptyOpen] = useState(false)
+  const [pendingPayload, setPendingPayload] = useState<any>(null)
 
   useEffect(() => {
     if (isOpen && order) {
@@ -116,16 +119,22 @@ export function ChinaTrackingModal({
       }
     })
 
-    const hasAny = cleanedPerItem.some((it) => it.tracking_cn_cn.length > 0)
-    if (!hasAny && !confirm("คุณยังไม่ได้กรอกเลขแทร็กจีน ต้องการบันทึกเป็นค่าว่างใช่หรือไม่?")) {
-      return
-    }
-
     const payload = {
       notify_customer: notifyCustomer,
       items: cleanedPerItem,
     }
 
+    const hasAny = cleanedPerItem.some((it) => it.tracking_cn_cn.length > 0)
+    if (!hasAny) {
+      setPendingPayload(payload)
+      setConfirmEmptyOpen(true)
+      return
+    }
+
+    await executeSave(payload)
+  }
+
+  const executeSave = async (payload: any) => {
     try {
       setLoading(true)
       setError("")
@@ -406,6 +415,25 @@ export function ChinaTrackingModal({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <ConfirmDialog
+        open={confirmEmptyOpen}
+        onOpenChange={(open) => {
+          setConfirmEmptyOpen(open)
+          if (!open) setPendingPayload(null)
+        }}
+        title="ยืนยันบันทึกเลขแทร็กจีนเป็นค่าว่าง"
+        description="คุณยังไม่ได้กรอกเลขแทร็กจีน ต้องการบันทึกเป็นค่าว่างใช่หรือไม่?"
+        confirmLabel="บันทึกเป็นค่าว่าง"
+        loading={loading}
+        onConfirm={async () => {
+          if (pendingPayload) {
+            await executeSave(pendingPayload)
+            setConfirmEmptyOpen(false)
+            setPendingPayload(null)
+          }
+        }}
+      />
     </Dialog>
   )
 }

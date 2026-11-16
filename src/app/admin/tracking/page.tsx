@@ -1,21 +1,24 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Search, Truck, Loader2, Package, Clock, CheckCircle, Database } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import { TrackingUpdateModal } from "./TrackingUpdateModal"
 import { ExcelUploadModal } from "./ExcelUploadModal"
 import { FileSpreadsheet } from "lucide-react"
+import { getAdminOrderStageBadge } from "@/lib/order-status"
 
 const STATUS_CONFIG: Record<string, { label: string, color: string, icon: any }> = {
-  SHIPPING: { label: "กำลังจัดส่งมาไทย", color: "bg-blue-100 text-blue-700 border-blue-200", icon: Truck },
-  CHINA_WAREHOUSE: { label: "ถึงโกดังจีน", color: "bg-violet-100 text-violet-700 border-violet-200", icon: Package },
-  THAILAND_WAREHOUSE: { label: "ถึงโกดังไทยแล้ว", color: "bg-purple-100 text-purple-700 border-purple-200", icon: Package },
-  OUT_FOR_DELIVERY: { label: "กำลังนำส่งลูกค้า", color: "bg-orange-100 text-orange-700 border-orange-200", icon: Truck },
-  DELIVERED: { label: "จัดส่งแล้ว", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: CheckCircle }
+  SHIPPING: { label: "กำลังจัดส่งมาไทย", color: getAdminOrderStageBadge("SHIPPING"), icon: Truck },
+  CHINA_WAREHOUSE: { label: "ถึงโกดังจีน", color: getAdminOrderStageBadge("CHINA_WAREHOUSE"), icon: Package },
+  THAILAND_WAREHOUSE: { label: "ถึงโกดังไทยแล้ว", color: getAdminOrderStageBadge("THAILAND_WAREHOUSE"), icon: Package },
+  OUT_FOR_DELIVERY: { label: "กำลังนำส่งลูกค้า", color: getAdminOrderStageBadge("OUT_FOR_DELIVERY"), icon: Truck },
+  DELIVERED: { label: "จัดส่งแล้ว", color: getAdminOrderStageBadge("DELIVERED"), icon: CheckCircle }
 }
 
 export default function AdminTrackingPage() {
@@ -30,6 +33,7 @@ export default function AdminTrackingPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [loadError, setLoadError] = useState("")
+  const [pendingShipmentPayment, setPendingShipmentPayment] = useState<any>(null)
 
   const fetchOrders = async () => {
     try {
@@ -104,25 +108,29 @@ export default function AdminTrackingPage() {
     setModalOpen(true)
   }
 
-  const handleManualShipmentPayment = async (shipment: any) => {
-    if (!confirm(`ยืนยันการรับชำระเงินค่าจัดส่งสำหรับพัสดุ ${shipment.tracking_number || '-'}?`)) return
+  const handleManualShipmentPayment = (shipment: any) => {
+    setPendingShipmentPayment(shipment)
+  }
+
+  const executeManualShipmentPayment = async (values: Record<string, string>) => {
+    if (!pendingShipmentPayment) return
 
     try {
       setLoadingShipments(true)
-      
-      const reference = prompt("เลขอ้างอิงการรับเงิน (ถ้ามี)")?.trim() || ""
-      const response = await fetch(`/api/admin/shipments/${shipment.id}/payment`, {
+
+      const response = await fetch(`/api/admin/shipments/${pendingShipmentPayment.id}/payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_reference: reference }),
+        body: JSON.stringify({ payment_reference: values.payment_reference || "" }),
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "ไม่สามารถบันทึกการรับเงินได้")
 
-      alert("บันทึกการรับชำระเงินค่าขนส่งสำเร็จ!")
+      toast.success("บันทึกการรับชำระเงินค่าขนส่งสำเร็จ!")
+      setPendingShipmentPayment(null)
       fetchShipments()
     } catch (err: any) {
-      alert(err.message || "เกิดข้อผิดพลาดในการบันทึก")
+      toast.error(err.message || "เกิดข้อผิดพลาดในการบันทึก")
     } finally {
       setLoadingShipments(false)
     }
@@ -369,6 +377,23 @@ export default function AdminTrackingPage() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingShipmentPayment)}
+        onOpenChange={(open) => !open && setPendingShipmentPayment(null)}
+        title="ยืนยันการรับชำระเงินค่าจัดส่ง"
+        description={`ยืนยันการรับชำระเงินค่าจัดส่งสำหรับพัสดุ ${pendingShipmentPayment?.tracking_number || "-"}`}
+        confirmLabel="ยืนยันรับเงิน"
+        loading={loadingShipments}
+        fields={[
+          {
+            name: "payment_reference",
+            label: "เลขอ้างอิงการรับเงิน (ถ้ามี)",
+            placeholder: "ระบุเลขสลิปหรือหมายเลขอ้างอิง",
+          },
+        ]}
+        onConfirm={executeManualShipmentPayment}
+      />
     </div>
   )
 }

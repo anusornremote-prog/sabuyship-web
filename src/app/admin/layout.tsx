@@ -152,13 +152,31 @@ export default function AdminLayout({
       <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-clip">
         {/* Desktop Top Header Bar with prominent Logout & Breadcrumb */}
         <header className="hidden md:flex h-16 bg-white border-b border-slate-200 items-center justify-between px-6 lg:px-8 sticky top-0 z-20 shrink-0 shadow-xs">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-2xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
-              ระบบแอดมิน
-            </span>
-            <span className="text-slate-300">/</span>
-            <span className="text-sm font-bold text-slate-800">{getPageTitle()}</span>
+          <div className="flex items-center gap-2.5 text-sm">
+            <Link
+              href="/admin"
+              className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-2xs hover:bg-amber-100 transition-colors"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-amber-600" aria-hidden="true" />
+              <span>ระบบแอดมิน</span>
+            </Link>
+            <span className="text-slate-300" aria-hidden="true">/</span>
+            {pathname.startsWith("/admin/orders/") ? (
+              <>
+                <Link
+                  href="/admin/orders"
+                  className="font-semibold text-slate-600 hover:text-primary transition-colors"
+                >
+                  คำสั่งซื้อ
+                </Link>
+                <span className="text-slate-300" aria-hidden="true">/</span>
+                <span className="font-bold text-slate-900">
+                  {pathname === "/admin/orders/new" ? "สร้างคำสั่งซื้อใหม่" : "รายละเอียดคำสั่งซื้อ"}
+                </span>
+              </>
+            ) : (
+              <span className="font-bold text-slate-800">{getPageTitle()}</span>
+            )}
           </div>
 
           <div className="flex items-center gap-2.5">

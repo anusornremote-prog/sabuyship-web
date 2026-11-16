@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -59,7 +60,7 @@ export default function AdminNewOrder() {
     e.preventDefault()
     
     if (!selectedCustomerId) {
-      alert("กรุณาเลือกลูกค้า")
+      toast.warning("กรุณาเลือกลูกค้า")
       return
     }
 
@@ -79,12 +80,12 @@ export default function AdminNewOrder() {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'ไม่สามารถสร้างออเดอร์ได้')
 
-      alert(`สร้างออเดอร์ ${result.data.order_number} สำเร็จ!`)
+      toast.success(`สร้างออเดอร์ ${result.data.order_number} สำเร็จ!`)
       router.push('/admin/orders')
 
     } catch (err: any) {
       console.error(err)
-      alert("เกิดข้อผิดพลาด: " + err.message)
+      toast.error("เกิดข้อผิดพลาด: " + err.message)
     } finally {
       setLoading(false)
     }

@@ -69,14 +69,39 @@ export function PaymentStepper({
   }
 
   // Logic for steps
+  const round1Completed =
+    paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE'
+  const round2Completed = paymentRound2Status === 'PAID'
+  const round2ActionRequired =
+    round1Completed &&
+    !round2Completed &&
+    (status === 'CHINA_WAREHOUSE' ||
+      paymentRound2Status === 'UPLOADED' ||
+      paymentRound2Status === 'REJECTED' ||
+      shippingCostCnTh > 0)
+  const round2Waiting = round1Completed && !round2Completed && !round2ActionRequired
+
+  const round3Completed =
+    paymentRound3Status === 'PAID' ||
+    (status === 'DELIVERED' && shippingCostThTh === 0)
+  const round3ActionRequired =
+    round2Completed &&
+    !round3Completed &&
+    (status === 'THAILAND_WAREHOUSE' ||
+      paymentRound3Status === 'UPLOADED' ||
+      paymentRound3Status === 'REJECTED' ||
+      shippingCostThTh > 0)
+  const round3Waiting = round2Completed && !round3Completed && !round3ActionRequired
+
   const steps = [
     {
       round: 1,
       title: "รอบ 1: ค่าสินค้า + จีน-จีน",
       description: paymentRound1Status === 'NOT_APPLICABLE' ? "ลูกค้านำเข้าเอง (ไม่มีค่าสินค้า)" : paymentRound1Status === 'PAID' ? "ชำระเงินแล้ว" : paymentRound1Status === 'UPLOADED' ? "รอแอดมินตรวจสอบ" : paymentRound1Status === 'REJECTED' ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" : "รอการชำระเงิน",
       amount: paymentRound1Status === 'NOT_APPLICABLE' ? 0 : productCost + shippingCostCnCn,
-      isCompleted: paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE',
-      isActive: paymentRound1Status !== 'PAID' && paymentRound1Status !== 'NOT_APPLICABLE',
+      isCompleted: round1Completed,
+      isActive: !round1Completed,
+      isWaiting: false,
       status: paymentRound1Status,
       icon: Package
     },
@@ -93,12 +118,13 @@ export function PaymentStepper({
                 ? (shippingCostCnTh > 0 ? "รอการชำระเงิน" : "สินค้าถึงโกดังจีนแล้ว รอประเมินค่าขนส่ง") 
                 : (status === 'ORDERED' 
                     ? (chinaTrackingNumber 
-                        ? `ร้านค้าจีนจัดส่งแล้ว กำลังไปโกดังจีน (รอสินค้าถึงโกดัง)` 
-                        : "สั่งซื้อสำเร็จแล้ว รอร้านค้าจีนจัดส่ง")
-                    : (status === 'PENDING' ? "รอสินค้าถึงโกดังจีน" : "ยืนยันยอดการโอนรอสินค้าจัดส่งมาไทย"))),
+                        ? "ร้านค้าจีนจัดส่งแล้ว กำลังไปโกดังจีน (ยังไม่ถึงรอบชำระ)" 
+                        : "สั่งซื้อสำเร็จแล้ว รอร้านค้าจีนจัดส่ง (ยังไม่ถึงรอบชำระ)")
+                    : "รอสินค้าถึงโกดังจีนเพื่อชั่งน้ำหนัก")),
       amount: shippingCostCnTh,
-      isCompleted: paymentRound2Status === 'PAID',
-      isActive: (paymentRound1Status === 'PAID' || paymentRound1Status === 'NOT_APPLICABLE') && paymentRound2Status !== 'PAID',
+      isCompleted: round2Completed,
+      isActive: round2ActionRequired,
+      isWaiting: round2Waiting,
       status: paymentRound2Status,
       icon: Truck
     },
@@ -112,11 +138,16 @@ export function PaymentStepper({
           : paymentRound3Status === 'REJECTED' 
             ? "สลิปถูกปฏิเสธ (กรุณาแนบใหม่)" 
             : (status === 'THAILAND_WAREHOUSE' 
-                ? (shippingCostThTh > 0 ? "รอการชำระเงิน" : savedMethod === "รับสินค้าด้วยตัวเองที่โกดัง" ? "เลือก: รับสินค้าด้วยตัวเองที่โกดัง (รอแอดมินยืนยันนัดรับ)" : "รอแอดมินประเมินค่าจัดส่ง") 
-                : (status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED' ? "ชำระเงินแล้ว" : "รอสินค้าถึงโกดังไทย")),
+                ? (shippingCostThTh > 0 ? "รอการชำระเงิน" : savedMethod === "รับสินค้าด้วยตัวเองที่โกดัง" ? "เลือก: รับสินค้าด้วยตัวเองที่โกดัง (รอแอดมินยืนยันนัดรับ)" : "รอเลือกวิธีจัดส่ง / รอแอดมินประเมินค่าส่ง") 
+                : (status === 'ARRIVED' || status === 'OUT_FOR_DELIVERY' || status === 'DELIVERED'
+                    ? "ชำระเงินแล้ว"
+                    : status === 'SHIPPING'
+                      ? "สินค้ากำลังเดินทางมาไทย (ยังไม่ถึงรอบชำระ)"
+                      : "รอสินค้าถึงโกดังไทย")),
       amount: shippingCostThTh,
-      isCompleted: paymentRound3Status === 'PAID' || (status === 'DELIVERED' && shippingCostThTh === 0),
-      isActive: paymentRound2Status === 'PAID' && paymentRound3Status !== 'PAID',
+      isCompleted: round3Completed,
+      isActive: round3ActionRequired,
+      isWaiting: round3Waiting,
       status: paymentRound3Status,
       icon: Home
     }
@@ -124,7 +155,7 @@ export function PaymentStepper({
 
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
-      <h3 className="text-lg font-bold text-slate-900 mb-6">สถานะการชำระเงิน (Payment Progress)</h3>
+      <h3 className="text-lg font-bold text-slate-900 mb-6">สถานะการชำระเงิน 3 รอบ</h3>
       <div className="relative">
         <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0 hidden md:block" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
@@ -139,12 +170,14 @@ export function PaymentStepper({
                       ? "bg-red-100 border-red-50 text-red-600"
                       : step.isActive 
                         ? "bg-blue-100 border-blue-50 text-blue-600" 
-                        : "bg-slate-100 border-white text-slate-400"
+                        : step.isWaiting
+                          ? "bg-sky-50 border-white text-sky-600"
+                          : "bg-slate-100 border-white text-slate-400"
                 }`}>
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-5 h-5" aria-hidden="true" />
                 </div>
                 <div>
-                  <h4 className={`font-bold ${step.isCompleted ? 'text-emerald-700' : step.status === 'REJECTED' ? 'text-red-700' : step.isActive ? 'text-blue-700' : 'text-slate-500'}`}>
+                  <h4 className={`font-bold ${step.isCompleted ? 'text-emerald-700' : step.status === 'REJECTED' ? 'text-red-700' : step.isActive ? 'text-blue-700' : step.isWaiting ? 'text-slate-700' : 'text-slate-500'}`}>
                     {step.title}
                   </h4>
                   

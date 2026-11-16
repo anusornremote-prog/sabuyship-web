@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { MapPin, Plus, Edit, Trash2, Loader2, Star, CheckCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { AddressFormModal } from "./AddressFormModal"
@@ -14,6 +16,7 @@ export default function AddressesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<any>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
   const fetchAddresses = async () => {
     try {
@@ -42,18 +45,25 @@ export default function AddressesPage() {
     fetchAddresses()
   }, [])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบที่อยู่นี้?")) return
-    
+  const handleDelete = (id: string) => {
+    setPendingDeleteId(id)
+  }
+
+  const executeDelete = async () => {
+    if (!pendingDeleteId) return
+    const id = pendingDeleteId
+
     try {
       setDeletingId(id)
       const { error } = await supabase.from("addresses").delete().eq("id", id)
       if (error) throw error
-      
-      setAddresses(addresses.filter(addr => addr.id !== id))
+
+      setAddresses((prev) => prev.filter((addr) => addr.id !== id))
+      setPendingDeleteId(null)
+      toast.success("ลบที่อยู่เรียบร้อยแล้ว")
     } catch (error) {
       console.error("Error deleting address:", error)
-      alert("ไม่สามารถลบที่อยู่ได้")
+      toast.error("ไม่สามารถลบที่อยู่ได้")
     } finally {
       setDeletingId(null)
     }
@@ -149,11 +159,11 @@ export default function AddressesPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700" onClick={() => openEditModal(address)}>
-                      <Edit className="w-4 h-4" />
+                    <Button variant="ghost" size="icon" aria-label="แก้ไขที่อยู่" className="h-9 w-9 text-slate-400 hover:text-slate-700" onClick={() => openEditModal(address)}>
+                      <Edit className="w-4 h-4" aria-hidden="true" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-rose-600" onClick={() => handleDelete(address.id)} disabled={deletingId === address.id}>
-                      {deletingId === address.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    <Button variant="ghost" size="icon" aria-label="ลบที่อยู่" className="h-9 w-9 text-slate-400 hover:text-rose-600" onClick={() => handleDelete(address.id)} disabled={deletingId === address.id}>
+                      {deletingId === address.id ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Trash2 className="w-4 h-4" aria-hidden="true" />}
                     </Button>
                   </div>
                 </div>
@@ -193,6 +203,17 @@ export default function AddressesPage() {
           onSuccess={fetchAddresses} 
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDeleteId)}
+        onOpenChange={(open) => !open && setPendingDeleteId(null)}
+        title="ยืนยันการลบที่อยู่"
+        description="คุณแน่ใจหรือไม่ว่าต้องการลบที่อยู่จัดส่งนี้?"
+        confirmLabel="ลบที่อยู่"
+        variant="destructive"
+        loading={Boolean(deletingId)}
+        onConfirm={executeDelete}
+      />
     </div>
   )
 }
