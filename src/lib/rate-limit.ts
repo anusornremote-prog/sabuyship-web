@@ -21,6 +21,8 @@ const buckets = new Map<string, BucketEntry>()
 const MAX_BUCKET_ENTRIES = 2000
 
 function getClientIp(request: Request): string {
+  const cfConnectingIp = request.headers.get("cf-connecting-ip")?.trim()
+  if (cfConnectingIp) return cfConnectingIp
   const forwarded = request.headers.get("x-forwarded-for")
   if (forwarded) {
     const firstIp = forwarded.split(",")[0]?.trim()
