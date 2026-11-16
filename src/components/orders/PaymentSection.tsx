@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/custom-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { X, Copy, Check, Upload, CheckCircle2, QrCode, Download, Camera, Trash2, RefreshCw } from "lucide-react"
+import { Copy, Check, Upload, CheckCircle2, QrCode, Download, Camera, Trash2, RefreshCw } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -309,25 +309,16 @@ export function PaymentSection({
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && setIsOpen(false)}>
         <DialogContent className="p-0 space-y-0 gap-0 overflow-hidden flex flex-col max-h-[90dvh]">
           {/* Fixed Header */}
-          <div className="flex justify-between items-center p-4 border-b border-slate-100 shrink-0 bg-white">
-            <DialogHeader className="text-left pr-4">
+          <div className="p-4 pr-12 border-b border-slate-100 shrink-0 bg-white">
+            <DialogHeader className="text-left">
               <DialogTitle className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" aria-hidden="true" />
                 <span>แจ้งชำระเงิน รอบที่ {paymentRound}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-500 mt-0.5">
                 โอนเงินเข้าบัญชีแล้วแตะแนบรูปสลิปเพื่อยืนยัน
               </DialogDescription>
             </DialogHeader>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => !isSubmitting && setIsOpen(false)} 
-              className="h-8 w-8 rounded-full cursor-pointer shrink-0 text-slate-400 hover:text-slate-700"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           {/* Hidden File Input - Always Mounted (Never Unmounted) */}
@@ -505,10 +496,11 @@ export function PaymentSection({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      aria-label="ลบรูปสลิป"
                       onClick={() => { setFile(null); setPreviewUrl(null); }}
-                      className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl shrink-0 cursor-pointer"
+                      className="min-h-9 min-w-9 h-9 w-9 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl shrink-0 cursor-pointer"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>

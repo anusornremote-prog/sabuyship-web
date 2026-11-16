@@ -160,8 +160,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Link href="/admin/orders">
-            <Button variant="outline" size="icon" className="cursor-pointer">
-              <ArrowLeft className="h-4 w-4" />
+            <Button variant="outline" size="icon" aria-label="กลับไปหน้ารายการคำสั่งซื้อ" className="min-h-11 min-w-11 cursor-pointer">
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
           </Link>
           <div>

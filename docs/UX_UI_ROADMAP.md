@@ -11,7 +11,7 @@
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Quick Wins & Critical Stability** | `P0 Critical` | **[DONE]** ปิดจุดหลุด Error Stack Trace, แก้ปุ่มลอยทับซ้อนบนมือถือ, แยก Modal ลูกค้าออกจาก Shell แอดมิน |
 | **Phase 2** | **3-Round Payment Clarity & Modern Feedback** | `P1 High` | **[DONE]** ปรับ Stepper/ป้ายสถานะ 3 รอบให้ไม่งง, ลบโค้ดอังกฤษดิบ, เลิกใช้ `alert/confirm/prompt/reload` และอัปเกรดหน้า Admin/Charts |
-| **Phase 3** | **Design System, Touch Targets & A11y Polish** | `P2 Medium` | รวม Modal เป็น Radix มาตรฐานเดียว, ขยาย Touch Target ≥44px, ผูก Form Labels/ARIA, แก้ Token & i18n ให้ครบ |
+| **Phase 3** | **Design System, Touch Targets & A11y Polish** | `P2 Medium` | **[DONE]** รวม Modal เป็น Radix มาตรฐานเดียว, ขยาย Touch Target ≥44px, ผูก Form Labels/ARIA, แก้ Token & i18n ให้ครบ |
 
 ---
 
@@ -118,9 +118,9 @@
 
 ---
 
-## Phase 3: Design System, Touch Targets & Accessibility Polish (`P2`)
+## Phase 3: Design System, Touch Targets & Accessibility Polish (`P2`) — `[DONE 2026-11-16]`
 
-### `UX-3.1` รวมระบบ Modal ทั้งหมดเป็นมาตรฐานเดียว (Radix UI Dialog)
+### [x] `UX-3.1` รวมระบบ Modal ทั้งหมดเป็นมาตรฐานเดียว (Radix UI Dialog)
 - **Priority:** `P2 Medium`
 - **UI/UX Pro Max Ref:** `#11 Dialog`, `#13 Dialog Structure`, `#53 Focus Management`
 - **Target Files:**
@@ -133,7 +133,7 @@
   1. ย้ายทุก Modal มาใช้ `@/components/ui/dialog` เพื่อได้ `role="dialog"`, `aria-modal="true"`, Focus Trap, การกด `Escape` เพื่อปิด, `DialogTitle`, และคืน Focus ให้ปุ่มเดิมอัตโนมัติ
   2. ทำให้ Dropdown เมนูโปรไฟล์ใน `navbar.tsx` (L133–165) มี `aria-expanded`, `aria-haspopup="menu"`, `role="menu"`, `role="menuitem"`, และรองรับปุ่ม `Escape`
 
-### `UX-3.2` ขยาย Touch Target บนมือถือให้ ≥ 44×44px และแก้ Layout มือถือ
+### [x] `UX-3.2` ขยาย Touch Target บนมือถือให้ ≥ 44×44px และแก้ Layout มือถือ
 - **Priority:** `P2 Medium`
 - **UI/UX Pro Max Ref:** `#22 Touch Target Size`, `#66 Touch Friendly`, `#104 Target Size`, `#112 Text Reflow`
 - **Target Files:**
@@ -152,7 +152,7 @@
   3. ปรับ Mobile Drawer links ใน `navbar.tsx` และ Pills ใน `dashboard/layout.tsx` ให้มี `min-h-[44px] flex items-center`
   4. ปรับ Stepper 5 ขั้นตอนใน `track/page.tsx` จาก `grid-cols-5` ตายตัวบนมือถือ เป็น Vertical Timeline หรือ Horizontal Scrollable Stepper เพื่อไม่ให้คำภาษาไทยตัดกลางคำบนจอ 320–375px
 
-### `UX-3.3` ยกระดับ Form UX, Accessibility (`htmlFor`, `aria-label`, Contrast) & Icon Hygiene
+### [x] `UX-3.3` ยกระดับ Form UX, Accessibility (`htmlFor`, `aria-label`, Contrast) & Icon Hygiene
 - **Priority:** `P2 Medium`
 - **UI/UX Pro Max Ref:** `#36 Color Contrast`, `#40 ARIA Labels`, `#43 Form Labels`, `#44 Error Messages`, `#107 Accessible Auth`, `#109 Focusable Error Summary`
 - **Target Files:**
@@ -172,7 +172,7 @@
   6. ปรับ Contrast ข้อความรองที่ต่ำกว่า 4.5:1 (`slate-400` บนพื้นขาว -> `slate-500`/`slate-600`, และ `text-slate-500` บน `#06152f` ใน Footer -> `text-slate-300`)
   7. เปลี่ยนการตรวจเบอร์โทรใน `dashboard/profile/page.tsx` มาใช้ `isValidThaiPhone` / `normalizeThaiPhone` จาก `src/lib/phone.ts` (DRY) และใช้ `toast.success` แทน timeout banner
 
-### `UX-3.4` มาตรฐาน Design Tokens, Typography, Images และ Multi-language (i18n)
+### [x] `UX-3.4` มาตรฐาน Design Tokens, Typography, Images และ Multi-language (i18n)
 - **Priority:** `P2 Medium`
 - **UI/UX Pro Max Ref:** `#4 CSS Variables`, `#17 next/image`, `#56 Static Class Tokens`, `#58 Long Token Resilience`
 - **Target Files:**

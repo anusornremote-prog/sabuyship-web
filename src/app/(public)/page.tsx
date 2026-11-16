@@ -167,17 +167,17 @@ export default function Home() {
                 <form onSubmit={handleQuickQuoteSubmit} className="space-y-3">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                     <div className="relative min-w-0 flex-1">
-                      <Input value={quickUrl} onChange={(event) => setQuickUrl(event.target.value)} onPaste={handleQuickUrlPaste} placeholder={locale === "en" ? "Paste a product link or shared message" : locale === "zh" ? "粘贴商品链接或分享文案" : "วางลิงก์ หรือข้อความแชร์จากแอปจีนได้เลย"} className="h-14 rounded-2xl border-slate-200 bg-white pl-5 pr-12 text-base shadow-inner focus-visible:ring-blue-500" />
-                      <button type="button" onClick={handlePasteQuickUrl} className="absolute right-2 top-2 grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-700 transition hover:bg-blue-100" aria-label="Paste product link"><Copy className="h-4 w-4" /></button>
+                      <Input aria-label={locale === "en" ? "Product link or shared message" : locale === "zh" ? "商品链接或分享文案" : "วางลิงก์สินค้า หรือข้อความแชร์จากแอปจีน"} value={quickUrl} onChange={(event) => setQuickUrl(event.target.value)} onPaste={handleQuickUrlPaste} placeholder={locale === "en" ? "Paste a product link or shared message" : locale === "zh" ? "粘贴商品链接或分享文案" : "วางลิงก์ หรือข้อความแชร์จากแอปจีนได้เลย"} className="h-14 rounded-2xl border-slate-200 bg-white pl-5 pr-12 text-base shadow-inner focus-visible:ring-blue-500" />
+                      <button type="button" onClick={handlePasteQuickUrl} className="absolute right-2 top-2 grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-700 transition hover:bg-blue-100" aria-label="Paste product link"><Copy className="h-4 w-4" aria-hidden="true" /></button>
                     </div>
-                    <Button type="submit" variant="orange" className="h-14 shrink-0 rounded-2xl px-4 sm:px-7">{locale === "en" ? "Quote" : locale === "zh" ? "询价" : "เช็กราคา"}<ArrowRight className="ml-1.5 hidden h-4 w-4 sm:block" /></Button>
+                    <Button type="submit" variant="orange" className="h-14 shrink-0 rounded-2xl px-4 sm:px-7">{locale === "en" ? "Quote" : locale === "zh" ? "询价" : "เช็กราคา"}<ArrowRight className="ml-1.5 hidden h-4 w-4 sm:block" aria-hidden="true" /></Button>
                   </div>
-                  <p className="flex items-center gap-2 px-1 text-xs text-slate-500"><Zap className="h-3.5 w-3.5 text-orange-500" />{locale === "en" ? "We automatically extract the URL from shared text." : locale === "zh" ? "系统会自动从分享文案中提取链接。" : "ระบบดึง URL ออกจากข้อความภาษาจีนให้อัตโนมัติ"}</p>
+                  <p className="flex items-center gap-2 px-1 text-xs text-slate-500"><Zap className="h-3.5 w-3.5 text-orange-500" aria-hidden="true" />{locale === "en" ? "We automatically extract the URL from shared text." : locale === "zh" ? "系统会自动从分享文案中提取链接。" : "ระบบดึง URL ออกจากข้อความภาษาจีนให้อัตโนมัติ"}</p>
                 </form>
               ) : (
                 <form onSubmit={handleQuickTrackSubmit} className="flex gap-2">
-                  <Input value={quickTrackId} onChange={(event) => setQuickTrackId(event.target.value)} placeholder={locale === "en" ? "Order or tracking number" : locale === "zh" ? "订单号或运单号" : "เลขออเดอร์ หรือเลขพัสดุ"} className="h-14 rounded-2xl border-slate-200 bg-white px-5 text-base" />
-                  <Button type="submit" className="h-14 rounded-2xl px-5 sm:px-7">{locale === "en" ? "Track" : locale === "zh" ? "查询" : "ติดตาม"}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+                  <Input aria-label={locale === "en" ? "Order or tracking number" : locale === "zh" ? "订单号或运单号" : "กรอกเลขออเดอร์ หรือเลขพัสดุ"} value={quickTrackId} onChange={(event) => setQuickTrackId(event.target.value)} placeholder={locale === "en" ? "Order or tracking number" : locale === "zh" ? "订单号或运单号" : "เลขออเดอร์ หรือเลขพัสดุ"} className="h-14 rounded-2xl border-slate-200 bg-white px-5 text-base" />
+                  <Button type="submit" className="h-14 rounded-2xl px-5 sm:px-7">{locale === "en" ? "Track" : locale === "zh" ? "查询" : "ติดตาม"}<ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" /></Button>
                 </form>
               )}
             </div>
@@ -243,7 +243,7 @@ export default function Home() {
               {paymentRounds.map(({ icon: Icon, round, title, description }) => (
                 <div key={round} className="group flex gap-4 bg-white/[0.055] p-6 transition hover:bg-white/[0.09] sm:block lg:flex lg:p-8">
                   <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-orange-300"><Icon className="h-5 w-5" /></div>
-                  <div className="sm:mt-4 lg:mt-0"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">ROUND {round}</p><h3 className="mt-1 font-black">{title}</h3><p className="mt-1 text-sm leading-6 text-blue-100/65">{description}</p></div>
+                  <div className="sm:mt-4 lg:mt-0"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">ROUND {round}</p><h3 className="mt-1 font-black">{title}</h3><p className="mt-1 text-sm leading-6 text-blue-100/90">{description}</p></div>
                 </div>
               ))}
             </div>

@@ -245,7 +245,7 @@ export default function AdminLayout({
                 <item.icon className="h-3.5 w-3.5" />
                 <span>{item.label}</span>
                 {item.badge && item.badge > 0 ? (
-                  <span className="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full ml-0.5">
+                  <span className="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full ml-0.5">
                     {item.badge}
                   </span>
                 ) : null}

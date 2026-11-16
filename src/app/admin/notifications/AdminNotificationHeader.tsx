@@ -202,7 +202,7 @@ export function AdminNotificationHeader({ isConfigured }: AdminNotificationHeade
                       <div className="space-y-0.5 min-w-0">
                         <div className="font-bold text-slate-800 flex flex-wrap items-center gap-1.5">
                           <span className="truncate">{u.fullName}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold shrink-0 ${u.role === "ADMIN"
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${u.role === "ADMIN"
                             ? "bg-blue-100 text-blue-700"
                             : "bg-slate-200 text-slate-600"
                             }`}>

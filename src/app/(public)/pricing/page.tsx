@@ -158,24 +158,24 @@ export default function Pricing() {
   }
 
   return (
-    <div className="py-16 md:py-24 px-4 md:px-8 min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+    <div className="py-16 md:py-24 px-4 md:px-8 min-h-screen bg-slate-50 text-slate-800">
       <div className="container max-w-5xl mx-auto space-y-12">
         {/* 1. Header Section */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-primary rounded-full text-xs font-black uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
             {t.pricingSub || "ราคาโปร่งใส ไม่มีบวกเพิ่ม มั่นใจทุกการสั่งซื้อ"}
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
             {t.pricingTitle || "อัตราค่าบริการนำเข้าสินค้า"} <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Sabuyship</span>
           </h1>
-          <p className="text-base md:text-lg text-slate-600 dark:text-slate-400">
+          <p className="text-base md:text-lg text-slate-600">
             {t.pricingSub || "คิดตามจริงตามขนาดและน้ำหนักของสินค้า ไม่มีค่าธรรมเนียมแอบแฝง"}
           </p>
         </div>
 
         {/* 2. Modern Rate Matrix Card */}
-        <Card className="border border-slate-200 shadow-md bg-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <Card className="border border-slate-200 shadow-md bg-white rounded-2xl overflow-hidden">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 p-5 md:px-6 bg-gradient-to-r from-slate-50 to-blue-50/40 border-b border-slate-200/80">
             <div>
               <CardTitle className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
@@ -351,11 +351,12 @@ export default function Pricing() {
               {/* Weight & Quantity */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black text-slate-600 uppercase tracking-wider block">
+                  <label htmlFor="pricing-weight" className="text-xs font-black text-slate-600 uppercase tracking-wider block">
                     {t.calcStep3Title || "3. น้ำหนักรวม (กิโลกรัม)"}
                   </label>
                   <div className="relative">
                     <Input
+                      id="pricing-weight"
                       type="number"
                       placeholder="0.00"
                       value={weight}
@@ -371,10 +372,11 @@ export default function Pricing() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black text-slate-600 uppercase tracking-wider block">
+                  <label htmlFor="pricing-quantity" className="text-xs font-black text-slate-600 uppercase tracking-wider block">
                     {t.calcStep3Qty || "จำนวนกล่อง / ชิ้น"}
                   </label>
                   <Input
+                    id="pricing-quantity"
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
@@ -387,29 +389,31 @@ export default function Pricing() {
 
               {/* Dimensions Section with Presets */}
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-black text-slate-600 uppercase tracking-wider">
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
                     {t.calcStep4Title || "4. ขนาดพัสดุ (สำหรับคิดคิว CBM)"}
-                  </label>
+                  </span>
                   <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                     <button
                       type="button"
+                      aria-pressed={inputType === "dimensions"}
                       onClick={() => setInputType("dimensions")}
-                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                      className={`min-h-9 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
                         inputType === "dimensions"
                           ? "bg-white text-slate-900 shadow-2xs"
-                          : "text-slate-500 hover:text-slate-900"
+                          : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
                       {locale === 'zh' ? "外箱尺寸 (cm)" : locale === 'en' ? "Dimensions (cm)" : "ขนาด ก×ย×ส (ซม.)"}
                     </button>
                     <button
                       type="button"
+                      aria-pressed={inputType === "directCbm"}
                       onClick={() => setInputType("directCbm")}
-                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                      className={`min-h-9 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
                         inputType === "directCbm"
                           ? "bg-white text-slate-900 shadow-2xs"
-                          : "text-slate-500 hover:text-slate-900"
+                          : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
                       {locale === 'zh' ? "直接填入立方 (CBM)" : locale === 'en' ? "Direct CBM" : "ระบุคิว (CBM) ตรงๆ"}
@@ -429,7 +433,7 @@ export default function Pricing() {
                           key={idx}
                           type="button"
                           onClick={() => handleApplyPreset(preset.w, preset.l, preset.h)}
-                          className="p-2 text-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer text-xs"
+                          className="min-h-11 p-2 text-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer text-xs"
                         >
                           <span className="font-bold text-slate-800 block text-[11px]">{preset.label}</span>
                           <span className="text-[10px] text-slate-500">{preset.desc}</span>
@@ -443,42 +447,49 @@ export default function Pricing() {
                 {inputType === "dimensions" ? (
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-bold block uppercase">{locale === 'zh' ? "宽 (cm)" : locale === 'en' ? "Width (cm)" : "กว้าง (ซม.)"}</span>
+                      <label htmlFor="pricing-width" className="text-[10px] text-slate-600 font-bold block uppercase">{locale === 'zh' ? "宽 (cm)" : locale === 'en' ? "Width (cm)" : "กว้าง (ซม.)"}</label>
                       <Input
+                        id="pricing-width"
                         type="number"
                         placeholder="W"
                         value={width}
                         onChange={(e) => setWidth(e.target.value)}
-                        className="h-10 text-center font-bold"
+                        className="h-11 text-center font-bold"
                         min="0"
                       />
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-bold block uppercase">{locale === 'zh' ? "长 (cm)" : locale === 'en' ? "Length (cm)" : "ยาว (ซม.)"}</span>
+                      <label htmlFor="pricing-length" className="text-[10px] text-slate-600 font-bold block uppercase">{locale === 'zh' ? "长 (cm)" : locale === 'en' ? "Length (cm)" : "ยาว (ซม.)"}</label>
                       <Input
+                        id="pricing-length"
                         type="number"
                         placeholder="L"
                         value={length}
                         onChange={(e) => setLength(e.target.value)}
-                        className="h-10 text-center font-bold"
+                        className="h-11 text-center font-bold"
                         min="0"
                       />
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-bold block uppercase">{locale === 'zh' ? "高 (cm)" : locale === 'en' ? "Height (cm)" : "สูง (ซม.)"}</span>
+                      <label htmlFor="pricing-height" className="text-[10px] text-slate-600 font-bold block uppercase">{locale === 'zh' ? "高 (cm)" : locale === 'en' ? "Height (cm)" : "สูง (ซม.)"}</label>
                       <Input
+                        id="pricing-height"
                         type="number"
                         placeholder="H"
                         value={height}
                         onChange={(e) => setHeight(e.target.value)}
-                        className="h-10 text-center font-bold"
+                        className="h-11 text-center font-bold"
                         min="0"
                       />
                     </div>
                   </div>
                 ) : (
                   <div className="relative">
+                    <label htmlFor="pricing-direct-cbm" className="sr-only">
+                      {locale === 'zh' ? "直接填入立方 (CBM)" : locale === 'en' ? "Direct CBM" : "ระบุคิว (CBM)"}
+                    </label>
                     <Input
+                      id="pricing-direct-cbm"
                       type="number"
                       placeholder="0.0000"
                       value={directCbm}

@@ -20,6 +20,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const savedLang = match ? (match[1] as Locale) : 'th'
     if (['th', 'en', 'zh'].includes(savedLang)) {
       setLocaleState(savedLang)
+      document.documentElement.lang = savedLang
     }
   }, [])
 

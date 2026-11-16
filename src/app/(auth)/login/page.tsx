@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Eye, EyeOff } from "lucide-react"
 import { LineIcon } from "@/components/ui/icons"
 import { InAppBrowserNotice } from "@/components/auth/InAppBrowserNotice"
 import { getFriendlyAuthErrorMessage } from "@/lib/auth-errors"
@@ -16,6 +17,7 @@ import { startLineOAuth } from "@/lib/line-oauth"
 export default function Login() {
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -199,7 +201,7 @@ export default function Login() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleLogin} className="space-y-4">
-          {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
+          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">อีเมล *</label>
             <Input 
@@ -224,19 +226,31 @@ export default function Login() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label htmlFor="password" className="text-sm font-medium">รหัสผ่าน *</label>
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+              <Link href="/forgot-password" className="inline-flex min-h-9 items-center text-sm text-primary hover:underline">
                 ลืมรหัสผ่าน?
               </Link>
             </div>
-            <Input 
-              id="password"
-              type="password" 
-              name="password"
-              autoComplete="current-password"
-              required 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <Input 
+                id="password"
+                type={showPassword ? "text" : "password"} 
+                name="password"
+                autoComplete="current-password"
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                aria-pressed={showPassword}
+                className="absolute right-0 top-0 flex h-full min-w-11 items-center justify-center text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+              </button>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <input 
@@ -282,7 +296,7 @@ export default function Login() {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full h-[40px] bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
+              className="w-full min-h-11 h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
               onClick={handleLineLogin}
               disabled={loading}
             >

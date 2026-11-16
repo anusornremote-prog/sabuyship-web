@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Phone, User, MessageCircle, ShieldAlert, LogOut, Loader2 } from "lucide-react"
 import {
@@ -181,28 +181,28 @@ export function PhoneSetupModal({
     router.refresh()
   }
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto overscroll-contain"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="phone-setup-modal-title"
-    >
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 sm:p-7 my-auto animate-in fade-in zoom-in-95 duration-200">
-        <div className="mb-5 text-center">
+  return (
+    <Dialog open={isOpen}>
+      <DialogContent
+        hideCloseButton
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        className="w-full max-w-md rounded-2xl border-slate-200 p-6 sm:p-7 shadow-2xl"
+      >
+        <div className="mb-3 text-center">
           <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs">
-            <Phone className="w-8 h-8" />
+            <Phone className="w-8 h-8" aria-hidden="true" />
           </div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-2">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" />
             จำเป็นต้องระบุข้อมูลก่อนเข้าใช้งาน
           </span>
-          <h2 id="phone-setup-modal-title" className="text-xl sm:text-2xl font-black text-slate-900">
+          <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 text-center">
             กรุณายืนยันเบอร์โทรศัพท์มือถือ
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+          </DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed text-center">
             เพื่อความรวดเร็วในการแจ้งเตือนสถานะพัสดุและจัดส่งสินค้า สมาชิกทุกท่านจำเป็นต้องระบุเบอร์โทรศัพท์มือถือที่ติดต่อได้จริง
-          </p>
+          </DialogDescription>
           {customerCode && (
             <div className="mt-2 inline-block px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
               รหัสสมาชิกของคุณ: <span className="text-primary">{customerCode}</span>
@@ -212,18 +212,20 @@ export function PhoneSetupModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold leading-relaxed">
+            <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold leading-relaxed">
               {errorMsg}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5">
-              <User className="w-4 h-4 text-slate-400" />
+            <label htmlFor="phone-setup-fullname" className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5">
+              <User className="w-4 h-4 text-slate-500" aria-hidden="true" />
               ชื่อ - นามสกุล (หรือชื่อเล่น) <span className="text-rose-500">*</span>
             </label>
             <Input
+              id="phone-setup-fullname"
               type="text"
+              autoComplete="name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="ระบุชื่อสำหรับติดต่อและจ่าหน้าพัสดุ"
@@ -233,13 +235,15 @@ export function PhoneSetupModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5">
-              <Phone className="w-4 h-4 text-orange-500" />
+            <label htmlFor="phone-setup-phone" className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5">
+              <Phone className="w-4 h-4 text-orange-500" aria-hidden="true" />
               เบอร์โทรศัพท์มือถือ (จำเป็น) <span className="text-rose-500">*</span>
             </label>
             <Input
+              id="phone-setup-phone"
               type="tel"
               inputMode="numeric"
+              autoComplete="tel"
               maxLength={10}
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -253,11 +257,12 @@ export function PhoneSetupModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4 text-[#06C755]" />
-              LINE ID <span className="text-xs font-normal text-slate-400">(ไม่บังคับ)</span>
+            <label htmlFor="phone-setup-line" className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4 text-[#06C755]" aria-hidden="true" />
+              LINE ID <span className="text-xs font-normal text-slate-500">(ไม่บังคับ)</span>
             </label>
             <Input
+              id="phone-setup-line"
               type="text"
               value={lineId}
               onChange={(e) => setLineId(e.target.value)}
@@ -274,7 +279,7 @@ export function PhoneSetupModal({
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                 กำลังบันทึกข้อมูล...
               </span>
             ) : (
@@ -286,15 +291,14 @@ export function PhoneSetupModal({
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-rose-600 transition-colors cursor-pointer py-1"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-rose-600 transition-colors cursor-pointer py-2 px-3 min-h-10"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
               ออกจากระบบ / เปลี่ยนบัญชีผู้ใช้
             </button>
           </div>
         </form>
-      </div>
-    </div>,
-    document.body
+      </DialogContent>
+    </Dialog>
   )
 }

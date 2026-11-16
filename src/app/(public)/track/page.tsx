@@ -214,18 +214,23 @@ export default function TrackOrder() {
           <CardContent className="p-6 md:p-8">
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
+                <label htmlFor="track-order-input" className="sr-only">
+                  {t.trackPlaceholder || "กรอก Order ID"}
+                </label>
                 <Input 
+                  id="track-order-input"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   placeholder={t.trackPlaceholder || "กรอก Order ID เช่น ORD-26077893 หรือตัวเลข"} 
-                  className="h-14 text-base sm:text-lg px-5 pr-10 rounded-xl uppercase font-bold border-slate-300 focus:border-primary shadow-2xs"
+                  className="h-14 text-base sm:text-lg px-5 pr-16 rounded-xl uppercase font-bold border-slate-300 focus:border-primary shadow-2xs"
                   required
                 />
                 {trackingNumber && (
                   <button
                     type="button"
                     onClick={() => setTrackingNumber("")}
-                    className="absolute right-3.5 top-4.5 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                    aria-label="ล้างคำค้นหา"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 min-h-11 px-3 inline-flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold cursor-pointer"
                   >
                     {locale === 'zh' ? "清空" : locale === 'en' ? "Clear" : "ล้าง"}
                   </button>
@@ -253,7 +258,7 @@ export default function TrackOrder() {
             </form>
 
             {error && (
-              <div className="mt-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-xl text-center">
+              <div role="alert" className="mt-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-xl text-center">
                 {error}
               </div>
             )}
@@ -275,11 +280,13 @@ export default function TrackOrder() {
                       {packageInfo.tracking_number}
                     </span>
                     <button
+                      type="button"
                       onClick={() => handleCopy(packageInfo.tracking_number)}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      className="min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      aria-label="คัดลอกหมายเลขคำสั่งซื้อ"
                       title="Copy Order ID"
                     >
-                      {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      {copied ? <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
                     </button>
                   </div>
                 </div>
@@ -289,8 +296,8 @@ export default function TrackOrder() {
                     {packageInfo.shipping_type}
                   </Badge>
                   {packageInfo.china_tracking && (
-                    <div className="flex items-center gap-1.5 p-1.5 px-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-900 shadow-2xs">
-                      <span>🇨🇳 แทร็กจีน:</span>
+                    <div className="flex items-center gap-1.5 py-1 pl-3 pr-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-900 shadow-2xs">
+                      <span>แทร็กจีน:</span>
                       <span className="font-mono text-amber-950">{packageInfo.china_tracking}</span>
                       <button
                         type="button"
@@ -298,16 +305,17 @@ export default function TrackOrder() {
                           navigator.clipboard.writeText(packageInfo.china_tracking);
                           toast.success("คัดลอกเลขพัสดุจีนแล้ว");
                         }}
-                        className="p-1 hover:bg-amber-100 rounded text-amber-800 cursor-pointer ml-1"
+                        className="min-h-9 min-w-9 inline-flex items-center justify-center p-1.5 hover:bg-amber-100 rounded-lg text-amber-800 cursor-pointer ml-0.5"
+                        aria-label="คัดลอกเลขพัสดุจีน"
                         title="คัดลอกเลขพัสดุจีน"
                       >
-                        <Copy className="w-3.5 h-3.5" />
+                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   )}
                   {packageInfo.thai_tracking && (
-                    <div className="flex items-center gap-1.5 p-1.5 px-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 shadow-2xs">
-                      <span>🚚 {packageInfo.thai_carrier || "ขนส่งในไทย"}:</span>
+                    <div className="flex items-center gap-1.5 py-1 pl-3 pr-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 shadow-2xs">
+                      <span>{packageInfo.thai_carrier || "ขนส่งในไทย"}:</span>
                       <span className="font-mono text-emerald-900">{packageInfo.thai_tracking}</span>
                       <button
                         type="button"
@@ -315,10 +323,11 @@ export default function TrackOrder() {
                           navigator.clipboard.writeText(packageInfo.thai_tracking);
                           toast.success("คัดลอกเลขพัสดุในไทยแล้ว");
                         }}
-                        className="p-1 hover:bg-emerald-100 rounded text-emerald-700 cursor-pointer ml-1"
+                        className="min-h-9 min-w-9 inline-flex items-center justify-center p-1.5 hover:bg-emerald-100 rounded-lg text-emerald-700 cursor-pointer ml-0.5"
+                        aria-label="คัดลอกเลขพัสดุในไทย"
                         title="คัดลอกเลขพัสดุ"
                       >
-                        <Copy className="w-3.5 h-3.5" />
+                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>
                       <a
                         href={
@@ -330,10 +339,11 @@ export default function TrackOrder() {
                         }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1 hover:bg-emerald-100 rounded text-emerald-700 cursor-pointer"
+                        className="min-h-9 min-w-9 inline-flex items-center justify-center p-1.5 hover:bg-emerald-100 rounded-lg text-emerald-700 cursor-pointer"
+                        aria-label={`เปิดเว็บตรวจสอบพัสดุ ${packageInfo.thai_carrier || "ขนส่งในไทย"} (เปิดแท็บใหม่)`}
                         title="เปิดเว็บขนส่ง"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                       </a>
                     </div>
                   )}
@@ -341,26 +351,26 @@ export default function TrackOrder() {
               </div>
 
               {/* Visual 5-Stage Stepper Progress Bar */}
-              <div className="p-6 md:p-8 bg-slate-50/60 border-b border-slate-100">
-                <div className="grid grid-cols-5 gap-2 relative">
+              <div className="p-5 sm:p-6 md:p-8 bg-slate-50/60 border-b border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 sm:gap-2 relative">
                   {stepLabels.map((step, idx) => {
                     const isPassed = currentStepIndex >= idx
                     const isCurrent = currentStepIndex === idx
                     const Icon = step.icon
 
                     return (
-                      <div key={idx} className="flex flex-col items-center text-center relative z-10">
-                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center font-black transition-all ${
+                      <div key={idx} className="flex flex-row sm:flex-col items-center sm:text-center gap-3 sm:gap-0 relative z-10">
+                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center font-black shrink-0 transition-all ${
                           isCurrent
-                            ? "bg-primary text-white shadow-lg shadow-blue-500/30 scale-110 ring-4 ring-blue-100"
+                            ? "bg-primary text-white shadow-lg shadow-blue-500/30 sm:scale-110 ring-4 ring-blue-100"
                             : isPassed
                             ? "bg-emerald-500 text-white"
                             : "bg-slate-200 text-slate-400"
                         }`}>
-                          <Icon className="w-5 h-5" />
+                          <Icon className="w-5 h-5" aria-hidden="true" />
                         </div>
-                        <span className={`text-[11px] sm:text-xs font-bold mt-2.5 ${
-                          isCurrent ? "text-primary" : isPassed ? "text-slate-800" : "text-slate-400"
+                        <span className={`text-xs font-bold sm:mt-2.5 leading-snug ${
+                          isCurrent ? "text-primary" : isPassed ? "text-slate-800" : "text-slate-500"
                         }`}>
                           {step.title}
                         </span>

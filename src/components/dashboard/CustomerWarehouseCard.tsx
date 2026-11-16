@@ -195,10 +195,10 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
               <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
                       ผู้รับ (Consignee Name / 收件人)
                     </span>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                       shippingType === "EK"
                         ? "text-orange-700 bg-orange-50 border-orange-200"
                         : "text-blue-700 bg-blue-50 border-blue-200"
@@ -214,15 +214,15 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopy(consigneeName, "ชื่อผู้รับ")}
-                  className="h-9 sm:h-8 px-3 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
+                  className="min-h-10 h-10 px-3 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
                 >
                   {copiedField === "ชื่อผู้รับ" ? (
                     <span className="flex items-center gap-1 text-emerald-600">
-                      <Check className="w-3.5 h-3.5" /> คัดลอกแล้ว
+                      <Check className="w-3.5 h-3.5" aria-hidden="true" /> คัดลอกแล้ว
                     </span>
                   ) : (
                     <span className="flex items-center gap-1">
-                      <Copy className="w-3.5 h-3.5" /> คัดลอก
+                      <Copy className="w-3.5 h-3.5" aria-hidden="true" /> คัดลอก
                     </span>
                   )}
                 </Button>
@@ -232,7 +232,7 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 flex items-center justify-between gap-2">
                   <div className="space-y-0.5 min-w-0">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
                       เบอร์โทรศัพท์ (Phone / 电话)
                     </span>
                     <span className="font-bold text-slate-900 text-sm block truncate font-mono">
@@ -242,16 +242,17 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                   <Button
                     variant="outline"
                     size="sm"
+                    aria-label="คัดลอกเบอร์โทรศัพท์โกดังจีน"
                     onClick={() => handleCopy(phone, "เบอร์โทรศัพท์")}
-                    className="h-9 sm:h-8 px-2.5 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
+                    className="min-h-10 min-w-10 h-10 px-2.5 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
                   >
-                    {copiedField === "เบอร์โทรศัพท์" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedField === "เบอร์โทรศัพท์" ? <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
                   </Button>
                 </div>
 
                 <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 flex items-center justify-between gap-2">
                   <div className="space-y-0.5 min-w-0">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
                       รหัสไปรษณีย์ (Zip Code / 邮编)
                     </span>
                     <span className="font-bold text-slate-900 text-sm block truncate font-mono">
@@ -261,10 +262,11 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
                   <Button
                     variant="outline"
                     size="sm"
+                    aria-label="คัดลอกรหัสไปรษณีย์โกดังจีน"
                     onClick={() => handleCopy(zipCode, "รหัสไปรษณีย์")}
-                    className="h-9 sm:h-8 px-2.5 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
+                    className="min-h-10 min-w-10 h-10 px-2.5 text-xs text-slate-700 font-bold hover:text-primary hover:bg-blue-50 border-slate-200 shrink-0 cursor-pointer shadow-2xs"
                   >
-                    {copiedField === "รหัสไปรษณีย์" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedField === "รหัสไปรษณีย์" ? <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
                   </Button>
                 </div>
               </div>
@@ -273,7 +275,7 @@ export function CustomerWarehouseCard({ customerCode }: CustomerWarehouseCardPro
               <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-2">
                 <div className="flex justify-between items-center flex-wrap gap-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
                       ที่อยู่โกดัง (Detailed Address / 详细地址)
                     </span>
                     <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${

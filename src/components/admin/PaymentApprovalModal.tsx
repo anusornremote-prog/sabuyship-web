@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/custom-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle, X, AlertTriangle, ZoomIn, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
@@ -117,7 +117,7 @@ export function PaymentApprovalModal({
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent className="max-w-lg p-5 sm:p-6 bg-white rounded-3xl shadow-2xl">
-          <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+          <div className="border-b border-slate-100 pb-3 pr-8">
             <DialogHeader>
               <DialogTitle className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                 <span>💳</span> ตรวจสอบการชำระเงิน
@@ -126,9 +126,6 @@ export function PaymentApprovalModal({
                 รหัสคำสั่งซื้อ: <span className="font-bold text-primary">{order.order_number}</span>
               </DialogDescription>
             </DialogHeader>
-            <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8 rounded-full cursor-pointer">
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="space-y-4 pt-2">
@@ -267,8 +264,8 @@ export function PaymentApprovalModal({
             <span className="text-white text-xs bg-black/50 px-3 py-1.5 rounded-full font-mono">
               แตะที่ใดก็ได้เพื่อปิด
             </span>
-            <button type="button" className="p-2 bg-white/20 hover:bg-white/40 text-white rounded-full cursor-pointer">
-              <X className="w-6 h-6" />
+            <button type="button" aria-label="ปิดรูปขยาย" className="min-h-11 min-w-11 flex items-center justify-center p-2 bg-white/20 hover:bg-white/40 text-white rounded-full cursor-pointer">
+              <X className="w-6 h-6" aria-hidden="true" />
             </button>
           </div>
           <img 

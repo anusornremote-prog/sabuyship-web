@@ -1,11 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { User, Phone, CheckCircle2, Loader2, AlertTriangle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { isValidThaiPhone, normalizeThaiPhone } from "@/lib/phone"
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
@@ -52,8 +54,8 @@ export default function ProfilePage() {
     setErrorMsg("")
 
     try {
-      const cleanPhone = phone.replace(/\D/g, "")
-      if (cleanPhone.length < 9 || cleanPhone.length > 10) {
+      const cleanPhone = normalizeThaiPhone(phone)
+      if (!isValidThaiPhone(cleanPhone)) {
         throw new Error("กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (9-10 หลัก)")
       }
 
@@ -64,7 +66,7 @@ export default function ProfilePage() {
       const { error } = await supabase
         .from("profiles")
         .update({
-          full_name: fullName,
+          full_name: fullName.trim(),
           phone: cleanPhone,
           updated_at: new Date().toISOString()
         })
@@ -73,7 +75,7 @@ export default function ProfilePage() {
       if (error) throw error
 
       setSuccess(true)
-      // Hide success message after 3 seconds
+      toast.success("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว")
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: any) {
       console.error(err)

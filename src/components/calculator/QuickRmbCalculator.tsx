@@ -9,6 +9,12 @@ import {
   TrendingUp, 
   ChevronRight
 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { vibrateTap, vibrateSuccess } from "@/lib/haptics"
 import { fetchExchangeRate } from "@/lib/exchange-rate"
 
@@ -127,258 +133,258 @@ export function QuickRmbCalculator() {
       </div>
 
       {/* 2. Modal & Mobile Bottom Sheet */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-            onClick={handleClose}
-          />
+      <Dialog open={isOpen} onOpenChange={(open) => (open ? setIsOpen(true) : handleClose())}>
+        <DialogContent
+          hideCloseButton
+          className="w-full max-w-full sm:max-w-md left-0 sm:left-[50%] top-auto bottom-0 sm:top-[50%] sm:bottom-auto translate-x-0 sm:translate-x-[-50%] translate-y-0 sm:translate-y-[-50%] rounded-b-none rounded-t-3xl sm:rounded-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90dvh] border-slate-200/80 shadow-2xl"
+        >
+          {/* Mobile Drag Indicator */}
+          <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-1 sm:hidden" />
 
-          {/* Dialog Container */}
-          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200/80 z-10 overflow-hidden flex flex-col max-h-[90dvh] animate-bottom-sheet sm:animate-in sm:zoom-in-95 duration-200">
-            
-            {/* Mobile Drag Indicator */}
-            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-3 mb-1 sm:hidden" />
+          {/* Header */}
+          <div className="p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-br from-slate-900 via-primary to-blue-900 text-white shrink-0 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
 
-            {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-br from-slate-900 via-primary to-blue-900 text-white shrink-0 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
-              
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-amber-300 font-black shadow-inner">
-                    <Calculator className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-white flex items-center gap-1.5">
-                      <span>เครื่องคิดเลขแปลงเงินหยวน</span>
-                    </h3>
-                    <p className="text-xs text-blue-200 flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
-                      <span>เรทปัจจุบัน: <strong>1 หยวน = ฿{rate.toFixed(2)} บาท</strong></span>
-                    </p>
-                  </div>
+            <div className="relative flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-amber-300 font-black shadow-inner">
+                  <Calculator className="w-5 h-5" aria-hidden="true" />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div>
+                  <DialogTitle className="text-base font-black text-white flex items-center gap-1.5">
+                    <span>เครื่องคิดเลขแปลงเงินหยวน</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-blue-200 flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                    <span>เรทปัจจุบัน: <strong>1 หยวน = ฿{rate.toFixed(2)} บาท</strong></span>
+                  </DialogDescription>
+                </div>
               </div>
 
-              {/* Tab Selector */}
-              <div className="grid grid-cols-2 gap-1 bg-black/20 p-1 rounded-xl mt-4 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    vibrateTap()
-                    setActiveTab("convert")
-                  }}
-                  className={`py-2 px-3 rounded-lg transition-all text-center cursor-pointer ${
-                    activeTab === "convert" 
-                      ? "bg-white text-slate-900 shadow-sm font-black" 
-                      : "text-blue-200 hover:text-white"
-                  }`}
-                >
-                  🔄 แปลงเรทเงินด่วน
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    vibrateTap()
-                    setActiveTab("landed")
-                  }}
-                  className={`py-2 px-3 rounded-lg transition-all text-center cursor-pointer ${
-                    activeTab === "landed" 
-                      ? "bg-white text-slate-900 shadow-sm font-black" 
-                      : "text-blue-200 hover:text-white"
-                  }`}
-                >
-                  📦 คำนวณต้นทุนถึงไทย
-                </button>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="p-4 sm:p-5 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0 space-y-4 text-slate-800">
-              {activeTab === "convert" ? (
-                /* TAB 1: Simple Dual Converter */
-                <div className="space-y-4">
-                  {/* Currency Input Card */}
-                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-500 uppercase">
-                        {direction === "RMB_TO_THB" ? "🇨🇳 จำนวนเงินหยวน (RMB ¥)" : "🇹🇭 จำนวนเงินบาท (THB ฿)"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleToggleDirection}
-                        className="text-xs font-bold text-primary hover:text-blue-700 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95"
-                      >
-                        <ArrowRightLeft className="w-3 h-3" />
-                        <span>สลับสกุลเงิน</span>
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">
-                        {direction === "RMB_TO_THB" ? "¥" : "฿"}
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="any"
-                        value={rmbInput}
-                        onChange={(e) => setRmbInput(e.target.value)}
-                        placeholder="0.00"
-                        className="w-full pl-9 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-xl font-black text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                      />
-                    </div>
-
-                    {/* Quick Chips */}
-                    {direction === "RMB_TO_THB" && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {quickChips.map((chip) => (
-                          <button
-                            key={chip}
-                            type="button"
-                            onClick={() => handleQuickChip(chip)}
-                            className={`px-2.5 py-1 text-xs rounded-lg font-bold transition-all cursor-pointer ${
-                              rmbInput === chip.toString()
-                                ? "bg-primary text-white shadow-xs"
-                                : "bg-white text-slate-600 hover:bg-slate-200/80 border border-slate-200"
-                            }`}
-                          >
-                            ¥{chip}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Result Display Box */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50/60 border border-blue-200/70 rounded-2xl p-4 text-center">
-                    <p className="text-xs font-bold text-blue-600 mb-1">
-                      {direction === "RMB_TO_THB" ? "🇹🇭 คิดเป็นเงินไทยประมาณ" : "🇨🇳 คิดเป็นเงินหยวนประมาณ"}
-                    </p>
-                    <p className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                      {direction === "RMB_TO_THB" ? "฿" : "¥"}
-                      {thbResult.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      *คำนวณจากเรทอัตราแลกเปลี่ยน ณ ปัจจุบัน (1¥ = ฿{rate.toFixed(2)}) ไม่มีค่าธรรมเนียมแอบแฝง
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                /* TAB 2: Landed Cost Estimator */
-                <div className="space-y-3.5">
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Item Price in RMB */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        ราคาสินค้าต่อชิ้น (¥)
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">¥</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="any"
-                          value={itemPriceRmb}
-                          onChange={(e) => setItemPriceRmb(e.target.value)}
-                          className="w-full pl-7 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-primary/30"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Quantity */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        จำนวน (ชิ้น)
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={quantity}
-                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-primary/30"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Weight & Shipping Method */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        น้ำหนักรวม (กก.)
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="0.1"
-                          step="0.1"
-                          value={weightKg}
-                          onChange={(e) => setWeightKg(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-primary/30"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">kg</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        วิธีขนส่งจีน-ไทย
-                      </label>
-                      <select
-                        value={shippingType}
-                        onChange={(e) => setShippingType(e.target.value as "ROAD" | "SEA")}
-                        className="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-hidden focus:bg-white"
-                      >
-                        <option value="ROAD">🚛 ทางรถ (39฿/kg)</option>
-                        <option value="SEA">🚢 ทางเรือ (29฿/kg)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Cost Breakdown Summary Card */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2 text-xs">
-                    <div className="flex justify-between items-center text-slate-600">
-                      <span>🛍️ ค่าสินค้า ({quantity} ชิ้น @ ¥{parsedPriceRmb})</span>
-                      <span className="font-bold text-slate-900">฿{totalProductThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-600">
-                      <span>🚚 ค่าส่งจีน-ไทย ({parsedWeight} kg @ {shippingRatePerKg}฿)</span>
-                      <span className="font-bold text-slate-900">฿{estimatedFreightThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm">
-                      <span className="font-black text-slate-900">💰 ยอดรวมถึงไทยโดยประมาณ:</span>
-                      <span className="font-black text-primary text-base">฿{totalLandedCostThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Action */}
-            <div className="p-4 pb-[max(env(safe-area-inset-bottom),1rem)] bg-slate-50 border-t border-slate-100 shrink-0">
               <button
                 type="button"
-                onClick={handleGoToInquiry}
-                className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 text-sm transition-all active:scale-98 cursor-pointer"
+                onClick={handleClose}
+                aria-label="ปิดเครื่องคิดเลขแปลงเงินหยวน"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
               >
-                <span>ส่งลิงก์สั่งซื้อสินค้านี้เลย</span>
-                <ChevronRight className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 
+            {/* Tab Selector */}
+            <div className="grid grid-cols-2 gap-1 bg-black/20 p-1 rounded-xl mt-4 text-xs font-bold">
+              <button
+                type="button"
+                aria-pressed={activeTab === "convert"}
+                onClick={() => {
+                  vibrateTap()
+                  setActiveTab("convert")
+                }}
+                className={`min-h-10 py-2 px-3 rounded-lg transition-all text-center cursor-pointer ${
+                  activeTab === "convert"
+                    ? "bg-white text-slate-900 shadow-sm font-black"
+                    : "text-blue-200 hover:text-white"
+                }`}
+              >
+                แปลงเรทเงินด่วน
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === "landed"}
+                onClick={() => {
+                  vibrateTap()
+                  setActiveTab("landed")
+                }}
+                className={`min-h-10 py-2 px-3 rounded-lg transition-all text-center cursor-pointer ${
+                  activeTab === "landed"
+                    ? "bg-white text-slate-900 shadow-sm font-black"
+                    : "text-blue-200 hover:text-white"
+                }`}
+              >
+                คำนวณต้นทุนถึงไทย
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+
+          {/* Body */}
+          <div className="p-4 sm:p-5 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0 space-y-4 text-slate-800">
+            {activeTab === "convert" ? (
+              /* TAB 1: Simple Dual Converter */
+              <div className="space-y-4">
+                {/* Currency Input Card */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <label htmlFor="quick-rmb-amount" className="text-xs font-bold text-slate-600 uppercase">
+                      {direction === "RMB_TO_THB" ? "จำนวนเงินหยวน (RMB ¥)" : "จำนวนเงินบาท (THB ฿)"}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleToggleDirection}
+                      className="min-h-9 text-xs font-bold text-primary hover:text-blue-700 flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95"
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>สลับสกุลเงิน</span>
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg" aria-hidden="true">
+                      {direction === "RMB_TO_THB" ? "¥" : "฿"}
+                    </span>
+                    <input
+                      id="quick-rmb-amount"
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={rmbInput}
+                      onChange={(e) => setRmbInput(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full pl-9 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-xl font-black text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                    />
+                  </div>
+
+                  {/* Quick Chips */}
+                  {direction === "RMB_TO_THB" && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {quickChips.map((chip) => (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => handleQuickChip(chip)}
+                          className={`min-h-9 px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                            rmbInput === chip.toString()
+                              ? "bg-primary text-white shadow-xs"
+                              : "bg-white text-slate-600 hover:bg-slate-200/80 border border-slate-200"
+                          }`}
+                        >
+                          ¥{chip}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Result Display Box */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50/60 border border-blue-200/70 rounded-2xl p-4 text-center">
+                  <p className="text-xs font-bold text-blue-600 mb-1">
+                    {direction === "RMB_TO_THB" ? "คิดเป็นเงินไทยประมาณ" : "คิดเป็นเงินหยวนประมาณ"}
+                  </p>
+                  <p className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    {direction === "RMB_TO_THB" ? "฿" : "¥"}
+                    {thbResult.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    *คำนวณจากเรทอัตราแลกเปลี่ยน ณ ปัจจุบัน (1¥ = ฿{rate.toFixed(2)}) ไม่มีค่าธรรมเนียมแอบแฝง
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* TAB 2: Landed Cost Estimator */
+              <div className="space-y-3.5">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Item Price in RMB */}
+                  <div>
+                    <label htmlFor="quick-landed-price" className="text-xs font-bold text-slate-700 block mb-1">
+                      ราคาสินค้าต่อชิ้น (¥)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm" aria-hidden="true">¥</span>
+                      <input
+                        id="quick-landed-price"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={itemPriceRmb}
+                        onChange={(e) => setItemPriceRmb(e.target.value)}
+                        className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-primary/30"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quantity */}
+                  <div>
+                    <label htmlFor="quick-landed-qty" className="text-xs font-bold text-slate-700 block mb-1">
+                      จำนวน (ชิ้น)
+                    </label>
+                    <input
+                      id="quick-landed-qty"
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
+                </div>
+
+                {/* Weight & Shipping Method */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="quick-landed-weight" className="text-xs font-bold text-slate-700 block mb-1">
+                      น้ำหนักรวม (กก.)
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="quick-landed-weight"
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        value={weightKg}
+                        onChange={(e) => setWeightKg(e.target.value)}
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-primary/30"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">kg</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="quick-landed-shipping" className="text-xs font-bold text-slate-700 block mb-1">
+                      วิธีขนส่งจีน-ไทย
+                    </label>
+                    <select
+                      id="quick-landed-shipping"
+                      value={shippingType}
+                      onChange={(e) => setShippingType(e.target.value as "ROAD" | "SEA")}
+                      className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-hidden focus:bg-white"
+                    >
+                      <option value="ROAD">ทางรถ (39฿/kg)</option>
+                      <option value="SEA">ทางเรือ (29฿/kg)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Cost Breakdown Summary Card */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>ค่าสินค้า ({quantity} ชิ้น @ ¥{parsedPriceRmb})</span>
+                    <span className="font-bold text-slate-900">฿{totalProductThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>ค่าส่งจีน-ไทย ({parsedWeight} kg @ {shippingRatePerKg}฿)</span>
+                    <span className="font-bold text-slate-900">฿{estimatedFreightThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm">
+                    <span className="font-black text-slate-900">ยอดรวมถึงไทยโดยประมาณ:</span>
+                    <span className="font-black text-primary text-base">฿{totalLandedCostThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Action */}
+          <div className="p-4 pb-[max(env(safe-area-inset-bottom),1rem)] bg-slate-50 border-t border-slate-100 shrink-0">
+            <button
+              type="button"
+              onClick={handleGoToInquiry}
+              className="w-full min-h-11 py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 text-sm transition-all active:scale-98 cursor-pointer"
+            >
+              <span>ส่งลิงก์สั่งซื้อสินค้านี้เลย</span>
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

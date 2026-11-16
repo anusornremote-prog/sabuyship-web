@@ -5,6 +5,14 @@ import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Calendar, ChevronDown, Eye, FileText, Loader2, MapPin, PackagePlus, PackageX, RotateCcw, Search, Truck, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
@@ -691,14 +699,15 @@ export default function AdminOrders() {
              {searchQuery && (
                <button
                  type="button"
+                 aria-label="ล้างคำค้นหา"
                  onClick={() => {
                    setSearchQuery("")
                    setCurrentPage(1)
                  }}
-                 className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
+                 className="absolute right-2 top-1/2 -translate-y-1/2 min-h-9 min-w-9 inline-flex items-center justify-center text-slate-400 hover:text-slate-600 p-1 rounded-full cursor-pointer"
                  title="ล้างคำค้นหา"
                >
-                 <X className="h-4 w-4" />
+                 <X className="h-4 w-4" aria-hidden="true" />
                </button>
              )}
           </form>
@@ -716,11 +725,12 @@ export default function AdminOrders() {
               {dateFilter && (
                 <button
                   type="button"
+                  aria-label="ล้างวันที่สั่งซื้อ"
                   onClick={() => handleDateFilterChange("")}
-                  className="absolute right-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
+                  className="absolute right-2 min-h-9 min-w-9 inline-flex items-center justify-center text-slate-400 hover:text-slate-600 p-1 rounded-full cursor-pointer"
                   title="ล้างวันที่สั่งซื้อ"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -757,8 +767,9 @@ export default function AdminOrders() {
               <button
                 key={filter.value}
                 type="button"
+                aria-pressed={statusFilter === filter.value}
                 onClick={() => handleFilterChange(filter.value)}
-                className={`shrink-0 rounded-full border px-3 py-2 text-xs font-bold transition-colors ${
+                className={`shrink-0 min-h-10 rounded-full border px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer ${
                   statusFilter === filter.value
                     ? "border-primary bg-primary text-white shadow-sm"
                     : "border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-primary"
@@ -782,6 +793,7 @@ export default function AdminOrders() {
                   <th className="px-6 py-4 font-medium w-12">
                     <input 
                       type="checkbox" 
+                      aria-label="เลือกคำสั่งซื้อทั้งหมดในหน้านี้"
                       onChange={handleSelectAll} 
                       checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedOrderIds.includes(o.id))} 
                       className="rounded border-slate-300 text-primary focus:ring-primary"
@@ -815,6 +827,7 @@ export default function AdminOrders() {
                       <td className="px-6 py-4">
                         <input 
                           type="checkbox" 
+                          aria-label={`เลือกคำสั่งซื้อ ${order.order_number}`}
                           checked={selectedOrderIds.includes(order.id)} 
                           onChange={() => handleSelectRow(order.id)} 
                           className="rounded border-slate-300 text-primary focus:ring-primary"
@@ -957,8 +970,8 @@ export default function AdminOrders() {
                             </Link>
                           </Button>
                           <Button variant="ghost" size="icon" className="cursor-pointer" asChild>
-                            <Link href={`/admin/orders/${order.order_number}`} target="_blank" title="ดูรายละเอียด">
-                              <Eye className="h-4 w-4 text-slate-500 hover:text-slate-900" />
+                            <Link href={`/admin/orders/${order.order_number}`} target="_blank" aria-label={`ดูรายละเอียดคำสั่งซื้อ ${order.order_number}`} title="ดูรายละเอียด">
+                              <Eye className="h-4 w-4 text-slate-500 hover:text-slate-900" aria-hidden="true" />
                             </Link>
                           </Button>
                         </div>
@@ -980,12 +993,13 @@ export default function AdminOrders() {
           <div className="md:hidden flex flex-col">
             <div className="bg-slate-50 border-b p-3 flex items-center gap-2">
                <input 
+                  id="admin-orders-select-all-mobile"
                   type="checkbox" 
                   onChange={handleSelectAll} 
                   checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedOrderIds.includes(o.id))} 
                   className="rounded border-slate-300 text-primary focus:ring-primary w-5 h-5"
                 />
-                <span className="text-xs font-semibold text-slate-500">เลือกทั้งหมดในหน้านี้</span>
+                <label htmlFor="admin-orders-select-all-mobile" className="text-xs font-semibold text-slate-600 cursor-pointer">เลือกทั้งหมดในหน้านี้</label>
             </div>
             {loading ? (
               <div className="p-12 text-center text-slate-400 flex flex-col justify-center items-center gap-2">
@@ -999,6 +1013,7 @@ export default function AdminOrders() {
                     <div className="flex items-center gap-2">
                       <input 
                         type="checkbox" 
+                        aria-label={`เลือกคำสั่งซื้อ ${order.order_number}`}
                         checked={selectedOrderIds.includes(order.id)} 
                         onChange={() => handleSelectRow(order.id)} 
                         className="rounded border-slate-300 text-primary focus:ring-primary w-5 h-5"
@@ -1188,106 +1203,99 @@ export default function AdminOrders() {
       />
 
       {/* Status Update Modal */}
-      {editingOrder && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card className="w-full max-w-md max-h-[90dvh] flex flex-col overflow-hidden shadow-2xl bg-white border border-slate-100 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 shrink-0">
-              <div>
-                <h3 className="font-bold text-lg text-slate-900">อัปเดตสถานะสินค้า</h3>
-                <p className="text-xs text-slate-500">คำสั่งซื้อ: {editingOrder.order_number}</p>
+      <Dialog open={Boolean(editingOrder)} onOpenChange={(open) => !open && !updating && setEditingOrder(null)}>
+        <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+          <DialogHeader className="p-4 pr-12 border-b border-slate-100 shrink-0 text-left">
+            <DialogTitle className="font-bold text-lg text-slate-900">อัปเดตสถานะสินค้า</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              คำสั่งซื้อ: {editingOrder?.order_number}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateStatus} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1 min-h-0">
+              {successMsg && (
+                <div role="status" className="p-3 bg-green-50 text-green-700 text-sm rounded-lg font-medium border border-green-200">
+                  {successMsg}
+                </div>
+              )}
+              {errorMsg && (
+                <div role="alert" className="p-3 bg-red-50 text-red-700 text-sm rounded-lg font-medium border border-red-200">
+                  {errorMsg}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label htmlFor="admin-manual-status" className="text-sm font-semibold text-slate-700">เลือกสถานะใหม่ *</label>
+                <select
+                  id="admin-manual-status"
+                  required
+                  className="flex h-11 w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                >
+                  <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
+                  <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
+                  <option value="ORDERED">ORDERED (ร้านจีนเตรียมจัดส่ง)</option>
+                  <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
+                  <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
+                  <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
+                  <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
+                  <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
+                </select>
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setEditingOrder(null)}
-                className="text-slate-400 hover:text-slate-600 rounded-full"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+
+              <div className="space-y-2">
+                <label htmlFor="admin-manual-tracking" className="text-sm font-semibold text-slate-700">หมายเลขพัสดุ (Tracking Number)</label>
+                <Input
+                  id="admin-manual-tracking"
+                  type="text"
+                  placeholder="กรอกเลขพัสดุสำหรับจัดส่งในไทย (ถ้ามี)"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  className="w-full h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="admin-manual-note" className="text-sm font-semibold text-slate-700">บันทึกประวัติ (Tracking Note)</label>
+                <textarea
+                  id="admin-manual-note"
+                  className="flex min-h-[100px] w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-slate-400"
+                  placeholder="ใส่บันทึกรายละเอียดขนส่ง เช่น 'ตู้สินค้าขึ้นเรือจากกวางโจวแล้ว' หรือ 'พัสดุถึงจุดแยกปทุมธานี'"
+                  value={trackingNotes}
+                  onChange={(e) => setTrackingNotes(e.target.value)}
+                />
+              </div>
             </div>
-            
-            <form onSubmit={handleUpdateStatus} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <CardContent className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] flex-1 min-h-0">
-                {successMsg && (
-                  <div className="p-3 bg-green-50 text-green-700 text-sm rounded-lg font-medium border border-green-200">
-                    {successMsg}
+
+            <DialogFooter className="p-4 bg-slate-50 border-t border-slate-100 gap-2 sm:gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditingOrder(null)}
+                disabled={updating}
+                className="cursor-pointer min-h-11"
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                type="submit"
+                variant="orange"
+                disabled={updating}
+                className="cursor-pointer min-h-11"
+              >
+                {updating ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span>กำลังบันทึก...</span>
                   </div>
-                )}
-                {errorMsg && (
-                  <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg font-medium border border-red-200">
-                    {errorMsg}
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">เลือกสถานะใหม่ *</label>
-                  <select 
-                    required
-                    className="flex h-11 w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                  >
-                    <option value="WAITING_PAYMENT">WAITING_PAYMENT (รอชำระเงิน/อัปสลิป)</option>
-                    <option value="PAID">PAID (ชำระเงินแล้ว/รอสั่งของ)</option>
-                    <option value="ORDERED">ORDERED (ร้านจีนเตรียมจัดส่ง)</option>
-                    <option value="CHINA_WAREHOUSE">CHINA_WAREHOUSE (ถึงโกดังจีน/รอชำระรอบ2)</option>
-                    <option value="SHIPPING">SHIPPING (ส่งข้ามแดนมาไทย)</option>
-                    <option value="THAILAND_WAREHOUSE">THAILAND_WAREHOUSE (ถึงโกดังไทย/รอชำระรอบ3)</option>
-                    <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY (กำลังนำส่งลูกค้า)</option>
-                    <option value="DELIVERED">DELIVERED (จัดส่งสำเร็จ)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">หมายเลขพัสดุ (Tracking Number)</label>
-                  <Input 
-                    type="text"
-                    placeholder="กรอกเลขพัสดุสำหรับจัดส่งในไทย (ถ้ามี)"
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">บันทึกประวัติ (Tracking Note)</label>
-                  <textarea 
-                    className="flex min-h-[100px] w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-slate-400"
-                    placeholder="ใส่บันทึกรายละเอียดขนส่ง เช่น 'ตู้สินค้าขึ้นเรือจากกวางโจวแล้ว' หรือ 'พัสดุถึงจุดแยกปทุมธานี'"
-                    value={trackingNotes}
-                    onChange={(e) => setTrackingNotes(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-
-              <div className="flex gap-3 justify-end p-4 bg-slate-50 border-t border-slate-100 rounded-b-xl">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setEditingOrder(null)}
-                  disabled={updating}
-                  className="cursor-pointer"
-                >
-                  ยกเลิก
-                </Button>
-                <Button 
-                  type="submit" 
-                  variant="orange" 
-                  disabled={updating}
-                  className="cursor-pointer"
-                >
-                  {updating ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>กำลังบันทึก...</span>
-                    </div>
-                  ) : "บันทึกการอัปเดต"}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+                ) : "บันทึกการอัปเดต"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       {/* Out of Stock Modal */}
       <OutOfStockModal
         isOpen={outOfStockModalOpen}

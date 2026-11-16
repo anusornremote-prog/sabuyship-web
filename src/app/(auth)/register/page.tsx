@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Eye, EyeOff } from "lucide-react"
 import { LineIcon } from "@/components/ui/icons"
 import { InAppBrowserNotice } from "@/components/auth/InAppBrowserNotice"
 import { canAcceptBusiness } from "@/lib/public-business-config"
@@ -17,6 +18,7 @@ export default function Register() {
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [phone, setPhone] = useState("")
   const [lineId, setLineId] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -181,12 +183,15 @@ export default function Register() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleRegister} className="space-y-4">
-          {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
-          {success && <div className="p-3 bg-emerald-50 text-emerald-700 text-sm rounded-md">{success}</div>}
+          {error && <div role="alert" className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
+          {success && <div role="status" className="p-3 bg-emerald-50 text-emerald-700 text-sm rounded-md">{success}</div>}
           <div className="space-y-2">
-            <label className="text-sm font-medium">ชื่อ - นามสกุล *</label>
+            <label htmlFor="register-fullname" className="text-sm font-medium">ชื่อ - นามสกุล *</label>
             <Input 
+              id="register-fullname"
+              name="fullName"
               type="text" 
+              autoComplete="name"
               required 
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -194,9 +199,12 @@ export default function Register() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">เบอร์โทรศัพท์ *</label>
+            <label htmlFor="register-phone" className="text-sm font-medium">เบอร์โทรศัพท์ *</label>
             <Input 
+              id="register-phone"
+              name="phone"
               type="tel" 
+              autoComplete="tel"
               required 
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -204,8 +212,10 @@ export default function Register() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">LINE ID / WeChat ID (ไม่บังคับ)</label>
+            <label htmlFor="register-line" className="text-sm font-medium">LINE ID / WeChat ID (ไม่บังคับ)</label>
             <Input 
+              id="register-line"
+              name="lineId"
               type="text" 
               value={lineId}
               onChange={(e) => setLineId(e.target.value)}
@@ -213,9 +223,12 @@ export default function Register() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">อีเมล *</label>
+            <label htmlFor="register-email" className="text-sm font-medium">อีเมล *</label>
             <Input 
+              id="register-email"
+              name="email"
               type="email" 
+              autoComplete="email"
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -223,19 +236,52 @@ export default function Register() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">รหัสผ่าน *</label>
-            <Input 
-              type="password" 
-              required 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="อย่างน้อย 6 ตัวอักษร"
-            />
+            <label htmlFor="register-password" className="text-sm font-medium">รหัสผ่าน *</label>
+            <div className="relative">
+              <Input 
+                id="register-password"
+                name="password"
+                type={showPassword ? "text" : "password"} 
+                autoComplete="new-password"
+                minLength={6}
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="อย่างน้อย 6 ตัวอักษร"
+                className="pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                aria-pressed={showPassword}
+                className="absolute right-0 top-0 flex h-full min-w-11 items-center justify-center text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+              </button>
+            </div>
           </div>
-          <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-            <input type="checkbox" required checked={privacyAcknowledged} onChange={(event) => setPrivacyAcknowledged(event.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-600" />
-            <span>ฉันรับทราบ <Link href="/privacy" target="_blank" className="font-bold text-primary underline">ประกาศความเป็นส่วนตัว</Link> สำหรับการสร้างบัญชีและให้บริการ</span>
-          </label>
+          <div className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+            <input
+              id="register-privacy"
+              type="checkbox"
+              required
+              checked={privacyAcknowledged}
+              onChange={(event) => setPrivacyAcknowledged(event.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 cursor-pointer"
+            />
+            <div>
+              <label htmlFor="register-privacy" className="cursor-pointer">
+                ฉันรับทราบ
+              </label>{" "}
+              <Link href="/privacy" target="_blank" className="font-bold text-primary underline">
+                ประกาศความเป็นส่วนตัว
+              </Link>{" "}
+              <label htmlFor="register-privacy" className="cursor-pointer">
+                สำหรับการสร้างบัญชีและให้บริการ
+              </label>
+            </div>
+          </div>
           {!canAcceptBusiness && <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950">ยังไม่เปิดสมัครสมาชิกจริงจนกว่าจะตั้งค่าข้อมูลผู้ประกอบการและช่วงดำเนินกิจการครบ</p>}
           <Button type="submit" className="w-full h-11" disabled={loading || !privacyAcknowledged || !canAcceptBusiness}>
             {loading ? "กำลังสมัครสมาชิก..." : "สมัครสมาชิก"}
@@ -255,7 +301,7 @@ export default function Register() {
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full h-[40px] bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
+              className="w-full min-h-11 h-11 bg-[#06C755] hover:bg-[#05b34c] text-white hover:text-white border-transparent font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2.5 rounded-md text-sm transition-all"
               onClick={handleLineRegister}
               disabled={loading || !privacyAcknowledged || !canAcceptBusiness}
             >

@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/custom-dialog"
+} from "@/components/ui/dialog"
 
 const extractUrl = (text?: string) => {
   if (!text) return "#"
@@ -518,6 +518,7 @@ export default function AdminInquiryList({
                   <th className="px-6 py-4 w-12">
                     <input 
                       type="checkbox" 
+                      aria-label="เลือกคำขอทั้งหมดในหน้านี้"
                       className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                       checked={filtered.length > 0 && selectedIds.length === filtered.length}
                       onChange={handleSelectAll}
@@ -538,6 +539,7 @@ export default function AdminInquiryList({
                       <td className="px-6 py-4">
                         <input 
                           type="checkbox" 
+                          aria-label={`เลือกคำขอ ${inq.inquiry_number}`}
                           className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                           checked={selectedIds.includes(inq.id)}
                           onChange={() => handleSelectRow(inq.id)}
@@ -651,10 +653,12 @@ export default function AdminInquiryList({
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                                aria-label={`ยกเลิกคำขอ ${inq.inquiry_number}`}
+                                title="ยกเลิกคำขอ"
+                                className="min-h-9 min-w-9 text-rose-600 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
                                 onClick={() => handleRejectInquiry(inq.id)}
                               >
-                                <XCircle className="h-4 w-4" />
+                                <XCircle className="h-4 w-4" aria-hidden="true" />
                               </Button>
                             </>
                           ) : inq.quotations && inq.quotations.length > 0 && inq.status === "QUOTED" ? (
@@ -712,12 +716,13 @@ export default function AdminInquiryList({
           <div className="md:hidden flex flex-col divide-y">
             <div className="bg-slate-50 border-b p-3 flex items-center gap-2">
                <input 
+                  id="admin-inquiries-select-all-mobile"
                   type="checkbox" 
                   className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                   checked={filtered.length > 0 && selectedIds.length === filtered.length}
                   onChange={handleSelectAll}
                 />
-                <span className="text-xs font-semibold text-slate-500">เลือกทั้งหมดในหน้านี้</span>
+                <label htmlFor="admin-inquiries-select-all-mobile" className="text-xs font-semibold text-slate-600 cursor-pointer">เลือกทั้งหมดในหน้านี้</label>
             </div>
             {filtered.length > 0 ? (
               filtered.map((inq: any) => (
@@ -726,6 +731,7 @@ export default function AdminInquiryList({
                     <div className="flex items-center gap-2">
                       <input 
                         type="checkbox" 
+                        aria-label={`เลือกคำขอ ${inq.inquiry_number}`}
                         className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                         checked={selectedIds.includes(inq.id)}
                         onChange={() => handleSelectRow(inq.id)}
@@ -1080,8 +1086,8 @@ export default function AdminInquiryList({
 
       {/* Details Dialog Modal */}
       {isDetailsOpen && selectedDetailsInquiry && (
-        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} className="max-w-6xl w-[95vw]">
-          <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="max-w-6xl w-[95vw] max-h-[90dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-slate-900 font-bold text-xl">รายละเอียดคำขอ {selectedDetailsInquiry.inquiry_number}</DialogTitle>
               <DialogDescription>

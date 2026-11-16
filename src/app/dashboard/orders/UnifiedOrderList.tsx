@@ -327,7 +327,8 @@ export default function UnifiedOrderList({ items, customerId }: UnifiedOrderList
                           <button
                             type="button"
                             onClick={(e) => handleCopyNumber(e, itemNum)}
-                            className="text-slate-400 hover:text-primary p-1 rounded-md transition-colors shrink-0"
+                            aria-label={`คัดลอกรหัสคำสั่งซื้อ ${itemNum}`}
+                            className="min-h-9 min-w-9 inline-flex items-center justify-center text-slate-400 hover:text-primary p-1.5 rounded-md transition-colors shrink-0 cursor-pointer"
                             title="คัดลอกรหัสคำสั่งซื้อ"
                           >
                             {copiedId === itemNum ? (

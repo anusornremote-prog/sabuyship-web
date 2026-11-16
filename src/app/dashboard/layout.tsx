@@ -183,8 +183,8 @@ export default function DashboardLayout({
 
           {/* Desktop Breadcrumb / Title on the left */}
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400">ระบบลูกค้า</span>
-            <span className="text-xs text-slate-300">/</span>
+            <span className="text-xs font-bold text-slate-500">ระบบลูกค้า</span>
+            <span className="text-xs text-slate-400">/</span>
             <span className="text-sm font-black text-slate-900">{getPageTitle()}</span>
           </div>
 
@@ -212,27 +212,27 @@ export default function DashboardLayout({
         <nav className="flex md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200/80 overflow-x-auto no-scrollbar scroll-snap-x px-3 py-2 gap-2 sticky top-0 z-30">
           <Link 
             href="/dashboard" 
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+            className={`whitespace-nowrap flex min-h-10 items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
               pathname === '/dashboard' 
                 ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            <LayoutDashboard className="w-3.5 h-3.5" />
+            <LayoutDashboard className="w-3.5 h-3.5" aria-hidden="true" />
             <span>ภาพรวม</span>
           </Link>
           <Link 
             href="/dashboard/orders" 
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+            className={`whitespace-nowrap flex min-h-10 items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
               pathname.startsWith('/dashboard/orders') 
                 ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            <Package className="w-3.5 h-3.5" />
+            <Package className="w-3.5 h-3.5" aria-hidden="true" />
             <span>คำสั่งซื้อ</span>
             {(badgeCounts.ordersCount + badgeCounts.inquiriesCount) > 0 && (
-              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
                 pathname.startsWith('/dashboard/orders') ? 'bg-white text-primary' : 'bg-red-500 text-white'
               }`}>
                 {badgeCounts.ordersCount + badgeCounts.inquiriesCount}
@@ -241,24 +241,24 @@ export default function DashboardLayout({
           </Link>
           <Link 
             href="/dashboard/addresses" 
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+            className={`whitespace-nowrap flex min-h-10 items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
               pathname.startsWith('/dashboard/addresses') 
                 ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            <MapPin className="w-3.5 h-3.5" />
+            <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
             <span>สมุดที่อยู่</span>
           </Link>
           <Link 
             href="/dashboard/profile" 
-            className={`whitespace-nowrap flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+            className={`whitespace-nowrap flex min-h-10 items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
               pathname.startsWith('/dashboard/profile') 
                 ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            <User className="w-3.5 h-3.5" />
+            <User className="w-3.5 h-3.5" aria-hidden="true" />
             <span>ข้อมูลส่วนตัว</span>
           </Link>
         </nav>

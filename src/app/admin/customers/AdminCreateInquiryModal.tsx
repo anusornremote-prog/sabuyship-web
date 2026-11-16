@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/custom-dialog"
+} from "@/components/ui/dialog"
 
 interface AdminCreateInquiryModalProps {
   isOpen: boolean
@@ -144,8 +144,8 @@ export default function AdminCreateInquiryModal({ isOpen, onClose, customer }: A
   if (!customer) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} className="max-w-4xl w-[95vw]">
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">สร้างคำขอประเมินราคาแทนลูกค้า</DialogTitle>
           <div className="text-sm text-slate-500 mt-1">

@@ -34,29 +34,29 @@ export function Footer() {
               <Image src="/Sabuy_Ship_Express.webp" alt="Sabuy Ship Express" width={200} height={81} sizes="150px" className="h-12 w-auto object-contain" />
             </Link>
             <p className="mt-5 text-sm leading-7 text-slate-300">{t.footerDesc}</p>
-            <p className="mt-3 text-xs font-semibold leading-6 text-slate-500">ดำเนินงานโดยผู้ประกอบการบุคคลธรรมดา{publicBusinessConfig.commercialRegistrationNo ? ` · ทะเบียนพาณิชย์ ${publicBusinessConfig.commercialRegistrationNo}` : ""}</p>
+            <p className="mt-3 text-xs font-semibold leading-6 text-slate-300">ดำเนินงานโดยผู้ประกอบการบุคคลธรรมดา{publicBusinessConfig.commercialRegistrationNo ? ` · ทะเบียนพาณิชย์ ${publicBusinessConfig.commercialRegistrationNo}` : ""}</p>
           </div>
           <FooterColumn title={t.footerServices} links={serviceLinks} />
           <FooterColumn title={t.footerCompany} links={companyLinks} />
           <div>
             <h3 className="text-xs font-black uppercase tracking-[0.18em] text-blue-300">{t.footerContactUs}</h3>
             <div className="mt-5 space-y-3">
-              <ContactLink href={LINE_OA_URL} icon={<MessageCircle className="h-4 w-4" />} label={`LINE ${LINE_OA_ID}`} />
-              <ContactLink href="https://facebook.com/sabuyshipexpress" icon={<Facebook className="h-4 w-4" />} label="Sabuy Ship Express" />
-              <ContactLink href="mailto:sabuyship.express@gmail.com" icon={<Mail className="h-4 w-4" />} label="sabuyship.express@gmail.com" />
+              <ContactLink href={LINE_OA_URL} icon={<MessageCircle className="h-4 w-4" aria-hidden="true" />} label={`LINE ${LINE_OA_ID}`} />
+              <ContactLink href="https://facebook.com/sabuyshipexpress" icon={<Facebook className="h-4 w-4" aria-hidden="true" />} label="Sabuy Ship Express" />
+              <ContactLink href="mailto:sabuyship.express@gmail.com" icon={<Mail className="h-4 w-4" aria-hidden="true" />} label="sabuyship.express@gmail.com" />
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-3 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} Sabuy Ship. {t.footerCopyright}</p><p>China to Thailand, made delightfully simple.</p></div>
+        <div className="flex flex-col gap-3 pt-6 text-xs text-slate-300 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} Sabuy Ship. {t.footerCopyright}</p><p>China to Thailand, made delightfully simple.</p></div>
       </div>
     </footer>
   )
 }
 
 function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
-  return <div><h3 className="text-xs font-black uppercase tracking-[0.18em] text-blue-300">{title}</h3><ul className="mt-5 space-y-3">{links.map((link) => <li key={link.href}><Link href={link.href} className="text-sm text-slate-300 transition hover:text-white">{link.label}</Link></li>)}</ul></div>
+  return <div><h3 className="text-xs font-black uppercase tracking-[0.18em] text-blue-300">{title}</h3><ul className="mt-4 space-y-1">{links.map((link) => <li key={link.href}><Link href={link.href} className="inline-flex min-h-10 items-center text-sm text-slate-300 transition hover:text-white">{link.label}</Link></li>)}</ul></div>
 }
 
 function ContactLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  return <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined} className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-slate-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"><span className="text-orange-300">{icon}</span><span className="min-w-0 flex-1 truncate">{label}</span><ArrowUpRight className="h-3.5 w-3.5 opacity-40 transition group-hover:opacity-100" /></a>
+  return <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined} className="group flex min-h-11 items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-slate-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"><span className="text-orange-300" aria-hidden="true">{icon}</span><span className="min-w-0 flex-1 truncate">{label}</span><ArrowUpRight className="h-3.5 w-3.5 opacity-40 transition group-hover:opacity-100" aria-hidden="true" /></a>
 }

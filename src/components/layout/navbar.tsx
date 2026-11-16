@@ -46,8 +46,7 @@ export function Navbar() {
     if (user?.user_metadata?.full_name) {
       name = user.user_metadata.full_name
     }
-    
-    // 3. Try email or phone
+
     if (!name) {
       if (user?.email) {
         name = user.email.split('@')[0]
@@ -55,27 +54,35 @@ export function Navbar() {
         name = user.phone
       }
     }
-    
-    // If we have any name/identifier, use it
+
     if (name && name.trim() !== '') {
       return locale === 'en' ? `Hi, ${name}` : locale === 'zh' ? `你好, ${name}` : `สวัสดีคุณ ${name}`
     }
-    
-    // Fallback if absolutely nothing is available
-    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'ชื่อลูกค้า' // fallback to "ชื่อลูกค้า" instead of Dashboard as requested
+
+    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'ชื่อลูกค้า'
   }
-  
+
   const dashboardLabel = getDashboardLabel()
 
-  // Close dropdown when clicking outside
+  // Close dropdown and mobile drawer on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isDropdownOpen && !(event.target as Element).closest('.user-dropdown')) {
         setIsDropdownOpen(false)
       }
     }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false)
+        setIsOpen(false)
+      }
+    }
     document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [isDropdownOpen])
 
   const handleLogout = async () => {
@@ -130,8 +137,10 @@ export function Navbar() {
           {user && <NotificationBell />}
           {user ? (
             <div className="relative user-dropdown">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
+                aria-expanded={isDropdownOpen}
+                aria-haspopup="menu"
                 className="font-bold text-primary flex items-center gap-1.5 h-10 px-3 hover:bg-slate-100/80 rounded-xl"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
@@ -139,48 +148,48 @@ export function Navbar() {
                   <img src={user.user_metadata.avatar_url} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4" />
+                    <User className="h-4 w-4" aria-hidden="true" />
                   </div>
                 )}
                 <span>{dashboardLabel}</span>
-                <ChevronDown className="h-4 w-4 ml-1" />
+                <ChevronDown className="h-4 w-4 ml-1" aria-hidden="true" />
               </Button>
               {isDropdownOpen && (
-                <div className="absolute right-0 z-50 mt-3 w-64 rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
-                  <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <User className="h-4 w-4" /> ภาพรวม
+                <div role="menu" className="absolute right-0 z-50 mt-3 w-64 rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
+                  <Link role="menuitem" href="/dashboard" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <User className="h-4 w-4" aria-hidden="true" /> {t.navOverview}
                   </Link>
-                  <Link href="/dashboard/orders" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <Package className="h-4 w-4" /> คำสั่งซื้อของฉัน
+                  <Link role="menuitem" href="/dashboard/orders" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <Package className="h-4 w-4" aria-hidden="true" /> {t.navMyOrders}
                   </Link>
-                  <Link href="/dashboard/addresses" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <MapPin className="h-4 w-4" /> สมุดที่อยู่
+                  <Link role="menuitem" href="/dashboard/addresses" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <MapPin className="h-4 w-4" aria-hidden="true" /> {t.navAddresses}
                   </Link>
-                  <Link href="/dashboard/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <User className="h-4 w-4" /> ข้อมูลส่วนตัว
+                  <Link role="menuitem" href="/dashboard/profile" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <User className="h-4 w-4" aria-hidden="true" /> {t.navProfile}
                   </Link>
                   <div className="border-t my-1"></div>
-                  <Link href="/inquiry" className="flex items-center gap-2 px-4 py-2 text-sm text-primary font-medium hover:bg-slate-50 transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <FileQuestion className="h-4 w-4" /> ขอใบเสนอราคา
+                  <Link role="menuitem" href="/inquiry" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-primary font-medium hover:bg-slate-50 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                    <FileQuestion className="h-4 w-4" aria-hidden="true" /> {t.navRequestQuote}
                   </Link>
                   <div className="border-t my-1"></div>
                   <div className="px-4 py-2">
                     <span className="text-xs text-slate-500 font-semibold mb-2 block">เปลี่ยนภาษา / Language</span>
                     <div className="flex gap-1.5">
-                      <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+                      <button type="button" onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2 rounded text-xs transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
                         <img src="https://flagcdn.com/w20/th.png" srcSet="https://flagcdn.com/w40/th.png 2x" width="16" height="11" alt="TH" /> TH
                       </button>
-                      <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+                      <button type="button" onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2 rounded text-xs transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
                         <img src="https://flagcdn.com/w20/us.png" srcSet="https://flagcdn.com/w40/us.png 2x" width="16" height="11" alt="EN" /> EN
                       </button>
-                      <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-1.5 rounded text-xs transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+                      <button type="button" onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsDropdownOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2 rounded text-xs transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white font-bold shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
                         <img src="https://flagcdn.com/w20/cn.png" srcSet="https://flagcdn.com/w40/cn.png 2x" width="16" height="11" alt="ZH" /> ZH
                       </button>
                     </div>
                   </div>
                   <div className="border-t my-1"></div>
-                  <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer">
-                    <LogOut className="h-4 w-4" /> ออกจากระบบ
+                  <button type="button" role="menuitem" onClick={handleLogout} className="w-full flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer">
+                    <LogOut className="h-4 w-4" aria-hidden="true" /> {t.navLogout}
                   </button>
                 </div>
               )}
@@ -192,12 +201,12 @@ export function Navbar() {
           )}
 
           <Link href="/dashboard/orders">
-            <Button 
-              size="sm" 
-              variant="orange" 
+            <Button
+              size="sm"
+              variant="orange"
               className="font-black text-xs sm:text-sm px-3.5 lg:px-4 h-10 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
             >
-              <Package className="w-4 h-4 mr-1.5 shrink-0" />
+              <Package className="w-4 h-4 mr-1.5 shrink-0" aria-hidden="true" />
               <span>{t.navMyOrders || "คำสั่งซื้อของฉัน"}</span>
             </Button>
           </Link>
@@ -207,12 +216,14 @@ export function Navbar() {
         <div className="flex xl:hidden items-center gap-1.5">
           {!user && <LanguageSwitcher />}
           {user && <NotificationBell />}
-          <button 
-            onClick={() => setIsOpen(!isOpen)} 
-            className="p-2 text-muted-foreground hover:text-foreground cursor-pointer"
-            aria-label="Toggle menu"
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="min-h-11 min-w-11 inline-flex items-center justify-center p-2 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg"
+            aria-label="เปิด/ปิดเมนู"
+            aria-expanded={isOpen}
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -222,7 +233,7 @@ export function Navbar() {
         <div className="relative z-[60] max-h-[calc(100dvh-4.75rem)] space-y-4 overflow-y-auto overscroll-contain touch-pan-y border-b border-blue-100 bg-white/96 px-4 py-5 pb-28 shadow-2xl shadow-blue-950/10 backdrop-blur-xl animate-in slide-in-from-top duration-200 xl:hidden">
           <Link href="/dashboard/orders" onClick={() => setIsOpen(false)}>
             <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
-              <Package className="w-5 h-5 mr-2" />
+              <Package className="w-5 h-5 mr-2" aria-hidden="true" />
               {t.navMyOrders || "คำสั่งซื้อของฉัน"}
             </Button>
           </Link>
@@ -235,7 +246,7 @@ export function Navbar() {
                     <img src={user.user_metadata.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white shadow-sm">
-                      <User className="h-6 w-6 text-primary" />
+                      <User className="h-6 w-6 text-primary" aria-hidden="true" />
                     </div>
                   )}
                   <div className="flex flex-col">
@@ -245,21 +256,21 @@ export function Navbar() {
                     <span className="text-xs text-slate-500 line-clamp-1">{user.email || user.phone}</span>
                   </div>
                 </div>
-                
-                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <User className="h-5 w-5 text-primary" /> แผงควบคุม (Dashboard)
+
+                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                  <User className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navDashboard}
                 </Link>
-                <Link href="/dashboard/orders" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <Package className="h-5 w-5 text-primary" /> คำสั่งซื้อของฉัน
+                <Link href="/dashboard/orders" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                  <Package className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navMyOrders}
                 </Link>
-                <Link href="/dashboard/addresses" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <MapPin className="h-5 w-5 text-primary" /> สมุดที่อยู่
+                <Link href="/dashboard/addresses" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                  <MapPin className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navAddresses}
                 </Link>
-                <Link href="/dashboard/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <User className="h-5 w-5 text-primary" /> ข้อมูลส่วนตัว
+                <Link href="/dashboard/profile" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                  <User className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navProfile}
                 </Link>
-                <Link href="/inquiry" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-primary font-bold transition-colors bg-primary/5">
-                  <FileQuestion className="h-5 w-5" /> ขอใบเสนอราคา
+                <Link href="/inquiry" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-primary font-bold transition-colors bg-primary/5">
+                  <FileQuestion className="h-5 w-5" aria-hidden="true" /> {t.navRequestQuote}
                 </Link>
               </div>
             ) : (
@@ -270,39 +281,39 @@ export function Navbar() {
           </div>
 
           <div className="pt-4 border-t">
-            <nav className="flex flex-col gap-4">
-              <Link 
-                href="/how-it-works" 
+            <nav className="flex flex-col gap-1">
+              <Link
+                href="/how-it-works"
                 onClick={() => setIsOpen(false)}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium hover:bg-slate-50 hover:text-primary transition-colors"
               >
                 {t.navHowItWorks}
               </Link>
-              <Link 
-                href="/pricing" 
+              <Link
+                href="/pricing"
                 onClick={() => setIsOpen(false)}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium hover:bg-slate-50 hover:text-primary transition-colors"
               >
                 {t.navPricing}
               </Link>
-              <Link 
-                href="/track" 
+              <Link
+                href="/track"
                 onClick={() => setIsOpen(false)}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium hover:bg-slate-50 hover:text-primary transition-colors"
               >
                 {t.navTrack}
               </Link>
-              <Link 
-                href="/faq" 
+              <Link
+                href="/faq"
                 onClick={() => setIsOpen(false)}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium hover:bg-slate-50 hover:text-primary transition-colors"
               >
                 {t.navFaq}
               </Link>
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 onClick={() => setIsOpen(false)}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium hover:bg-slate-50 hover:text-primary transition-colors"
               >
                 {t.navContact}
               </Link>
@@ -312,13 +323,13 @@ export function Navbar() {
           <div className="px-4 py-4 mt-2 border-t">
             <span className="text-xs text-slate-500 font-semibold mb-3 block text-center">เปลี่ยนภาษา / Language</span>
             <div className="flex gap-2 justify-center">
-              <button onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+              <button type="button" onClick={(e) => { e.preventDefault(); setLanguage('th'); setIsOpen(false) }} className={`flex min-h-11 items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'th' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
                 <img src="https://flagcdn.com/w20/th.png" srcSet="https://flagcdn.com/w40/th.png 2x" width="16" height="11" alt="TH" /> TH
               </button>
-              <button onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+              <button type="button" onClick={(e) => { e.preventDefault(); setLanguage('en'); setIsOpen(false) }} className={`flex min-h-11 items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'en' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
                 <img src="https://flagcdn.com/w20/us.png" srcSet="https://flagcdn.com/w40/us.png 2x" width="16" height="11" alt="EN" /> EN
               </button>
-              <button onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsOpen(false) }} className={`flex items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+              <button type="button" onClick={(e) => { e.preventDefault(); setLanguage('zh'); setIsOpen(false) }} className={`flex min-h-11 items-center justify-center gap-1.5 flex-1 text-center py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${locale === 'zh' ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
                 <img src="https://flagcdn.com/w20/cn.png" srcSet="https://flagcdn.com/w40/cn.png 2x" width="16" height="11" alt="ZH" /> ZH
               </button>
             </div>
@@ -326,8 +337,8 @@ export function Navbar() {
 
           {user && (
             <div className="border-t">
-              <button onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-4 mt-1 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
-                <LogOut className="h-5 w-5" /> ออกจากระบบ
+              <button type="button" onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full flex min-h-11 items-center justify-center gap-2 px-4 py-3 mt-1 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                <LogOut className="h-5 w-5" aria-hidden="true" /> {t.navLogout}
               </button>
             </div>
           )}

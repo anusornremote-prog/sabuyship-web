@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
@@ -42,6 +42,7 @@ export default function InquiryForm() {
   const [success, setSuccess] = useState(false)
   const [createdInquiryNumber, setCreatedInquiryNumber] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const errorRef = useRef<HTMLDivElement>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [copied, setCopied] = useState(false)
   const [profile, setProfile] = useState<{ full_name?: string; phone?: string; line_id?: string } | null>(null)
@@ -186,12 +187,19 @@ export default function InquiryForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
+    const showValidationError = (msg: string) => {
+      setError(msg)
+      window.requestAnimationFrame(() => {
+        errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      })
+    }
+
     // Validate items based on serviceType
     if (serviceType === 'BUY_AND_IMPORT') {
       const invalidUrlIndex = items.findIndex(item => !extractProductUrl(item.url || ''))
       if (invalidUrlIndex !== -1) {
-        setError(
+        showValidationError(
           locale === 'en'
             ? `Item #${invalidUrlIndex + 1}: Please provide a valid product URL (starting with http:// or https:// from Taobao, 1688, or Tmall).`
             : locale === 'zh'
@@ -202,15 +210,15 @@ export default function InquiryForm() {
       }
     } else {
       if (items.some(item => !item.china_tracking_number?.trim())) {
-        setError(locale === 'en' ? 'Please fill in China tracking numbers.' : locale === 'zh' ? '请填写中国快递单号。' : 'กรุณากรอกเลขพัสดุจีนให้ครบทุกรายการ')
+        showValidationError(locale === 'en' ? 'Please fill in China tracking numbers.' : locale === 'zh' ? '请填写中国快递单号。' : 'กรุณากรอกเลขพัสดุจีนให้ครบทุกรายการ')
         return
       }
     }
 
     const formData = new FormData(e.currentTarget)
-    
+
     if (!formData.get("shippingType")) {
-      setError(locale === 'en' ? 'Please select a shipping method.' : locale === 'zh' ? '请选择运输方式。' : 'กรุณาเลือกรูปแบบการขนส่ง')
+      showValidationError(locale === 'en' ? 'Please select a shipping method.' : locale === 'zh' ? '请选择运输方式。' : 'กรุณาเลือกรูปแบบการขนส่ง')
       return
     }
 
@@ -414,7 +422,7 @@ export default function InquiryForm() {
         <Card className="border border-slate-200 shadow-xl rounded-3xl bg-white overflow-hidden">
           <CardContent className="p-6 md:p-8 space-y-8">
             {error && (
-              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-2xl animate-in fade-in duration-200">
+              <div ref={errorRef} role="alert" className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-2xl animate-in fade-in duration-200">
                 {error}
               </div>
             )}
@@ -513,20 +521,21 @@ export default function InquiryForm() {
 
                       {serviceType === 'BUY_AND_IMPORT' ? (
                         <div className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <label className="text-xs font-bold text-slate-700 block">
+                          <div className="flex justify-between items-center gap-2">
+                            <label htmlFor={`inquiry-url-${index}`} className="text-xs font-bold text-slate-700 block">
                               {locale === 'en' ? 'Product URL (1688 / Taobao / Tmall) *' : locale === 'zh' ? '商品链接 (1688 / 淘宝 / 天猫) *' : 'ลิงก์สินค้า (Taobao / 1688 / Tmall) *'}
                             </label>
                             <button
                               type="button"
                               onClick={() => handlePasteUrl(index)}
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-lg transition-colors cursor-pointer active:scale-95"
+                              className="inline-flex min-h-9 items-center gap-1 text-xs font-bold text-primary hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-colors cursor-pointer active:scale-95"
                             >
-                              <Clipboard className="w-3 h-3 text-primary" />
+                              <Clipboard className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                               <span>{locale === 'zh' ? '粘贴链接' : locale === 'en' ? 'Paste' : 'วางลิงก์'}</span>
                             </button>
                           </div>
                           <Input 
+                            id={`inquiry-url-${index}`}
                             type="text"
                             inputMode="url"
                             placeholder="https://detail.1688.com/offer/... หรือข้อความแชร์จากแอป"
@@ -540,10 +549,11 @@ export default function InquiryForm() {
                         </div>
                       ) : (
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-700 block">
+                          <label htmlFor={`inquiry-tracking-${index}`} className="text-xs font-bold text-slate-700 block">
                             {locale === 'en' ? 'China Domestic Tracking Number *' : locale === 'zh' ? '中国国内快递单号 *' : 'เลขพัสดุจีน (China Tracking Number) *'}
                           </label>
                           <Input 
+                            id={`inquiry-tracking-${index}`}
                             type="text" 
                             placeholder="เช่น 77329849204..." 
                             value={item.china_tracking_number || ''}
@@ -557,7 +567,7 @@ export default function InquiryForm() {
                       {/* Quantity & Remark Row */}
                       <div className="grid sm:grid-cols-12 gap-3">
                         <div className="sm:col-span-5 space-y-1">
-                          <label className="text-xs font-bold text-slate-700 block">
+                          <label htmlFor={`inquiry-qty-${index}`} className="text-xs font-bold text-slate-700 block">
                             {locale === 'en' ? 'Quantity *' : locale === 'zh' ? '数量 *' : 'จำนวนที่ต้องการ *'}
                           </label>
                           <div className="flex items-center gap-1.5">
@@ -567,9 +577,10 @@ export default function InquiryForm() {
                               className="w-11 h-11 bg-white border border-slate-300 hover:bg-slate-100 active:bg-slate-200 rounded-xl flex items-center justify-center text-slate-700 font-black cursor-pointer shrink-0 transition-transform active:scale-95 select-none"
                               aria-label="Decrease quantity"
                             >
-                              <Minus className="w-4 h-4" />
+                              <Minus className="w-4 h-4" aria-hidden="true" />
                             </button>
                             <Input 
+                              id={`inquiry-qty-${index}`}
                               type="number" 
                               min="1"
                               value={item.quantity}
@@ -583,16 +594,17 @@ export default function InquiryForm() {
                               className="w-11 h-11 bg-white border border-slate-300 hover:bg-slate-100 active:bg-slate-200 rounded-xl flex items-center justify-center text-slate-700 font-black cursor-pointer shrink-0 transition-transform active:scale-95 select-none"
                               aria-label="Increase quantity"
                             >
-                              <Plus className="w-4 h-4" />
+                              <Plus className="w-4 h-4" aria-hidden="true" />
                             </button>
                           </div>
                         </div>
 
                         <div className="sm:col-span-7 space-y-1">
-                          <label className="text-xs font-bold text-slate-700 block">
+                          <label htmlFor={`inquiry-remark-${index}`} className="text-xs font-bold text-slate-700 block">
                             {locale === 'en' ? 'Remarks (Color, Size, Option)' : locale === 'zh' ? '规格备注 (颜色、尺码、型号)' : 'ระบุสี / ไซส์ / แบบที่ต้องการ'}
                           </label>
                           <Input 
+                            id={`inquiry-remark-${index}`}
                             type="text" 
                             placeholder={locale === 'en' ? 'e.g. Black color, size L' : locale === 'zh' ? '如：黑色 L码' : 'เช่น สีดำ ไซส์ L อย่างละ 2 ชิ้น'} 
                             value={item.remark}
@@ -739,12 +751,14 @@ export default function InquiryForm() {
 
                 <div key={profile ? 'profile-loaded' : 'guest'} className="grid sm:grid-cols-3 gap-3.5">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 block">
+                    <label htmlFor="inquiry-customer-name" className="text-xs font-bold text-slate-700 block">
                       {locale === 'en' ? 'Full Name *' : locale === 'zh' ? '您的姓名 *' : 'ชื่อ-นามสกุลของคุณ *'}
                     </label>
                     <Input 
+                      id="inquiry-customer-name"
                       type="text" 
                       name="customerName"
+                      autoComplete="name"
                       placeholder={locale === 'en' ? 'John Doe' : locale === 'zh' ? '例如：张先生' : 'เช่น คุณสมชาย'} 
                       defaultValue={profile?.full_name || ''}
                       required
@@ -753,12 +767,14 @@ export default function InquiryForm() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 block">
+                    <label htmlFor="inquiry-phone" className="text-xs font-bold text-slate-700 block">
                       {locale === 'en' ? 'Phone Number *' : locale === 'zh' ? '手机号码 *' : 'เบอร์โทรศัพท์ติดต่อ *'}
                     </label>
                     <Input 
+                      id="inquiry-phone"
                       type="tel" 
                       name="phone"
+                      autoComplete="tel"
                       placeholder="08X-XXX-XXXX" 
                       defaultValue={profile?.phone || ''}
                       required
@@ -767,10 +783,11 @@ export default function InquiryForm() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 block">
+                    <label htmlFor="inquiry-line" className="text-xs font-bold text-slate-700 block">
                       {locale === 'en' ? 'LINE ID / WeChat (Optional)' : locale === 'zh' ? 'LINE ID / 微信 (可选)' : 'LINE ID (แนะนำ)'}
                     </label>
                     <Input 
+                      id="inquiry-line"
                       type="text" 
                       name="lineId"
                       placeholder="@yourlineid" 
@@ -788,14 +805,16 @@ export default function InquiryForm() {
                     แบบฟอร์มยังไม่เปิดรับคำขอจริง เนื่องจากข้อมูลผู้ประกอบการยังตั้งค่าไม่ครบ
                   </div>
                 )}
-                <label className="mb-4 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-                  <input type="checkbox" name="privacyAcknowledged" required className="mt-0.5 h-4 w-4 accent-blue-600" />
-                  <span>
-                    ฉันรับทราบว่า Sabuy Ship จะใช้ข้อมูลของฉันเพื่อจัดทำใบเสนอราคา ติดต่อกลับ และให้บริการตาม
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+                  <input id="inquiry-privacy" type="checkbox" name="privacyAcknowledged" required className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 cursor-pointer" />
+                  <div>
+                    <label htmlFor="inquiry-privacy" className="cursor-pointer">
+                      ฉันรับทราบว่า Sabuy Ship จะใช้ข้อมูลของฉันเพื่อจัดทำใบเสนอราคา ติดต่อกลับ และให้บริการตาม
+                    </label>
                     {' '}<Link href="/privacy" target="_blank" className="font-bold text-primary underline">ประกาศความเป็นส่วนตัว</Link>
-                    {' '}การทำเครื่องหมายนี้เป็นการรับทราบประกาศ ไม่ใช่การยินยอมรับการตลาด
-                  </span>
-                </label>
+                    {' '}<label htmlFor="inquiry-privacy" className="cursor-pointer">การทำเครื่องหมายนี้เป็นการรับทราบประกาศ ไม่ใช่การยินยอมรับการตลาด</label>
+                  </div>
+                </div>
                 <Button 
                   type="submit" 
                   size="lg" 
