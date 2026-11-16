@@ -46,9 +46,54 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Long-term immutable caching headers for static assets
+  // Security & long-term immutable caching headers
   async headers() {
+    const securityHeaders = [
+      {
+        key: "X-Frame-Options",
+        value: "DENY",
+      },
+      {
+        key: "Content-Security-Policy",
+        value: "frame-ancestors 'none'",
+      },
+      {
+        key: "X-Content-Type-Options",
+        value: "nosniff",
+      },
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
+      },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=()",
+      },
+    ];
+
+    const noIndexSources = [
+      "/admin/:path*",
+      "/dashboard/:path*",
+      "/api/:path*",
+      "/complete-profile",
+      "/reset-password",
+      "/forgot-password",
+    ];
+
     return [
+      {
+        source: "/(.*)",
+        headers: securityHeaders,
+      },
+      ...noIndexSources.map((source) => ({
+        source,
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow, noarchive",
+          },
+        ],
+      })),
       {
         source: "/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2)",
         headers: [

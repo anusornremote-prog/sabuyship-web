@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server'
 import { sendAdminNotification } from '@/lib/notify'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
   try {
+    const rateLimit = checkRateLimit(req, {
+      namespace: 'public-contact',
+      limit: 5,
+      windowMs: 60_000,
+    })
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterSeconds)
+    }
+
     const body = await req.json()
     const { name, email, phone, message } = body
 

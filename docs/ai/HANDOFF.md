@@ -16,6 +16,12 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Security & Anti-Scraping Hardening — Part 1 (2026-11-16)
+- Added `src/app/robots.txt/route.ts` to block major AI scraper/training crawlers (`GPTBot`, `ChatGPT-User`, `OAI-SearchBot`, `ClaudeBot`, `Claude-Web`, `anthropic-ai`, `Google-Extended`, `CCBot`, `Bytespider`, `PerplexityBot`, `Applebot-Extended`, `Amazonbot`, `Meta-ExternalAgent`, `Diffbot`, `Omgilibot`) and disallow indexing of `/admin/`, `/dashboard/`, `/api/`, `/complete-profile`, `/reset-password`, and `/forgot-password`.
+- Hardened `next.config.ts` response headers with `X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and `X-Robots-Tag: noindex, nofollow, noarchive` on private/API routes.
+- Added shared fixed-window rate limiter (`src/lib/rate-limit.ts`) applied to public endpoints: `GET /api/tracking/[id]` (20 req/min), `POST /api/inquiry` (10 req/min), and `POST /api/contact` (5 req/min).
+- Sanitized `GET /api/tracking/[id]/route.ts` to omit `product_url`, item product details, prices, and remarks from unauthenticated public tracking responses (retaining only `shipping_type` and `tracking_cn_cn` needed by `/track`).
+
 ### UX/UI Roadmap Phase 4 — Post-Audit P0–P1 Fixes (2026-11-16)
 - `UX-4.1`: Fixed Next.js 16 error boundary retry prop (`unstable_retry` -> `retry`) in `src/app/dashboard/error.tsx` and `src/app/admin/error.tsx`, added `unstable_rethrow(err)` + `OrderDetailErrorCard` in `src/app/admin/page.tsx`, and linked recent inquiries & tracking log order numbers in the admin overview.
 - `UX-4.2`: Corrected 3-round payment copy (TH/EN/ZH) in `src/app/(public)/how-it-works/page.tsx` and `src/app/(public)/faq/page.tsx` so Round 2 international freight billing accurately states China warehouse (Guangzhou) weighing instead of Thailand warehouse, and updated the customer quotation preview modal total in `src/app/dashboard/orders/UnifiedOrderList.tsx` to label Round 1 with a Round 2/3 footnote.

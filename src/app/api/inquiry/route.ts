@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { canAcceptBusiness } from "@/lib/public-business-config"
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit"
 import { createClient } from "@/lib/supabase/server"
 import { sendAdminNotification } from "@/lib/notify"
 import crypto from "crypto"
@@ -8,6 +9,15 @@ import { extractProductUrl } from "@/lib/product-link"
 // POST /api/inquiry - Create a new inquiry (Support both Authenticated & Guest Users)
 export async function POST(request: Request) {
   try {
+    const rateLimit = checkRateLimit(request, {
+      namespace: "public-inquiry",
+      limit: 10,
+      windowMs: 60_000,
+    })
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterSeconds)
+    }
+
     if (!canAcceptBusiness) {
       return NextResponse.json({ error: "Service is not accepting new inquiries" }, { status: 503 })
     }
