@@ -13,6 +13,7 @@ import {
   isPlaceholderProfileName,
   generateCustomerCode,
 } from "@/lib/phone"
+import { getCustomerDisplayName } from "@/lib/display-name"
 
 interface PhoneSetupModalProps {
   isOpen?: boolean
@@ -129,7 +130,13 @@ export function PhoneSetupModal({
         .eq("id", user.id)
         .maybeSingle()
 
-      const finalName = trimmedName || existingProfile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "ลูกค้า SabuyShip"
+      const finalName = getCustomerDisplayName({
+        profileName: trimmedName || existingProfile?.full_name,
+        userMetadata: user.user_metadata,
+        email: user.email,
+        phone: cleanPhone,
+        fallback: "ลูกค้า SabuyShip",
+      })
 
       if (!existingProfile) {
         const generatedCode = generateCustomerCode()

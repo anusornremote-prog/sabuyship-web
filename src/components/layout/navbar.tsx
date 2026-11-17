@@ -11,6 +11,7 @@ import { NotificationBell } from "./NotificationBell"
 import { PhoneSetupModal } from "@/components/dashboard/PhoneSetupModal"
 import { useRouter } from "next/navigation"
 import { hasSupabaseSessionCookie } from "@/lib/browser-session"
+import { getCustomerDisplayName, isSyntheticLineEmail } from "@/lib/display-name"
 
 export function Navbar() {
   const { t, locale, setLanguage } = useTranslation()
@@ -18,6 +19,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [profileName, setProfileName] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -29,6 +31,16 @@ export function Navbar() {
         const supabase = createClient()
         const { data: { session } } = await supabase.auth.getSession()
         if (!cancelled) setUser(session?.user || null)
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", session.user.id)
+            .maybeSingle()
+          if (!cancelled && profile?.full_name) {
+            setProfileName(profile.full_name)
+          }
+        }
       } catch (err) {
         console.error("Error fetching user in navbar:", err)
       }
@@ -41,25 +53,25 @@ export function Navbar() {
     }
   }, [])
 
+  const resolvedDisplayName = getCustomerDisplayName({
+    profileName,
+    userMetadata: user?.user_metadata,
+    email: user?.email,
+    phone: user?.phone,
+    fallback: "",
+  })
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
+
   const getDashboardLabel = () => {
-    let name
-    if (user?.user_metadata?.full_name) {
-      name = user.user_metadata.full_name
+    if (resolvedDisplayName) {
+      return locale === 'en'
+        ? `Hi, ${resolvedDisplayName}`
+        : locale === 'zh'
+          ? `你好, ${resolvedDisplayName}`
+          : `สวัสดีคุณ ${resolvedDisplayName}`
     }
 
-    if (!name) {
-      if (user?.email) {
-        name = user.email.split('@')[0]
-      } else if (user?.phone) {
-        name = user.phone
-      }
-    }
-
-    if (name && name.trim() !== '') {
-      return locale === 'en' ? `Hi, ${name}` : locale === 'zh' ? `你好, ${name}` : `สวัสดีคุณ ${name}`
-    }
-
-    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'ชื่อลูกค้า'
+    return locale === 'en' ? 'Dashboard' : locale === 'zh' ? '控制台' : 'บัญชีของฉัน'
   }
 
   const dashboardLabel = getDashboardLabel()
@@ -144,8 +156,8 @@ export function Navbar() {
                 className="font-bold text-primary flex items-center gap-1.5 h-10 px-3 hover:bg-slate-100/80 rounded-xl"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                {user?.user_metadata?.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                     <User className="h-4 w-4" aria-hidden="true" />
@@ -242,8 +254,8 @@ export function Navbar() {
             {user ? (
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-slate-50 rounded-xl border border-slate-100">
-                  {user?.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Profile" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white shadow-sm">
                       <User className="h-6 w-6 text-primary" aria-hidden="true" />
@@ -251,9 +263,11 @@ export function Navbar() {
                   )}
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-slate-900 line-clamp-1">
-                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || user?.phone || 'ผู้ใช้งาน'}
+                      {resolvedDisplayName || 'ผู้ใช้งาน'}
                     </span>
-                    <span className="text-xs text-slate-500 line-clamp-1">{user.email || user.phone}</span>
+                    <span className="text-xs text-slate-500 line-clamp-1">
+                      {!isSyntheticLineEmail(user.email) ? user.email || user.phone : user.phone || 'เชื่อมต่อผ่าน LINE'}
+                    </span>
                   </div>
                 </div>
 

@@ -11,6 +11,7 @@ import {
   hasExternalBrowserParam,
   shouldOpenExternalBrowserForLineOAuth,
 } from "../src/lib/in-app-browser.ts"
+import { getCustomerDisplayName, isSyntheticLineEmail } from "../src/lib/display-name.ts"
 
 assert.equal(getAuthCallbackErrorCode("access_denied"), "AuthCancelled")
 assert.equal(getAuthCallbackErrorCode("provider_failure: internal details"), "AuthFailed")
@@ -56,5 +57,23 @@ assert.equal(
 assert.equal(shouldOpenExternalBrowserForLineOAuth(lineUa, ""), true)
 assert.equal(shouldOpenExternalBrowserForLineOAuth(lineUa, "?openExternalBrowser=1"), false)
 assert.equal(shouldOpenExternalBrowserForLineOAuth(iosSafariUa, ""), false)
+
+assert.equal(isSyntheticLineEmail("u10677c26541dc7bf1ec5d369fb920e79@line.sabuyship.com"), true)
+assert.equal(isSyntheticLineEmail("customer@gmail.com"), false)
+assert.equal(
+  getCustomerDisplayName({
+    profileName: "u10677c26541dc7bf1ec5d369fb920e79",
+    userMetadata: { name: "Anusorn" },
+    email: "u10677c26541dc7bf1ec5d369fb920e79@line.sabuyship.com",
+  }),
+  "Anusorn"
+)
+assert.equal(
+  getCustomerDisplayName({
+    email: "u10677c26541dc7bf1ec5d369fb920e79@line.sabuyship.com",
+    fallback: "สมาชิก",
+  }),
+  "สมาชิก"
+)
 
 console.log("Auth safety checks passed")

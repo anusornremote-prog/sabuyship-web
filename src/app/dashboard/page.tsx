@@ -7,6 +7,7 @@ import { CustomerWarehouseCard } from "@/components/dashboard/CustomerWarehouseC
 import { LineConnectCard } from "@/components/dashboard/LineConnectCard"
 import { redirect } from "next/navigation"
 import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
+import { getCustomerDisplayName } from "@/lib/display-name"
 
 export default async function DashboardOverview() {
   const supabase = await createClient()
@@ -37,7 +38,12 @@ export default async function DashboardOverview() {
       .limit(5)
   ])
 
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || "ลูกค้า Sabuy Ship"
+  const displayName = getCustomerDisplayName({
+    profileName: profile?.full_name,
+    userMetadata: user?.user_metadata,
+    email: user?.email,
+    phone: user?.phone,
+  })
 
   const totalOrders = orders?.length || 0
   const pendingOrders = orders?.filter(order => order.status !== "DELIVERED" && order.status !== "CANCELED" && !order.consolidated_into_id).length || 0

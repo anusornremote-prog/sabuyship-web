@@ -3,6 +3,7 @@ import { type EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { buildAuthErrorRedirectUrl, getAuthCallbackErrorCode } from '@/lib/auth-errors'
 import { isValidThaiPhone, generateCustomerCode } from '@/lib/phone'
+import { getCustomerDisplayName } from '@/lib/display-name'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -56,7 +57,12 @@ export async function GET(request: Request) {
           
           const { error: insertError } = await supabase.from('profiles').insert({
             id: user.id,
-            full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Member',
+            full_name: getCustomerDisplayName({
+              userMetadata: user.user_metadata,
+              email: user.email,
+              phone: user.phone,
+              fallback: 'Member',
+            }),
             role: 'CUSTOMER',
             customer_code: customerCode,
             is_active: true,

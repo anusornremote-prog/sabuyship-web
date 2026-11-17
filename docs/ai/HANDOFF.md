@@ -16,6 +16,11 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Fix Synthetic LINE ID Display Name in Navbar & Auth Profile Fallbacks (2026-11-17)
+- Added shared `getCustomerDisplayName` and `isSyntheticLineEmail` helpers (`src/lib/display-name.ts`) so synthetic LINE OAuth placeholder emails (`<line_uid>@line.sabuyship.com`) and raw `u<32 hex>` IDs are never shown as `สวัสดีคุณ u...`.
+- Updated `src/components/layout/navbar.tsx` to load `profiles.full_name` alongside the session user, check `user_metadata.name` and `user_metadata.picture`, and hide synthetic `@line.sabuyship.com` emails in the mobile account drawer.
+- Applied `getCustomerDisplayName` consistently across `src/app/dashboard/page.tsx`, `src/components/dashboard/PhoneSetupModal.tsx`, and `src/app/api/auth/callback/route.ts`, with unit assertions added to `scripts/qa-auth-safety.mjs`.
+
 ### Customer LINE Account Linking (`linkIdentity`) for Email/Google Accounts (2026-11-17)
 - Added `linkLineIdentity` in `src/lib/line-oauth.ts` (reusing the in-app-browser breakout guard and `bot_prompt: "aggressive"`) so customers signed in via Email or Google can link LINE onto their existing account and automatically persist `profiles.line_uid` via `/api/auth/callback`.
 - Added reusable `LineConnectCard` (`src/components/dashboard/LineConnectCard.tsx`) on `src/app/dashboard/profile/page.tsx` (`variant="card"`) and `src/app/dashboard/page.tsx` (`variant="banner"` shown only when `!profile?.line_uid`).
