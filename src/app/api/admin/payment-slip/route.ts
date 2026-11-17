@@ -1,18 +1,7 @@
 import { NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
-
-function objectPathFromStoredValue(value: string) {
-  if (!value.startsWith("http")) return value
-  try {
-    const pathname = new URL(value).pathname
-    const marker = "/storage/v1/object/public/payment_slips/"
-    const index = pathname.indexOf(marker)
-    return index >= 0 ? decodeURIComponent(pathname.slice(index + marker.length)) : ""
-  } catch {
-    return ""
-  }
-}
+import { extractStorageObjectPath } from "@/lib/storage-path"
 
 export async function GET(request: Request) {
   const sessionClient = await createClient()
@@ -27,8 +16,8 @@ export async function GET(request: Request) {
 
   const adminClient = createAdminClient()
   const { data: payment } = await adminClient.from("payments").select("slip_url").eq("id", paymentId).maybeSingle()
-  const objectPath = payment?.slip_url ? objectPathFromStoredValue(payment.slip_url) : ""
-  if (!objectPath || objectPath.includes("..")) return NextResponse.json({ error: "Slip not found" }, { status: 404 })
+  const objectPath = extractStorageObjectPath(payment?.slip_url, "payment_slips")
+  if (!objectPath) return NextResponse.json({ error: "Slip not found" }, { status: 404 })
 
   const { data, error } = await adminClient.storage.from("payment_slips").createSignedUrl(objectPath, 300)
   if (error || !data?.signedUrl) return NextResponse.json({ error: "Unable to open slip" }, { status: 404 })

@@ -16,6 +16,12 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Clean Admin Customer & Orphan Account Deletion (`/admin/customers`) (2026-11-17)
+- Added `src/app/api/admin/customers/route.ts` (`GET`) to list `CUSTOMER` accounts and orphan `auth.users` accounts without profiles (`?tab=customers|orphans`), enriched with auth provider, email (excluding synthetic `@line.sabuyship.com`), and order/inquiry/shipment counts.
+- Added `src/app/api/admin/customers/[id]/route.ts` (`DELETE`) protected by `requireAdmin()`, self-delete guard, `ADMIN`-role protection, and explicit `confirm_text` check; removes Supabase Storage objects (`payment_slips`, `inquiries`), clears child tables in strict FK order (`refunds`, `payments`, `tracking_logs`, `shipments`, `orders`, `quotations`, `inquiries`, `wallet_transactions`, `addresses`, `notification_logs`, `profiles`, and `auth.users`), and writes `DELETE_CUSTOMER_ACCOUNT` to `admin_audit_logs`.
+- Extracted shared `extractStorageObjectPath` helper (`src/lib/storage-path.ts`) reused by `src/app/api/admin/payment-slip/route.ts` and customer cleanup.
+- Updated `src/app/admin/customers/page.tsx` with customer/orphan tabs, usage counts, `ConfirmDialog` confirmation prompt (`customer_code` or `DELETE`), and Bangkok date formatting.
+
 ### Fix Synthetic LINE ID Display Name in Navbar & Auth Profile Fallbacks (2026-11-17)
 - Added shared `getCustomerDisplayName` and `isSyntheticLineEmail` helpers (`src/lib/display-name.ts`) so synthetic LINE OAuth placeholder emails (`<line_uid>@line.sabuyship.com`) and raw `u<32 hex>` IDs are never shown as `สวัสดีคุณ u...`.
 - Updated `src/components/layout/navbar.tsx` to load `profiles.full_name` alongside the session user, check `user_metadata.name` and `user_metadata.picture`, and hide synthetic `@line.sabuyship.com` emails in the mobile account drawer.
