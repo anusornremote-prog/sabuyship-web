@@ -4,7 +4,6 @@ import { LanguageProvider } from "@/components/providers/language-provider";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { DeferredQuickRmbCalculator } from "@/components/calculator/DeferredQuickRmbCalculator";
 import { Toaster } from "sonner";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const promptFont = Prompt({
@@ -55,7 +54,6 @@ export default function RootLayout({
           <MobileBottomNav />
         </LanguageProvider>
         <Toaster richColors position="top-right" />
-        <SpeedInsights />
       </body>
     </html>
   );

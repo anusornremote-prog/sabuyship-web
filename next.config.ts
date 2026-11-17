@@ -22,8 +22,9 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Image optimization with AVIF and WebP priority
+  // Image optimization configured for Cloudflare Workers runtime (no native Sharp binary)
   images: {
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days cache
     remotePatterns: [

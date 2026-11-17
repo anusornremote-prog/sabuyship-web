@@ -1,4 +1,3 @@
-import crypto from "node:crypto"
 import { NextResponse } from "next/server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -67,7 +66,9 @@ export async function POST(request: Request) {
     if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 })
 
     const date = new Date()
-    const orderNumber = `ORD-${date.getFullYear().toString().slice(-2)}${String(date.getMonth() + 1).padStart(2, "0")}${crypto.randomBytes(3).toString("hex").toUpperCase()}`
+    const randomBytes = globalThis.crypto.getRandomValues(new Uint8Array(3))
+    const randomHex = Array.from(randomBytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase()
+    const orderNumber = `ORD-${date.getFullYear().toString().slice(-2)}${String(date.getMonth() + 1).padStart(2, "0")}${randomHex}`
     const productCost = normalizedItems.reduce(
       (sum, item) => sum + item.quantity * item.unit_price,
       0,

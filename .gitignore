@@ -34,5 +34,7 @@ yarn-error.log*
 
 # Deployment & TypeScript Cache
 .vercel
+.open-next
+.wrangler
 *.tsbuildinfo
 next-env.d.ts

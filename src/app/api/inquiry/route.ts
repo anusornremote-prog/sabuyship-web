@@ -3,7 +3,6 @@ import { canAcceptBusiness } from "@/lib/public-business-config"
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit"
 import { createClient } from "@/lib/supabase/server"
 import { sendAdminNotification } from "@/lib/notify"
-import crypto from "crypto"
 import { extractProductUrl } from "@/lib/product-link"
 
 // POST /api/inquiry - Create a new inquiry (Support both Authenticated & Guest Users)
@@ -65,7 +64,8 @@ export async function POST(request: Request) {
 
     // Generate base Inquiry ID as ORD-YYMMXXXX
     const date = new Date()
-    const randomHex = crypto.randomBytes(3).toString('hex').toUpperCase()
+    const randomBytes = globalThis.crypto.getRandomValues(new Uint8Array(3))
+    const randomHex = Array.from(randomBytes, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase()
     const baseInquiryNumber = `ORD-${date.getFullYear().toString().substring(2)}${String(date.getMonth() + 1).padStart(2, '0')}${randomHex}`
 
     // Create record with all items stored in the 'items' column (JSONB)

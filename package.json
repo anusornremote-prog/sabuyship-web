@@ -13,13 +13,14 @@
     "test:auth-safety": "node scripts/qa-auth-safety.mjs",
     "test:staging": "node scripts/staging-workflow-smoke.mjs",
     "test:preview": "node scripts/preview-workflow-smoke.mjs",
-    "start": "next start"
+    "start": "next start",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.17",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
-    "@vercel/speed-insights": "^2.0.0",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -36,13 +37,15 @@
     "thai-data": "^3.0.2"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.17",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vercel": "^59.20.0"
+    "vercel": "^59.20.0",
+    "wrangler": "^4.163.0"
   },
   "overrides": {
     "uuid": "^11.1.1"

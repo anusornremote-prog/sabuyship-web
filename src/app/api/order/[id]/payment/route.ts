@@ -51,7 +51,7 @@ export async function POST(
       const adminClient = createAdminClient()
       const { data: uploadData, error: uploadError } = await adminClient.storage
         .from("payment_slips")
-        .upload(targetPath, Buffer.from(arrayBuffer), {
+        .upload(targetPath, new Uint8Array(arrayBuffer), {
           contentType: mime,
           upsert: true,
         })

@@ -16,6 +16,14 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Cloudflare Workers Migration Readiness (`@opennextjs/cloudflare`) (2026-11-17)
+- Audited `package.json`, `next.config.ts`, `src/`, and `src/app/api/**` for Cloudflare Workers (`workerd` + `nodejs_compat`) compatibility:
+  - Set `images.unoptimized: true` in `next.config.ts` since native Sharp `/_next/image` optimization is unavailable on Workers.
+  - Replaced bare `"crypto"` / `node:crypto` random hex generation in `src/app/api/inquiry/route.ts` and `src/app/api/admin/orders/route.ts` with Web Standard `globalThis.crypto.getRandomValues`, and replaced `Buffer.from(arrayBuffer)` in `src/app/api/order/[id]/payment/route.ts` with Web Standard `new Uint8Array(arrayBuffer)`.
+  - Removed Vercel-only `@vercel/speed-insights` from `src/app/layout.tsx` and `package.json` to prevent 404 telemetry requests on Cloudflare.
+- Installed devDependencies `@opennextjs/cloudflare@^1.20.17` and `wrangler@^4.163.0`, added `wrangler.jsonc` (`name: "sabuyship-web"`, `main: ".open-next/worker.js"`, `compatibility_date: "2026-01-01"`, `compatibility_flags: ["nodejs_compat"]`, `assets` -> `.open-next/assets` `ASSETS`), added `open-next.config.ts` (`defineCloudflareConfig({})`), ignored `.open-next` & `.wrangler` in `.gitignore`, and added `preview` / `deploy` scripts to `package.json`.
+- Note on local Windows builds: Node.js `v25.8.2` on Windows exhibits a `fs.cpSync()` bug when copying into non-ASCII paths (`OneDrive/ไฟล์งานเก่า/...`), causing `initOutputDir` to skip copying compiled config files unless run in WSL/Linux CI, an ASCII path, Node LTS, or with a `fs.cpSync` fallback preload.
+
 ### Auth UI Consistency & Google Button Responsive Fix (2026-11-16)
 - Extracted shared Google Identity Services button renderer (`src/lib/google-gsi.ts`) using `ResizeObserver` + exact container width measurement and `shape: "pill"`, eliminating right-edge iframe clipping on `/login` and `/register`.
 - Unified `/login` and `/register` visual rhythm: aligned all stacked auth CTAs (`เข้าสู่ระบบ`/`สมัครสมาชิก`, LINE, and Google) to pill capsules (`rounded-full`, `h-11`), standardized form inputs to `h-11 rounded-xl bg-white`, removed `hover:-translate-y-1` from static auth form cards, and fixed top logo spacing (`-my-2 md:-my-6` removed) in `src/app/(auth)/layout.tsx`.
