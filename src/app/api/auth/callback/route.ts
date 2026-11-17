@@ -45,11 +45,12 @@ export async function GET(request: Request) {
         // Check if profile exists
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, phone')
+          .select('id, phone, role, is_active')
           .eq('id', user.id)
           .maybeSingle()
 
         let hasPhone = isValidThaiPhone(profile?.phone)
+        const isAdminUser = profile?.role === 'ADMIN' && profile?.is_active !== false
 
         if (!profile) {
           // Auto-generate customer code for new OAuth users
@@ -92,6 +93,10 @@ export async function GET(request: Request) {
         // Always allow password recovery to reach /reset-password first
         if (isPasswordRecovery) {
           return NextResponse.redirect(`${origin}/reset-password`)
+        }
+
+        if (isAdminUser) {
+          return NextResponse.redirect(`${origin}/admin`)
         }
 
         if (!hasPhone) {

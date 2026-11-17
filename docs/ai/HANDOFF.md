@@ -16,6 +16,11 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Separate Admin & Customer Portal Routing and Navigation (2026-11-17)
+- Updated `src/lib/supabase/middleware.ts` so active `ADMIN` users visiting `/dashboard/*` are automatically redirected to `/admin`.
+- Updated `src/app/api/auth/callback/route.ts` and `src/app/(auth)/login/page.tsx` so `ADMIN` users always land on `/admin` after OAuth/Google/Email login (even if missing a profile phone number).
+- Updated `src/components/layout/navbar.tsx` and `src/components/layout/MobileBottomNav.tsx` to read `profiles.role` and render Admin navigation (`ศูนย์ควบคุมแอดมิน`, `/admin/orders`, `/admin/customers`, `/admin/notifications`) + `"ระบบแอดมิน"` CTA instead of customer `/dashboard/*` links and customer notification bell when signed in as `ADMIN`.
+
 ### Clean Admin Customer & Orphan Account Deletion (`/admin/customers`) (2026-11-17)
 - Added `src/app/api/admin/customers/route.ts` (`GET`) to list `CUSTOMER` accounts and orphan `auth.users` accounts without profiles (`?tab=customers|orphans`), enriched with auth provider, email (excluding synthetic `@line.sabuyship.com`), and order/inquiry/shipment counts.
 - Added `src/app/api/admin/customers/[id]/route.ts` (`DELETE`) protected by `requireAdmin()`, self-delete guard, `ADMIN`-role protection, and explicit `confirm_text` check; removes Supabase Storage objects (`payment_slips`, `inquiries`), clears child tables in strict FK order (`refunds`, `payments`, `tracking_logs`, `shipments`, `orders`, `quotations`, `inquiries`, `wallet_transactions`, `addresses`, `notification_logs`, `profiles`, and `auth.users`), and writes `DELETE_CUSTOMER_ACCOUNT` to `admin_audit_logs`.

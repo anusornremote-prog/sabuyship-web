@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Menu, X, ChevronDown, User, Package, MapPin, FileQuestion, LogOut } from "lucide-react"
+import { Menu, X, ChevronDown, User, Package, MapPin, FileQuestion, LogOut, ShieldCheck, Users, Bell } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { LanguageSwitcher } from "./language-switcher"
 import { NotificationBell } from "./NotificationBell"
@@ -20,6 +20,7 @@ export function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profileName, setProfileName] = useState<string | null>(null)
+  const [profileRole, setProfileRole] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -34,11 +35,12 @@ export function Navbar() {
         if (session?.user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("full_name")
+            .select("full_name, role")
             .eq("id", session.user.id)
             .maybeSingle()
-          if (!cancelled && profile?.full_name) {
-            setProfileName(profile.full_name)
+          if (!cancelled && profile) {
+            if (profile.full_name) setProfileName(profile.full_name)
+            if (profile.role) setProfileRole(profile.role)
           }
         }
       } catch (err) {
@@ -52,6 +54,8 @@ export function Navbar() {
       window.clearTimeout(timeoutId)
     }
   }, [])
+
+  const isAdmin = profileRole === "ADMIN"
 
   const resolvedDisplayName = getCustomerDisplayName({
     profileName,
@@ -146,7 +150,7 @@ export function Navbar() {
         {/* 3. Right: Language Switcher, Login, Submit Button */}
         <div className="hidden xl:flex items-center gap-3 shrink-0">
           {!user && <LanguageSwitcher />}
-          {user && <NotificationBell />}
+          {user && !isAdmin && <NotificationBell />}
           {user ? (
             <div className="relative user-dropdown">
               <Button
@@ -160,7 +164,7 @@ export function Navbar() {
                   <img src={avatarUrl} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4" aria-hidden="true" />
+                    {isAdmin ? <ShieldCheck className="h-4 w-4" aria-hidden="true" /> : <User className="h-4 w-4" aria-hidden="true" />}
                   </div>
                 )}
                 <span>{dashboardLabel}</span>
@@ -168,22 +172,44 @@ export function Navbar() {
               </Button>
               {isDropdownOpen && (
                 <div role="menu" className="absolute right-0 z-50 mt-3 w-64 rounded-2xl border border-slate-200/80 bg-white/95 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
-                  <Link role="menuitem" href="/dashboard" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <User className="h-4 w-4" aria-hidden="true" /> {t.navOverview}
-                  </Link>
-                  <Link role="menuitem" href="/dashboard/orders" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <Package className="h-4 w-4" aria-hidden="true" /> {t.navMyOrders}
-                  </Link>
-                  <Link role="menuitem" href="/dashboard/addresses" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <MapPin className="h-4 w-4" aria-hidden="true" /> {t.navAddresses}
-                  </Link>
-                  <Link role="menuitem" href="/dashboard/profile" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <User className="h-4 w-4" aria-hidden="true" /> {t.navProfile}
-                  </Link>
-                  <div className="border-t my-1"></div>
-                  <Link role="menuitem" href="/inquiry" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-primary font-medium hover:bg-slate-50 transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                    <FileQuestion className="h-4 w-4" aria-hidden="true" /> {t.navRequestQuote}
-                  </Link>
+                  {isAdmin ? (
+                    <>
+                      <div className="px-4 py-1.5 text-[11px] font-black uppercase tracking-wider text-primary">
+                        ผู้ดูแลระบบ (Admin)
+                      </div>
+                      <Link role="menuitem" href="/admin" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" /> ศูนย์ควบคุมแอดมิน
+                      </Link>
+                      <Link role="menuitem" href="/admin/orders" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <Package className="h-4 w-4" aria-hidden="true" /> จัดการคำสั่งซื้อ
+                      </Link>
+                      <Link role="menuitem" href="/admin/customers" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <Users className="h-4 w-4" aria-hidden="true" /> จัดการลูกค้า
+                      </Link>
+                      <Link role="menuitem" href="/admin/notifications" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <Bell className="h-4 w-4" aria-hidden="true" /> การแจ้งเตือน LINE
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link role="menuitem" href="/dashboard" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <User className="h-4 w-4" aria-hidden="true" /> {t.navOverview}
+                      </Link>
+                      <Link role="menuitem" href="/dashboard/orders" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <Package className="h-4 w-4" aria-hidden="true" /> {t.navMyOrders}
+                      </Link>
+                      <Link role="menuitem" href="/dashboard/addresses" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <MapPin className="h-4 w-4" aria-hidden="true" /> {t.navAddresses}
+                      </Link>
+                      <Link role="menuitem" href="/dashboard/profile" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <User className="h-4 w-4" aria-hidden="true" /> {t.navProfile}
+                      </Link>
+                      <div className="border-t my-1"></div>
+                      <Link role="menuitem" href="/inquiry" className="flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm text-primary font-medium hover:bg-slate-50 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <FileQuestion className="h-4 w-4" aria-hidden="true" /> {t.navRequestQuote}
+                      </Link>
+                    </>
+                  )}
                   <div className="border-t my-1"></div>
                   <div className="px-4 py-2">
                     <span className="text-xs text-slate-500 font-semibold mb-2 block">เปลี่ยนภาษา / Language</span>
@@ -212,14 +238,23 @@ export function Navbar() {
             </Link>
           )}
 
-          <Link href="/dashboard/orders">
+          <Link href={isAdmin ? "/admin" : "/dashboard/orders"}>
             <Button
               size="sm"
               variant="orange"
               className="font-black text-xs sm:text-sm px-3.5 lg:px-4 h-10 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
             >
-              <Package className="w-4 h-4 mr-1.5 shrink-0" aria-hidden="true" />
-              <span>{t.navMyOrders || "คำสั่งซื้อของฉัน"}</span>
+              {isAdmin ? (
+                <>
+                  <ShieldCheck className="w-4 h-4 mr-1.5 shrink-0" aria-hidden="true" />
+                  <span>ระบบแอดมิน</span>
+                </>
+              ) : (
+                <>
+                  <Package className="w-4 h-4 mr-1.5 shrink-0" aria-hidden="true" />
+                  <span>{t.navMyOrders || "คำสั่งซื้อของฉัน"}</span>
+                </>
+              )}
             </Button>
           </Link>
         </div>
@@ -227,7 +262,7 @@ export function Navbar() {
         {/* Mobile Navigation Toggle & Switcher */}
         <div className="flex xl:hidden items-center gap-1.5">
           {!user && <LanguageSwitcher />}
-          {user && <NotificationBell />}
+          {user && !isAdmin && <NotificationBell />}
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
@@ -243,10 +278,19 @@ export function Navbar() {
       {/* Mobile Menu Panel */}
       {isOpen && (
         <div className="relative z-[60] max-h-[calc(100dvh-4.75rem)] space-y-4 overflow-y-auto overscroll-contain touch-pan-y border-b border-blue-100 bg-white/96 px-4 py-5 pb-28 shadow-2xl shadow-blue-950/10 backdrop-blur-xl animate-in slide-in-from-top duration-200 xl:hidden">
-          <Link href="/dashboard/orders" onClick={() => setIsOpen(false)}>
+          <Link href={isAdmin ? "/admin" : "/dashboard/orders"} onClick={() => setIsOpen(false)}>
             <Button variant="orange" className="w-full font-bold h-12 text-base shadow-md shadow-orange-500/20 mb-2 cursor-pointer">
-              <Package className="w-5 h-5 mr-2" aria-hidden="true" />
-              {t.navMyOrders || "คำสั่งซื้อของฉัน"}
+              {isAdmin ? (
+                <>
+                  <ShieldCheck className="w-5 h-5 mr-2" aria-hidden="true" />
+                  ระบบแอดมิน
+                </>
+              ) : (
+                <>
+                  <Package className="w-5 h-5 mr-2" aria-hidden="true" />
+                  {t.navMyOrders || "คำสั่งซื้อของฉัน"}
+                </>
+              )}
             </Button>
           </Link>
 
@@ -258,7 +302,7 @@ export function Navbar() {
                     <img src={avatarUrl} alt="Profile" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white shadow-sm">
-                      <User className="h-6 w-6 text-primary" aria-hidden="true" />
+                      {isAdmin ? <ShieldCheck className="h-6 w-6 text-primary" aria-hidden="true" /> : <User className="h-6 w-6 text-primary" aria-hidden="true" />}
                     </div>
                   )}
                   <div className="flex flex-col">
@@ -266,26 +310,45 @@ export function Navbar() {
                       {resolvedDisplayName || 'ผู้ใช้งาน'}
                     </span>
                     <span className="text-xs text-slate-500 line-clamp-1">
-                      {!isSyntheticLineEmail(user.email) ? user.email || user.phone : user.phone || 'เชื่อมต่อผ่าน LINE'}
+                      {isAdmin ? 'ผู้ดูแลระบบ (ADMIN)' : !isSyntheticLineEmail(user.email) ? user.email || user.phone : user.phone || 'เชื่อมต่อผ่าน LINE'}
                     </span>
                   </div>
                 </div>
 
-                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <User className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navDashboard}
-                </Link>
-                <Link href="/dashboard/orders" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <Package className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navMyOrders}
-                </Link>
-                <Link href="/dashboard/addresses" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <MapPin className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navAddresses}
-                </Link>
-                <Link href="/dashboard/profile" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
-                  <User className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navProfile}
-                </Link>
-                <Link href="/inquiry" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-primary font-bold transition-colors bg-primary/5">
-                  <FileQuestion className="h-5 w-5" aria-hidden="true" /> {t.navRequestQuote}
-                </Link>
+                {isAdmin ? (
+                  <>
+                    <Link href="/admin" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-semibold transition-colors">
+                      <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" /> ศูนย์ควบคุมแอดมิน
+                    </Link>
+                    <Link href="/admin/orders" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <Package className="h-5 w-5 text-primary" aria-hidden="true" /> จัดการคำสั่งซื้อ
+                    </Link>
+                    <Link href="/admin/customers" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <Users className="h-5 w-5 text-primary" aria-hidden="true" /> จัดการลูกค้า
+                    </Link>
+                    <Link href="/admin/notifications" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <Bell className="h-5 w-5 text-primary" aria-hidden="true" /> การแจ้งเตือน LINE
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <User className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navDashboard}
+                    </Link>
+                    <Link href="/dashboard/orders" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <Package className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navMyOrders}
+                    </Link>
+                    <Link href="/dashboard/addresses" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <MapPin className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navAddresses}
+                    </Link>
+                    <Link href="/dashboard/profile" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors">
+                      <User className="h-5 w-5 text-primary" aria-hidden="true" /> {t.navProfile}
+                    </Link>
+                    <Link href="/inquiry" onClick={() => setIsOpen(false)} className="flex min-h-11 items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-50 text-primary font-bold transition-colors bg-primary/5">
+                      <FileQuestion className="h-5 w-5" aria-hidden="true" /> {t.navRequestQuote}
+                    </Link>
+                  </>
+                )}
               </div>
             ) : (
               <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">

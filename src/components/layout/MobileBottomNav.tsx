@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Package, Plus, MessageCircle, User } from "lucide-react"
+import { Home, Package, Plus, MessageCircle, User, ShieldCheck } from "lucide-react"
 import { useTranslation } from "@/components/providers/language-provider"
 import { hasSupabaseSessionCookie } from "@/lib/browser-session"
 
@@ -11,6 +11,7 @@ export function MobileBottomNav() {
   const pathname = usePathname()
   const { locale } = useTranslation()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -18,13 +19,26 @@ export function MobileBottomNav() {
     const checkAuth = async () => {
       try {
         if (!hasSupabaseSessionCookie()) {
-          if (!cancelled) setIsLoggedIn(false)
+          if (!cancelled) {
+            setIsLoggedIn(false)
+            setIsAdmin(false)
+          }
           return
         }
         const { createClient } = await import("@/lib/supabase/client")
         const supabase = createClient()
         const { data: { session } } = await supabase.auth.getSession()
         if (!cancelled) setIsLoggedIn(!!session?.user)
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .maybeSingle()
+          if (!cancelled) setIsAdmin(profile?.role === "ADMIN")
+        } else if (!cancelled) {
+          setIsAdmin(false)
+        }
       } catch (e) {
         console.error("Error in MobileBottomNav auth check:", e)
       }
@@ -50,10 +64,14 @@ export function MobileBottomNav() {
   const lineUrl = process.env.NEXT_PUBLIC_LINE_OA_URL || "https://line.me/R/ti/p/@516lqkcd"
 
   const labelHome = locale === 'en' ? 'Home' : locale === 'zh' ? '首页' : 'หน้าแรก'
-  const labelOrders = locale === 'en' ? 'Orders' : locale === 'zh' ? '订单/追踪' : 'ติดตาม/บิล'
+  const labelOrders = isAdmin
+    ? (locale === 'en' ? 'Orders' : locale === 'zh' ? '订单' : 'จัดการออเดอร์')
+    : (locale === 'en' ? 'Orders' : locale === 'zh' ? '订单/追踪' : 'ติดตาม/บิล')
   const labelSubmit = locale === 'en' ? 'Quote' : locale === 'zh' ? '询价' : 'ส่งลิงก์'
   const labelLine = locale === 'en' ? 'Chat' : locale === 'zh' ? '客服' : 'แชทไลน์'
-  const labelAccount = locale === 'en' ? (isLoggedIn ? 'Account' : 'Login') : locale === 'zh' ? (isLoggedIn ? '我的' : '登录') : (isLoggedIn ? 'บัญชีฉัน' : 'เข้าสู่ระบบ')
+  const labelAccount = isAdmin
+    ? (locale === 'en' ? 'Admin' : locale === 'zh' ? '管理' : 'แอดมิน')
+    : (locale === 'en' ? (isLoggedIn ? 'Account' : 'Login') : locale === 'zh' ? (isLoggedIn ? '我的' : '登录') : (isLoggedIn ? 'บัญชีฉัน' : 'เข้าสู่ระบบ'))
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 block md:hidden pointer-events-auto">
@@ -79,7 +97,7 @@ export function MobileBottomNav() {
 
           {/* 2. Orders / Track Button */}
           <Link 
-            href={isLoggedIn ? "/dashboard/orders" : "/track"} 
+            href={isAdmin ? "/admin/orders" : isLoggedIn ? "/dashboard/orders" : "/track"}  
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-90 relative ${
               isOrdersActive ? "text-primary font-black" : "text-slate-500 hover:text-slate-900 font-semibold"
             }`}
@@ -148,13 +166,17 @@ export function MobileBottomNav() {
 
           {/* 5. Account / Login Button */}
           <Link 
-            href={isLoggedIn ? "/dashboard" : "/login"} 
+            href={isAdmin ? "/admin" : isLoggedIn ? "/dashboard" : "/login"} 
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-90 ${
               isProfileActive ? "text-primary font-black" : "text-slate-500 hover:text-slate-900 font-semibold"
             }`}
           >
             <div className="relative p-1">
-              <User className={`w-5 h-5 transition-transform ${isProfileActive ? "scale-110 stroke-[2.5]" : "stroke-[1.8]"}`} />
+              {isAdmin ? (
+                <ShieldCheck className={`w-5 h-5 transition-transform ${isProfileActive ? "scale-110 stroke-[2.5]" : "stroke-[1.8]"}`} />
+              ) : (
+                <User className={`w-5 h-5 transition-transform ${isProfileActive ? "scale-110 stroke-[2.5]" : "stroke-[1.8]"}`} />
+              )}
               {isProfileActive && (
                 <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full animate-in fade-in zoom-in-75 duration-200" />
               )}

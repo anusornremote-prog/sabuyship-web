@@ -77,6 +77,9 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       return createRedirectResponse('/login')
     }
+    if (role === 'ADMIN' && isActive) {
+      return createRedirectResponse('/admin')
+    }
   }
 
   if (pathname.startsWith('/admin')) {

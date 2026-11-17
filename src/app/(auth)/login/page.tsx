@@ -107,16 +107,17 @@ export default function Login() {
           return
         }
 
+        if (finalRole === "ADMIN") {
+          router.push("/admin")
+          return
+        }
+
         if (!profile.phone || profile.phone.trim().length < 9) {
           router.push("/dashboard")
           return
         }
 
-        if (finalRole === "ADMIN") {
-          router.push("/admin")
-        } else {
-          router.push("/dashboard")
-        }
+        router.push("/dashboard")
       }
     } catch (err: any) {
       let errMessage = err?.message
