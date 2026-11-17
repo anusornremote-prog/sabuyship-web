@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, Home, CircleDollarSign, ShieldCheck, Bell, FileSpreadsheet, ExternalLink } from "lucide-react"
+import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, CircleDollarSign, ShieldCheck, Bell, FileSpreadsheet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
@@ -130,13 +130,6 @@ export default function AdminLayout({
 
         {/* Sidebar Sticky Footer (Home & Logout) */}
         <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0 space-y-1.5">
-          <Link href="/" target="_blank" className="block">
-            <Button variant="ghost" className="w-full justify-start text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 cursor-pointer h-9 rounded-lg">
-              <Home className="mr-2 h-4 w-4 text-slate-400" />
-              <span>เปิดหน้าบ้าน (เว็บไซต์)</span>
-              <ExternalLink className="ml-auto h-3 w-3 opacity-60" />
-            </Button>
-          </Link>
           <Button 
             variant="ghost" 
             className="w-full justify-start text-xs font-bold text-rose-400 hover:text-rose-200 hover:bg-rose-950/60 cursor-pointer h-9 rounded-lg border border-rose-900/30 transition-colors" 
@@ -185,12 +178,6 @@ export default function AdminLayout({
                 {adminEmail}
               </span>
             )}
-            <Link href="/" target="_blank">
-              <Button variant="outline" size="sm" className="h-9 px-3 text-xs font-semibold text-slate-600 hover:text-slate-900 border-slate-200 cursor-pointer rounded-lg">
-                <Home className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
-                <span>หน้าบ้าน</span>
-              </Button>
-            </Link>
             <Button 
               variant="outline" 
               size="sm" 
@@ -210,12 +197,6 @@ export default function AdminLayout({
             <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 rounded-full">Admin</span>
           </Link>
           <div className="flex items-center gap-1.5">
-            <Link href="/" target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white min-h-11 px-2.5 text-xs font-bold gap-1 cursor-pointer">
-                <Home className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">หน้าบ้าน</span>
-              </Button>
-            </Link>
             <Button 
               variant="ghost" 
               size="sm" 

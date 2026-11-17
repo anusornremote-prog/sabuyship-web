@@ -20,6 +20,7 @@ Never replace production environment values with staging values. Do not place an
 - Updated `src/lib/supabase/middleware.ts` so active `ADMIN` users visiting `/dashboard/*` are automatically redirected to `/admin`.
 - Updated `src/app/api/auth/callback/route.ts` and `src/app/(auth)/login/page.tsx` so `ADMIN` users always land on `/admin` after OAuth/Google/Email login (even if missing a profile phone number).
 - Updated `src/components/layout/navbar.tsx` and `src/components/layout/MobileBottomNav.tsx` to read `profiles.role` and render Admin navigation (`ศูนย์ควบคุมแอดมิน`, `/admin/orders`, `/admin/customers`, `/admin/notifications`) + `"ระบบแอดมิน"` CTA instead of customer `/dashboard/*` links and customer notification bell when signed in as `ADMIN`.
+- Removed `"เปิดหน้าบ้าน (เว็บไซต์)"` and `"หน้าบ้าน"` storefront links from `src/app/admin/layout.tsx` (desktop sidebar, desktop header, and mobile header) so admins remain strictly inside the admin workspace.
 
 ### Clean Admin Customer & Orphan Account Deletion (`/admin/customers`) (2026-11-17)
 - Added `src/app/api/admin/customers/route.ts` (`GET`) to list `CUSTOMER` accounts and orphan `auth.users` accounts without profiles (`?tab=customers|orphans`), enriched with auth provider, email (excluding synthetic `@line.sabuyship.com`), and order/inquiry/shipment counts.
