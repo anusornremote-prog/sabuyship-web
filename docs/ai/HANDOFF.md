@@ -16,6 +16,12 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Customer LINE Account Linking (`linkIdentity`) for Email/Google Accounts (2026-11-17)
+- Added `linkLineIdentity` in `src/lib/line-oauth.ts` (reusing the in-app-browser breakout guard and `bot_prompt: "aggressive"`) so customers signed in via Email or Google can link LINE onto their existing account and automatically persist `profiles.line_uid` via `/api/auth/callback`.
+- Added reusable `LineConnectCard` (`src/components/dashboard/LineConnectCard.tsx`) on `src/app/dashboard/profile/page.tsx` (`variant="card"`) and `src/app/dashboard/page.tsx` (`variant="banner"` shown only when `!profile?.line_uid`).
+- Hardened `/api/auth/callback/route.ts` `next` relative redirect validation and error return handling for `/dashboard/profile`, and added Thai error messages in `src/lib/auth-errors.ts` (covered by `scripts/qa-auth-safety.mjs`).
+- Operational prerequisite: ensure **Enable Manual Linking** is toggled ON in Supabase Dashboard (`kzqbzrfcdrnghwjpmany` -> Authentication -> Providers/Settings) for `supabase.auth.linkIdentity()` to succeed.
+
 ### Cloudflare Workers CPU & Cold-Start Optimization (2026-11-17)
 - Fast-pathed unauthenticated requests (`!sb-*` cookie) in `src/lib/supabase/middleware.ts` so `/login`, `/register`, and unauthenticated redirects bypass Supabase SSR client creation and Auth RPC overhead.
 - Added shared module-scoped `Asia/Bangkok` formatters (`src/lib/date-format.ts`) eliminating repeated `Intl.DateTimeFormat` / `.toLocaleString()` allocations per row across `src/app/admin/notifications/page.tsx`, `src/app/admin/audit/page.tsx`, `src/app/admin/page.tsx`, and `src/app/dashboard/orders/[id]/page.tsx`, and lowered initial log table queries in `admin/notifications` and `admin/audit` from `200` to `80` rows.

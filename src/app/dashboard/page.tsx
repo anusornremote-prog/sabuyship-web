@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Package, Truck, Clock, CheckCircle2, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { CustomerWarehouseCard } from "@/components/dashboard/CustomerWarehouseCard"
+import { LineConnectCard } from "@/components/dashboard/LineConnectCard"
 import { redirect } from "next/navigation"
 import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
 
@@ -20,7 +21,7 @@ export default async function DashboardOverview() {
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, customer_code")
+      .select("full_name, customer_code, line_uid")
       .eq("id", user.id)
       .maybeSingle(),
     supabase
@@ -61,6 +62,9 @@ export default async function DashboardOverview() {
           <span>ยินดีต้อนรับคุณ {displayName} เข้าสู่ระบบ Sabuy Ship Express</span>
         </div>
       )}
+
+      {/* 1.5 Optional LINE Notification Connection Prompt for Email/Google accounts */}
+      {!profile?.line_uid && <LineConnectCard lineUid={null} variant="banner" />}
 
       {/* 2. Stat Cards (Balanced 4-Column Grid) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

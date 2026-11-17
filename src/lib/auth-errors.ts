@@ -38,6 +38,18 @@ export function getFriendlyAuthErrorMessage(message?: string | null): string {
     return "การเข้าสู่ระบบถูกยกเลิก กรุณาลองใหม่อีกครั้ง"
   }
 
+  if (normalizedMessage.includes("manual linking")) {
+    return "ระบบยังไม่ได้เปิดสิทธิ์เชื่อมต่อบัญชี LINE เพิ่มเติม กรุณาติดต่อเจ้าหน้าที่ทาง LINE OA"
+  }
+
+  if (
+    normalizedMessage.includes("identity_already_exists") ||
+    normalizedMessage.includes("already linked") ||
+    normalizedMessage.includes("already belongs")
+  ) {
+    return "บัญชี LINE นี้ถูกผูกกับบัญชีอื่นในระบบแล้ว กรุณาเข้าสู่ระบบด้วย LINE โดยตรง หรือติดต่อเจ้าหน้าที่"
+  }
+
   if (
     normalizedMessage.includes("provider is not enabled") ||
     normalizedMessage.includes("unsupported provider") ||

@@ -24,6 +24,11 @@ const friendlyMessage = getFriendlyAuthErrorMessage(rawDescription)
 assert.equal(friendlyMessage, "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อเจ้าหน้าที่")
 assert.equal(friendlyMessage.includes(rawDescription), false)
 
+const manualLinkingMessage = getFriendlyAuthErrorMessage("Manual linking is disabled")
+assert.match(manualLinkingMessage, /LINE OA/)
+const duplicateIdentityMessage = getFriendlyAuthErrorMessage("identity_already_exists")
+assert.match(duplicateIdentityMessage, /ถูกผูกกับบัญชีอื่นในระบบแล้ว/)
+
 const loginSource = await readFile(new URL("../src/app/(auth)/login/page.tsx", import.meta.url), "utf8")
 assert.match(loginSource, />อีเมล \*<\/label>/)
 assert.match(loginSource, /type="email"/)

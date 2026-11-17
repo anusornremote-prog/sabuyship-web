@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { User, Phone, CheckCircle2, Loader2, AlertTriangle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { isValidThaiPhone, normalizeThaiPhone } from "@/lib/phone"
+import { LineConnectCard } from "@/components/dashboard/LineConnectCard"
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
@@ -179,6 +180,8 @@ export default function ProfilePage() {
           </form>
         </CardContent>
       </Card>
+
+      <LineConnectCard lineUid={profile?.line_uid || null} variant="card" />
     </div>
   )
 }

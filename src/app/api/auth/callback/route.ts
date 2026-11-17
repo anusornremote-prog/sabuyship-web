@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { buildAuthErrorRedirectUrl } from '@/lib/auth-errors'
+import { buildAuthErrorRedirectUrl, getAuthCallbackErrorCode } from '@/lib/auth-errors'
 import { isValidThaiPhone, generateCustomerCode } from '@/lib/phone'
 
 export async function GET(request: Request) {
@@ -10,9 +10,12 @@ export async function GET(request: Request) {
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? (type === 'recovery' ? '/reset-password' : '/dashboard')
+  // Sanitize relative redirect target to prevent open redirects
+  const rawNext = searchParams.get('next')
+  const defaultNext = type === 'recovery' ? '/reset-password' : '/dashboard'
+  const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : defaultNext
   const isPasswordRecovery = next.startsWith('/reset-password') || type === 'recovery'
+  const isProfileLinkFlow = next.startsWith('/dashboard/profile')
 
   if (code || (tokenHash && type)) {
     const supabase = await createClient()
@@ -104,6 +107,9 @@ export async function GET(request: Request) {
     if (isPasswordRecovery) {
       return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
     }
+    if (isProfileLinkFlow) {
+      return NextResponse.redirect(`${origin}/dashboard/profile?line_error=AuthFailed`)
+    }
     return NextResponse.redirect(buildAuthErrorRedirectUrl(origin))
   }
 
@@ -116,6 +122,11 @@ export async function GET(request: Request) {
     })
     if (isPasswordRecovery) {
       return NextResponse.redirect(`${origin}/forgot-password?error=ResetLinkExpired`)
+    }
+    if (isProfileLinkFlow) {
+      return NextResponse.redirect(
+        `${origin}/dashboard/profile?line_error=${getAuthCallbackErrorCode(providerError)}`
+      )
     }
     return NextResponse.redirect(buildAuthErrorRedirectUrl(origin, providerError))
   }
