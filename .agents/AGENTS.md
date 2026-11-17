@@ -1,6 +1,9 @@
 <!-- BEGIN:auto-commit-rule -->
-# Auto-Commit Code Changes
-Every time you finish making code changes or implementing a feature, you MUST run `git add .`, `git commit -m "..."`, and `git push` to GitHub immediately, without waiting for the user to instruct you to do so.
+# Auto-Commit & Deploy to Cloudflare Workers
+Every time you finish making code changes or implementing a feature, you MUST commit the changed files (`git commit -m "..."`) and `git push` to GitHub `main` immediately, without waiting for the user to instruct you to do so.
+- Production is hosted on **Cloudflare Workers** (`sabuyship-web` -> `https://www.sabuyship.com` and `https://sabuyship.com`), **NOT Vercel**.
+- Pushing to `main` automatically triggers **Cloudflare Workers Builds** (`npx opennextjs-cloudflare build` -> `npx wrangler deploy`).
+- After pushing application changes, verify the Cloudflare deployment (`npx wrangler deployments list --name sabuyship-web`) and confirm `https://www.sabuyship.com` serves with `Server: cloudflare` (and never assume Vercel is the live host).
 <!-- END:auto-commit-rule -->
 
 <!-- BEGIN:direct-execution-rule -->

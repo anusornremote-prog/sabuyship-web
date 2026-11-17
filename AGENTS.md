@@ -26,5 +26,6 @@ Before handing work off:
 
 1. Run the narrowest relevant tests, then `npm run typecheck` and `npm run build` for application changes.
 2. Run `npm run schema:check` when Supabase queries, tables, storage, or policies are affected.
-3. Update `docs/ai/HANDOFF.md` with changed files, tests, remaining work, risks, and deployment status.
-4. Commit small, descriptive checkpoints using Conventional Commits (`feat:`, `fix:`, `refactor:`).
+3. Preserve Cloudflare Workers (`workerd` + `nodejs_compat`) compatibility: use Web Standard APIs (`globalThis.crypto.getRandomValues`, `Uint8Array`), keep `images.unoptimized: true`, never re-introduce Vercel-only runtime/telemetry packages (`@vercel/speed-insights`), and keep server secrets in Cloudflare Worker Runtime Secrets (not only Build Variables).
+4. Update `docs/ai/HANDOFF.md` with changed files, tests, remaining work, risks, and deployment status.
+5. Commit small, descriptive checkpoints using Conventional Commits (`feat:`, `fix:`, `refactor:`) and push to `main` so **Cloudflare Workers Builds** deploys automatically to `https://www.sabuyship.com` (replacing Vercel).

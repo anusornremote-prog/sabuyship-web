@@ -12,11 +12,14 @@
 - Staging workflow tests load `.env.staging.local` by default and must verify both the environment project ref and the Supabase CLI linked ref before creating temporary data.
 - Never run staging workflow tests with production `.env.local`; the test runner must fail closed when the project ref is not `rhillakurearebtzjwyr`.
 
-### Vercel Is the Production Host
+### Cloudflare Workers Is the Production Host
 
-- Canonical domain: `https://www.sabuyship.com`
-- Deploy only after a successful local typecheck and production build.
-- Record the deployment ID in `HANDOFF.md` after each production deployment.
+- Production Worker: `sabuyship-web` (configured via `open-next.config.ts` and `wrangler.jsonc` using `@opennextjs/cloudflare`)
+- Canonical domains: `https://www.sabuyship.com` and `https://sabuyship.com` (fallback Worker URL: `https://sabuyship-web.anusorn-remote.workers.dev`)
+- Deploy via GitHub `main` -> **Cloudflare Workers Builds** (`npx opennextjs-cloudflare build` + `npx wrangler deploy`) only after a successful local typecheck and build (Cloudflare Workers Builds runs on Linux, avoiding the Windows Node v25 non-ASCII path `fs.cpSync` quirk; CLI `npm run deploy` works from Linux/ASCII paths).
+- Server-only secrets (`SUPABASE_SERVICE_ROLE_KEY`, `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_ADMIN_USER_ID`, `TRACKINGMORE_API_KEY`) must be maintained in **Cloudflare Worker Runtime Secrets** (`Settings -> Runtime variables and secrets` or `npx wrangler secret bulk`), while `NEXT_PUBLIC_*` build variables live in **Build variables** (`Settings -> Builds -> Variables and secrets`).
+- Preserve `workerd` + `nodejs_compat` compatibility: keep `images.unoptimized: true` in `next.config.ts`, use Web Standard APIs (`globalThis.crypto.getRandomValues`, `Uint8Array`), and do not add Vercel-only packages.
+- Record deployment verification in `HANDOFF.md` after production releases.
 
 ## Authentication
 
@@ -34,7 +37,7 @@
 - Independent Supabase queries should run concurrently.
 - Avoid loading Supabase, ExcelJS, Recharts, image compression, or other heavy libraries on public initial routes unless immediately required.
 - Use route-level loading UI for data-heavy dashboard and admin navigation.
-- Collect production Core Web Vitals with Vercel Speed Insights from the root layout and evaluate mobile P75 LCP, CLS, and INP after deployment.
+- Monitor production Core Web Vitals and Cloudflare edge caching behavior after deployment (Vercel Speed Insights was removed during the Cloudflare Workers migration).
 
 ## Visual Design System
 

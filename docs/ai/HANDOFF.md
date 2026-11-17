@@ -1,20 +1,30 @@
 # Current Handoff
 
-Last updated: 2026-11-16 (Asia/Bangkok)
+Last updated: 2026-11-17 (Asia/Bangkok)
 
 ## Repository State
 
 - Active branch: `main`
 - Primary branch: `main`
-- Production domain: `https://www.sabuyship.com`
-- Last recorded production deployment ID: `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd`
-- Latest production commit: `02ae9f1` (GitHub Vercel status: `success`, completed 2026-11-05)
+- Production host: **Cloudflare Workers** (`sabuyship-web`, connected via Cloudflare Workers Builds on `main` -> `npx opennextjs-cloudflare build` + `npx wrangler deploy`)
+- Production domain: `https://www.sabuyship.com` and `https://sabuyship.com` (fallback Worker URL: `https://sabuyship-web.anusorn-remote.workers.dev`)
+- Last recorded Cloudflare Worker cutover verification: `2026-11-17` (`Server: cloudflare`, `CF-RAY: ...-BKK`; previous Vercel deployment `dpl_BSzkz8EGdwwjvZ1q4nkJ5cqZoRcd` on `02ae9f1` replaced)
 - Production Supabase project ref: `kzqbzrfcdrnghwjpmany`
 - Staging Supabase project ref: `rhillakurearebtzjwyr`
 
 Never replace production environment values with staging values. Do not place any API keys in this document.
 
 ## Completed Work
+
+### Cloudflare Workers Production Cutover & Deploy Pipeline Switch (2026-11-17)
+- Switched Cloudflare zone `sabuyship.com` nameservers (`beth.ns.cloudflare.com`, `simon.ns.cloudflare.com`), confirmed `SSL/TLS` mode `Full (strict)` with active Edge Certificates, removed legacy Vercel `A` records (`64.29.17.1` / `64.29.17.65`) for `sabuyship.com` and `www.sabuyship.com`, and attached both as Custom Domains on Worker `sabuyship-web` (Proxied).
+- Uploaded server runtime secrets (`SUPABASE_SERVICE_ROLE_KEY`, `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_ADMIN_USER_ID`, `TRACKINGMORE_API_KEY`) via `wrangler secret bulk` and enabled `"keep_vars": true` in `wrangler.jsonc` so `wrangler deploy` preserves dashboard runtime variables.
+- Verified live production cutover on `https://sabuyship.com`, `https://www.sabuyship.com`, and `https://sabuyship-web.anusorn-remote.workers.dev`:
+  - `GET https://sabuyship.com` & `https://www.sabuyship.com` -> `HTTP/1.1 200 OK`, `Server: cloudflare`
+  - `GET https://www.sabuyship.com/api/tracking/NOTEXISTTEST123` -> `{"error":"Order not found"}` (Supabase Admin runtime working)
+  - `POST https://sabuyship-web.anusorn-remote.workers.dev/api/contact` -> `{"success":true,"notification_sent":true}` and `notification_logs` recorded `ADMIN` / `MULTI` / `SENT` (LINE Admin delivery confirmed by owner).
+- Updated `AGENTS.md`, `.agents/AGENTS.md`, `docs/ai/DECISIONS.md`, `.agents/skills/sabuyship-expert/SKILL.md`, and `docs/ai/HANDOFF.md` so all future changes deploy cleanly via Cloudflare Workers Builds (`main`) instead of Vercel.
+- Remaining optional owner actions: disconnect Git / remove domains in the legacy Vercel project once ready, and switch `NEXT_PUBLIC_DEMO_MODE=false` + real bank/legal values in Cloudflare Build Variables when ready to disable the demo banner.
 
 ### Cloudflare Workers Migration Readiness (`@opennextjs/cloudflare`) (2026-11-17)
 - Audited `package.json`, `next.config.ts`, `src/`, and `src/app/api/**` for Cloudflare Workers (`workerd` + `nodejs_compat`) compatibility:
