@@ -3,6 +3,7 @@ import Link from "next/link"
 import { unstable_rethrow } from "next/navigation"
 import { Users, FileQuestion, FileText, Package, ArrowRight, Clock3, Warehouse, Ship, Truck, CheckCircle2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import { formatBangkokShortDate, getBangkokDateParts } from "@/lib/date-format"
 import { DashboardChartsWrapper } from "@/components/admin/DashboardChartsWrapper"
 import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
 
@@ -40,17 +41,6 @@ export default async function AdminOverview() {
   const recentTracking = recentTrackingResult.data
   const chartInquiries = chartInquiriesResult.data
   const chartOrders = chartOrdersResult.data
-
-  const bangkokDateParts = (date: Date) => {
-    const parts = new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Bangkok",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(date)
-    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
-    return { key: `${values.year}-${values.month}-${values.day}`, label: `${Number(values.day)}/${Number(values.month)}` }
-  }
 
   const waitingPaymentCount = waitingPaymentOrders?.length || 0
   const waitingPaymentTotal = waitingPaymentOrders?.reduce((sum: number, order: any) => {
@@ -166,7 +156,7 @@ export default async function AdminOverview() {
   for (let i = 29; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    const { key: dateStr, label } = bangkokDateParts(d)
+    const { key: dateStr, label } = getBangkokDateParts(d)
     aggregatedData[dateStr] = {
       date: label,
       fullDate: dateStr,
@@ -179,7 +169,7 @@ export default async function AdminOverview() {
   // Populate Inquiries
   if (chartInquiries) {
     chartInquiries.forEach((inq) => {
-      const dateStr = bangkokDateParts(new Date(inq.created_at)).key
+      const dateStr = getBangkokDateParts(new Date(inq.created_at)).key
       if (aggregatedData[dateStr]) {
         aggregatedData[dateStr].inquiries += 1
       }
@@ -189,7 +179,7 @@ export default async function AdminOverview() {
   // Populate Orders and Revenue
   if (chartOrders) {
     chartOrders.forEach((order) => {
-      const dateStr = bangkokDateParts(new Date(order.created_at)).key
+      const dateStr = getBangkokDateParts(new Date(order.created_at)).key
       if (aggregatedData[dateStr]) {
         aggregatedData[dateStr].orders += 1
         const quotation = Array.isArray(order.quotation) ? order.quotation[0] : order.quotation
@@ -321,7 +311,7 @@ export default async function AdminOverview() {
                         {getInquiryStatusLabel(inq.status)}
                       </span>
                       <p className="text-xs text-slate-500 mt-1">
-                        {new Date(inq.created_at).toLocaleDateString('th-TH')}
+                        {formatBangkokShortDate(inq.created_at)}
                       </p>
                     </div>
                   </Link>
@@ -367,7 +357,7 @@ export default async function AdminOverview() {
                         {getOrderStatusLabel(log.status)}
                       </span>
                       <p className="text-xs text-slate-500 mt-1">
-                        {new Date(log.created_at).toLocaleDateString('th-TH')}
+                        {formatBangkokShortDate(log.created_at)}
                       </p>
                     </div>
                   </div>

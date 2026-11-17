@@ -2,11 +2,25 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const hasSupabaseAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-'))
+
+  // Fast-path unauthenticated requests to avoid Supabase client instantiation & Auth RPC CPU cost
+  if (!hasSupabaseAuthCookie) {
+    if (pathname === '/login' || pathname === '/register') {
+      return NextResponse.next({ request })
+    }
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/complete-profile') {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
-
-  const { pathname } = request.nextUrl
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

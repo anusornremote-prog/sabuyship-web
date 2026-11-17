@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
+import { formatBangkokDateTime } from "@/lib/date-format"
 import { AdminNotificationHeader } from "./AdminNotificationHeader"
 
 export default async function AdminNotificationsPage() {
@@ -12,7 +13,7 @@ export default async function AdminNotificationsPage() {
     .from("notification_logs")
     .select("id, recipient_type, channel, status, error_code, created_at, recipient:recipient_profile_id(full_name, customer_code)")
     .order("created_at", { ascending: false })
-    .limit(200)
+    .limit(80)
 
   return (
     <div className="space-y-6">
@@ -45,7 +46,7 @@ export default async function AdminNotificationsPage() {
                 {(logs || []).map((log: any) => (
                   <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="p-3.5 text-xs text-slate-600 whitespace-nowrap font-mono">
-                      {new Date(log.created_at).toLocaleString("th-TH")}
+                      {formatBangkokDateTime(log.created_at)}
                     </td>
                     <td className="p-3.5 font-medium text-slate-900">
                       {log.recipient_type === "ADMIN" ? "แอดมิน" : log.recipient?.full_name || log.recipient?.customer_code || "ลูกค้า"}

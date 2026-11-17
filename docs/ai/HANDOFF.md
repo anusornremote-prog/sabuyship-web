@@ -16,6 +16,12 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Cloudflare Workers CPU & Cold-Start Optimization (2026-11-17)
+- Fast-pathed unauthenticated requests (`!sb-*` cookie) in `src/lib/supabase/middleware.ts` so `/login`, `/register`, and unauthenticated redirects bypass Supabase SSR client creation and Auth RPC overhead.
+- Added shared module-scoped `Asia/Bangkok` formatters (`src/lib/date-format.ts`) eliminating repeated `Intl.DateTimeFormat` / `.toLocaleString()` allocations per row across `src/app/admin/notifications/page.tsx`, `src/app/admin/audit/page.tsx`, `src/app/admin/page.tsx`, and `src/app/dashboard/orders/[id]/page.tsx`, and lowered initial log table queries in `admin/notifications` and `admin/audit` from `200` to `80` rows.
+- Added `recharts`, `@radix-ui/react-dialog`, and `sonner` to `optimizePackageImports` in `next.config.ts`.
+- Risk note: Cloudflare Workers Free plan hard-caps active CPU at `10 ms` per request; occasional `Error 1102` may still occur during cold isolate initialization of the Next.js 16 server bundle (`~2.64 MiB` gzip) unless upgraded to Workers Paid (`$5/mo`, `30s` CPU).
+
 ### Cloudflare Workers Production Cutover & Deploy Pipeline Switch (2026-11-17)
 - Switched Cloudflare zone `sabuyship.com` nameservers (`beth.ns.cloudflare.com`, `simon.ns.cloudflare.com`), confirmed `SSL/TLS` mode `Full (strict)` with active Edge Certificates, removed legacy Vercel `A` records (`64.29.17.1` / `64.29.17.65`) for `sabuyship.com` and `www.sabuyship.com`, and attached both as Custom Domains on Worker `sabuyship-web` (Proxied).
 - Uploaded server runtime secrets (`SUPABASE_SERVICE_ROLE_KEY`, `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_ADMIN_USER_ID`, `TRACKINGMORE_API_KEY`) via `wrangler secret bulk` and enabled `"keep_vars": true` in `wrangler.jsonc` so `wrangler deploy` preserves dashboard runtime variables.

@@ -11,6 +11,7 @@ import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
 import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
+import { formatBangkokDateTime } from "@/lib/date-format"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -144,7 +145,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           <div>
             <h1 className="text-2xl font-bold text-slate-900">รายละเอียดคำสั่งซื้อ {order.order_number}</h1>
             <p className="text-slate-600 text-sm">
-              สร้างเมื่อ: {order.created_at ? new Date(order.created_at).toLocaleString('th-TH') : '-'}
+              สร้างเมื่อ: {formatBangkokDateTime(order.created_at)}
             </p>
           </div>
         </div>
@@ -580,7 +581,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                     <TimelineItem 
                       key={log.id}
                       status={getCustomerOrderStatusText(log.status)} 
-                      date={log.created_at ? new Date(log.created_at).toLocaleString('th-TH') : ''}
+                      date={formatBangkokDateTime(log.created_at, '')}
                       description={log.notes || undefined} 
                       isActive={index === 0}
                       isLast={index === trackingLogs.length - 1}
@@ -589,7 +590,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
                 ) : (
                   <TimelineItem 
                     status="รอดำเนินการ" 
-                    date={order.created_at ? new Date(order.created_at).toLocaleString('th-TH') : ''}
+                    date={formatBangkokDateTime(order.created_at, '')}
                     description="สร้างคำสั่งซื้อเข้าระบบเรียบร้อยแล้ว" 
                     isActive={true}
                     isLast={true}
