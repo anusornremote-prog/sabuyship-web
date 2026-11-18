@@ -5,6 +5,8 @@
 
 export const LINE_OA_ID = "@516lqkcd" as const
 export const LINE_OA_URL = "https://line.me/R/ti/p/@516lqkcd" as const
+export const TERMS_VERSION = "2026-11-18" as const
+export const TERMS_UPDATED_LABEL_TH = "18 พฤศจิกายน 2026" as const
 
 export const ORDER_STATUSES = {
   WAITING_PAYMENT: "WAITING_PAYMENT",

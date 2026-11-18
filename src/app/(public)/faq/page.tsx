@@ -138,6 +138,13 @@ export default function FaqPage() {
           question: "How do I track parcel status in real time?",
           answer: "You can track anytime via our Track page by entering your Order ID (e.g. ORD-XXXXXX). Additionally, our automated LINE Notification Bot pushes updates at every milestone directly to your phone.",
           tags: ["track", "tracking", "status", "line", "notification"]
+        },
+        {
+          id: "gua-3",
+          category: "guarantee",
+          question: "How are lost parcels, transit damage, or items not as described handled?",
+          answer: "Sabuyship acts as a full-support purchasing and logistics coordinator and does not assume liability or direct compensation for items lost, damaged in transit, or not matching seller descriptions. However, our team will proactively coordinate with Chinese sellers, platforms, and carriers on your behalf with all available evidence, and return any refund or compensation actually recovered.",
+          tags: ["lost", "damage", "mismatch", "claim", "coordinator"]
         }
       ]
     } else if (locale === 'zh') {
@@ -225,6 +232,13 @@ export default function FaqPage() {
           question: "如何全程追踪我的货物动态？",
           answer: "您可在“跟踪包裹”页面输入订单号 (如 ORD-XXXXXX) 随时查询，同时我们的 LINE 机器人会在关键节点（已采购、抵广州仓、抵泰国仓、派送中）自动推送消息。",
           tags: ["追踪", "物流", "LINE", "通知", "查单"]
+        },
+        {
+          id: "gua-3",
+          category: "guarantee",
+          question: "如果货物运输丢失、破损或商品货不对板怎么处理？",
+          answer: "Sabuyship 作为您的采购与物流协调助手，不承担运输途中丢失、破损或中国商家商品货不对板的赔偿责任；但团队会全力协助您收集证据，并与中国卖家、平台及物流承运商积极沟通协调处理，若追回退款或赔付将全额退还给您（建议易碎品打木架并保留开箱视频）。",
+          tags: ["丢件", "破损", "货不对板", "协调", "索赔"]
         }
       ]
     } else {
@@ -312,6 +326,13 @@ export default function FaqPage() {
           question: "สามารถติดตามสถานะสินค้าแบบเรียลไทม์ได้อย่างไร?",
           answer: "คุณสามารถกรอกหมายเลขคำสั่งซื้อ (Order ID) ในหน้า 'ติดตามสถานะสินค้า' ได้ตลอด 24 ชม. นอกจากนี้ระบบยังมีบริการส่งข้อความแจ้งเตือนผ่าน LINE อัตโนมัติในทุกๆ สเต็ป",
           tags: ["ติดตามสถานะ", "tracking", "เช็คพัสดุ", "line แจ้งเตือน"]
+        },
+        {
+          id: "gua-3",
+          category: "guarantee",
+          question: "กรณีของหาย เสียหายระหว่างขนส่ง หรือสินค้าไม่ตรงปก ทาง Sabuyship รับผิดชอบอย่างไร?",
+          answer: "ทางเราไม่ได้รับผิดชอบชดเชยกรณีสินค้าสูญหาย เสียหายระหว่างขนส่ง หรือสินค้าไม่ตรงปกจากร้านค้าต้นทางครับ แต่ทีมงาน Sabuyship พร้อมทำหน้าที่เป็นตัวช่วยประสานงานให้คุณอย่างเต็มที่ ทั้งการรวบรวมหลักฐาน เจรจาติดตามกับร้านค้าจีน แพลตฟอร์ม และบริษัทขนส่งที่เกี่ยวข้อง และหากได้ยอดคืนเงินหรือชดเชยกลับมาจะคืนให้ลูกค้าตามจริงทั้งหมดครับ (แนะนำเลือกตีลังไม้สำหรับสินค้าแตกง่ายและถ่ายวิดีโอเปิดกล่องไว้เสมอ)",
+          tags: ["ของหาย", "เสียหาย", "ไม่ตรงปก", "ประสานงาน", "เคลม"]
         }
       ]
     }

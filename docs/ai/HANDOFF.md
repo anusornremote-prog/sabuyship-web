@@ -16,6 +16,10 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Liability & Full-Support Coordination Terms Update (2026-11-18)
+- Centralized `TERMS_VERSION = "2026-11-18"` and `TERMS_UPDATED_LABEL_TH = "18 พฤศจิกายน 2026"` in `src/lib/constants.ts`, consumed by `src/app/(public)/terms/page.tsx`, `src/app/dashboard/orders/AddressSelectionModal.tsx`, and `src/app/api/order/route.ts`.
+- Updated `src/app/(public)/terms/page.tsx` (Sections 3.1 & 6), `src/app/(public)/faq/page.tsx` (TH/EN/ZH `gua-3`), `src/app/(public)/how-it-works/page.tsx` (TH/EN/ZH), `src/app/(public)/inquiry/page.tsx` (TH/EN/ZH), and `src/app/dashboard/orders/AddressSelectionModal.tsx` to state clearly that Sabuy Ship acts as a full-support purchasing and shipping coordinator and is not liable for lost goods, transit damage, or items not matching seller descriptions, while assisting customers in full to coordinate claims/refunds with sellers, platforms, and carriers.
+
 ### Separate Admin & Customer Portal Routing and Navigation (2026-11-17)
 - Updated `src/lib/supabase/middleware.ts` so active `ADMIN` users visiting `/dashboard/*` are automatically redirected to `/admin`.
 - Updated `src/app/api/auth/callback/route.ts` and `src/app/(auth)/login/page.tsx` so `ADMIN` users always land on `/admin` after OAuth/Google/Email login (even if missing a profile phone number).

@@ -385,6 +385,10 @@ export default function HowItWorks() {
     {
       q: "Do you charge a purchasing service fee?",
       a: "No! Sabuyship charges 0% purchasing service fee and provides free supplier negotiation."
+    },
+    {
+      q: "What if goods are lost, damaged in transit, or not as described?",
+      a: "We do not assume liability for loss, transit damage, or seller mismatch, but our team acts as your full-support coordinator to gather evidence and follow up with sellers, platforms, and carriers."
     }
   ] : locale === 'zh' ? [
     {
@@ -410,6 +414,10 @@ export default function HowItWorks() {
     {
       q: "是否有代购服务费？",
       a: "没有！Sabuyship 不收取任何代购服务费 (0% Service Fee)，并免费提供中国厂家议价服务。"
+    },
+    {
+      q: "如果发生货物丢失、运输破损或货不对板怎么办？",
+      a: "我方不承担运输丢失、破损或商家货不对板的赔偿责任，但团队会全力作为协调助手，帮您与商家、平台及物流方沟通跟进。"
     }
   ] : [
     {
@@ -435,6 +443,10 @@ export default function HowItWorks() {
     {
       q: "มีค่าบริการสั่งซื้อ (Service Fee) หรือไม่?",
       a: "ไม่มีครับ! Sabuyship ฟรีค่าบริการสั่งซื้อ 0 บาท และมีทีมงานช่วยเจรจาต่อรองราคาส่งกับร้านค้าจีนให้ฟรี ไม่มีค่าแอบแฝง"
+    },
+    {
+      q: "กรณีของหาย เสียหายระหว่างขนส่ง หรือสินค้าไม่ตรงปก ดูแลอย่างไร?",
+      a: "ทางเราไม่ได้รับผิดชอบกรณีของหาย เสียหายระหว่างขนส่ง หรือสินค้าไม่ตรงปกจากร้านจีน แต่ทีมงานพร้อมเป็นตัวช่วยประสานงานกับร้านค้า แพลตฟอร์ม และขนส่งให้อย่างเต็มที่ครับ"
     }
   ]
 

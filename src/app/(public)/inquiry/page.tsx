@@ -805,7 +805,7 @@ export default function InquiryForm() {
                     แบบฟอร์มยังไม่เปิดรับคำขอจริง เนื่องจากข้อมูลผู้ประกอบการยังตั้งค่าไม่ครบ
                   </div>
                 )}
-                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+                <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
                   <input id="inquiry-privacy" type="checkbox" name="privacyAcknowledged" required className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 cursor-pointer" />
                   <div>
                     <label htmlFor="inquiry-privacy" className="cursor-pointer">
@@ -815,6 +815,21 @@ export default function InquiryForm() {
                     {' '}<label htmlFor="inquiry-privacy" className="cursor-pointer">การทำเครื่องหมายนี้เป็นการรับทราบประกาศ ไม่ใช่การยินยอมรับการตลาด</label>
                   </div>
                 </div>
+                <p className="mb-4 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-2.5 text-xs leading-relaxed text-amber-950">
+                  {locale === 'en' ? (
+                    <>
+                      <strong>Service Scope:</strong> Sabuy Ship acts as a full-support purchasing and shipping coordinator and is not liable for goods lost, damaged in transit, or not as described by the seller (<Link href="/terms#section-6" target="_blank" className="font-bold underline">Terms</Link>).
+                    </>
+                  ) : locale === 'zh' ? (
+                    <>
+                      <strong>服务声明：</strong> Sabuy Ship 作为采购与物流协调助手，全力协助沟通处理，但不承担运输途中丢失、破损或商品货不对板的赔偿责任（详见 <Link href="/terms#section-6" target="_blank" className="font-bold underline">服务条款</Link>）。
+                    </>
+                  ) : (
+                    <>
+                      <strong>ขอบเขตการบริการ:</strong> ทางเราไม่ได้รับผิดชอบกรณีสินค้าสูญหาย เสียหายระหว่างขนส่ง หรือสินค้าไม่ตรงปก แต่ทีมงานพร้อมเป็นตัวช่วยประสานงานติดตามและเจรจาให้อย่างเต็มที่ (<Link href="/terms#section-6" target="_blank" className="font-bold underline">อ่านเงื่อนไขบริการ</Link>)
+                    </>
+                  )}
+                </p>
                 <Button 
                   type="submit" 
                   size="lg" 

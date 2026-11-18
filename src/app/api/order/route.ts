@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { hasValidApiKey } from "@/lib/api-auth"
+import { TERMS_VERSION } from "@/lib/constants"
 import { sendAdminNotification } from "@/lib/notify"
 import { canAcceptBusiness } from "@/lib/public-business-config"
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       p_customer_id: targetCustomerId,
       p_shipping_address_id: typeof body.shipping_address_id === "string" ? body.shipping_address_id : null,
       p_admin_notes: typeof body.admin_notes === "string" ? body.admin_notes : null,
-      p_terms_version: apiKeyAuthorized ? null : "2026-09-14",
+      p_terms_version: apiKeyAuthorized ? null : TERMS_VERSION,
     })
     if (error) {
       const status = /not found/i.test(error.message) ? 404 : /forbidden/i.test(error.message) ? 403 : 409

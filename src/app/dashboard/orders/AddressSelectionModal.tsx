@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button"
 import { Loader2, MapPin, AlertCircle, Plus } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { TERMS_UPDATED_LABEL_TH } from "@/lib/constants"
 import Link from "next/link"
 
 interface AddressSelectionModalProps {
@@ -120,7 +121,11 @@ export function AddressSelectionModal({ isOpen, onClose, onConfirm }: AddressSel
         <DialogFooter className="pt-2 border-t mt-2">
           <label className="mb-3 flex w-full items-start gap-2 text-left text-xs leading-relaxed text-slate-600 sm:mb-0 sm:mr-auto">
             <input type="checkbox" checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-600" />
-            <span>ฉันตรวจสอบใบเสนอราคาและยอมรับ <Link href="/terms" target="_blank" className="font-bold text-primary underline">เงื่อนไขบริการ</Link> ฉบับวันที่ 14 กันยายน 2026</span>
+            <span>
+              ฉันตรวจสอบใบเสนอราคาและยอมรับ{" "}
+              <Link href="/terms" target="_blank" className="font-bold text-primary underline">เงื่อนไขบริการ</Link>{" "}
+              ฉบับวันที่ {TERMS_UPDATED_LABEL_TH} (รับทราบว่า Sabuy Ship ทำหน้าที่ประสานงานสั่งซื้อและขนส่งอย่างเต็มที่ แต่ไม่รับผิดชอบกรณีของหาย เสียหายระหว่างขนส่ง หรือสินค้าไม่ตรงปก)
+            </span>
           </label>
           <Button variant="outline" onClick={onClose}>
             ยกเลิก
