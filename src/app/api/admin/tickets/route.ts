@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const statusFilter = searchParams.get("status")?.trim() || "ALL"
     const categoryFilter = searchParams.get("category")?.trim() || "ALL"
+    const orderIdFilter = searchParams.get("order_id")?.trim() || ""
     const queryText = searchParams.get("q")?.trim().toLowerCase() || ""
 
     const adminClient = createAdminClient()
@@ -54,6 +55,13 @@ export async function GET(request: Request) {
 
     if (categoryFilter && categoryFilter !== "ALL" && isTicketCategory(categoryFilter)) {
       query = query.eq("category", categoryFilter)
+    }
+
+    if (orderIdFilter) {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdFilter)) {
+        return NextResponse.json({ error: "รหัสคำสั่งซื้อไม่ถูกต้อง" }, { status: 400 })
+      }
+      query = query.eq("order_id", orderIdFilter)
     }
 
     const { data: rows, error } = await query

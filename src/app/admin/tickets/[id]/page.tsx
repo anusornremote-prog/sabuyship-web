@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
@@ -29,6 +30,7 @@ import {
   ArrowLeft,
   Bell,
   Camera,
+  CircleDollarSign,
   ExternalLink,
   Loader2,
   Lock,
@@ -81,6 +83,22 @@ interface AdminTicketDetailResponse {
     evidence_signed: SignedAttachmentItem[]
   }
   updates: TicketUpdateEntry[]
+  refunds?: Array<{
+    id: string
+    amount: number
+    status: string
+    reason: string
+    payment_reference?: string | null
+    created_at: string
+  }>
+}
+
+const REFUND_STATUS_LABELS: Record<string, { label: string; cls: string }> = {
+  PENDING: { label: "รออนุมัติ", cls: "bg-amber-50 text-amber-800 border-amber-200" },
+  APPROVED: { label: "รอดำเนินการโอน", cls: "bg-sky-50 text-sky-800 border-sky-200" },
+  PAID: { label: "โอนคืนแล้ว", cls: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  FAILED: { label: "โอนไม่สำเร็จ", cls: "bg-rose-50 text-rose-800 border-rose-200" },
+  CANCELED: { label: "ยกเลิก", cls: "bg-slate-100 text-slate-600 border-slate-200" },
 }
 
 export default function AdminTicketDetailPage() {
@@ -100,6 +118,10 @@ export default function AdminTicketDetailPage() {
   const [notifyCustomer, setNotifyCustomer] = useState(true)
   const [photos, setPhotos] = useState<Array<{ id: string; file: File; previewUrl: string }>>([])
   const [saving, setSaving] = useState(false)
+  const [refundModalOpen, setRefundModalOpen] = useState(false)
+  const [refundAmount, setRefundAmount] = useState("")
+  const [refundReason, setRefundReason] = useState("")
+  const [creatingRefund, setCreatingRefund] = useState(false)
 
   const loadTicket = useCallback(async () => {
     if (!ticketId) return
@@ -626,19 +648,174 @@ export default function AdminTicketDetailPage() {
                 </span>
               </div>
 
-              <div className="pt-2 border-t border-slate-100">
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  หมายเหตุ: หากประสานงานแล้วร้านค้าจีนหรือขนส่งคืนเงินสำเร็จ ให้บันทึกยอดคืนให้ลูกค้าผ่านเมนู{" "}
-                  <Link href="/admin/refunds" className="text-primary font-bold hover:underline">
-                    เงินคืน (/admin/refunds)
-                  </Link>{" "}
-                  เพื่อให้ประวัติการเงินตรงกัน
-                </p>
+              <div className="pt-2 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <CircleDollarSign className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                    <span>คืนเงินที่ได้รับจากร้านค้า/ขนส่ง</span>
+                  </span>
+                  <Link href="/admin/refunds" className="text-[11px] font-bold text-primary hover:underline">
+                    หน้าเงินคืน →
+                  </Link>
+                </div>
+
+                {Array.isArray(data.refunds) && data.refunds.length > 0 && (
+                  <div className="space-y-2">
+                    {data.refunds.map((refund) => {
+                      const badge = REFUND_STATUS_LABELS[refund.status] || {
+                        label: refund.status,
+                        cls: "bg-slate-100 text-slate-700 border-slate-200",
+                      }
+                      return (
+                        <div
+                          key={refund.id}
+                          className="rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 space-y-1 text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-extrabold text-slate-900">
+                              ฿{Number(refund.amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${badge.cls}`}>
+                              {badge.label}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 line-clamp-2">{refund.reason}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setRefundAmount("")
+                    setRefundReason(`เงินคืนจากร้านค้า/ขนส่ง (${ticket.subject})`)
+                    setRefundModalOpen(true)
+                  }}
+                  className="w-full min-h-11 rounded-xl border-emerald-300 text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 font-bold cursor-pointer gap-1.5"
+                >
+                  <CircleDollarSign className="w-4 h-4" aria-hidden="true" />
+                  <span>สร้างรายการคืนเงินจากเคสนี้</span>
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <Dialog open={refundModalOpen} onOpenChange={setRefundModalOpen}>
+        <DialogContent className="max-w-md max-h-[90dvh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="px-5 py-4 border-b border-slate-100 bg-slate-50/70 shrink-0">
+            <DialogTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <CircleDollarSign className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+              <span>สร้างรายการคืนเงินจากเคสนี้</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-600">
+              เคส {ticket.ticket_number} · ออเดอร์ {ticket.order?.order_number || "-"}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault()
+              if (creatingRefund) return
+              const numAmount = Number(refundAmount)
+              if (!Number.isFinite(numAmount) || numAmount <= 0) {
+                toast.error("กรุณาระบุจำนวนเงินคืนที่ถูกต้อง")
+                return
+              }
+              if (refundReason.trim().length < 3) {
+                toast.error("กรุณาระบุเหตุผลการคืนเงินอย่างน้อย 3 ตัวอักษร")
+                return
+              }
+              setCreatingRefund(true)
+              try {
+                const res = await fetch("/api/admin/refunds", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    order_id: ticket.order_id,
+                    ticket_id: ticket.id,
+                    amount: numAmount,
+                    reason: refundReason.trim(),
+                  }),
+                })
+                const json = await res.json().catch(() => ({}))
+                if (!res.ok) {
+                  throw new Error(json.error || "ไม่สามารถสร้างรายการคืนเงินได้")
+                }
+                toast.success("บันทึกรายการคืนเงินเข้าระบบเรียบร้อยแล้ว")
+                setRefundModalOpen(false)
+                await loadTicket()
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด")
+              } finally {
+                setCreatingRefund(false)
+              }
+            }}
+            className="p-5 space-y-4 overflow-y-auto overscroll-contain"
+          >
+            <div className="space-y-1.5">
+              <label htmlFor="ticket-refund-amount" className="text-xs font-bold text-slate-800 block">
+                จำนวนเงินคืนที่ร้านค้า/ขนส่งอนุมัติ (บาท) *
+              </label>
+              <Input
+                id="ticket-refund-amount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={refundAmount}
+                onChange={(e) => setRefundAmount(e.target.value)}
+                placeholder="เช่น 350.00"
+                className="h-11 rounded-xl"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="ticket-refund-reason" className="text-xs font-bold text-slate-800 block">
+                รายละเอียดการคืนเงิน *
+              </label>
+              <Textarea
+                id="ticket-refund-reason"
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                rows={3}
+                maxLength={450}
+                className="rounded-xl"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRefundModalOpen(false)}
+                disabled={creatingRefund}
+                className="min-h-11 rounded-xl cursor-pointer"
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                type="submit"
+                disabled={creatingRefund}
+                className="min-h-11 rounded-xl cursor-pointer font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {creatingRefund ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                    <span>กำลังบันทึก...</span>
+                  </>
+                ) : (
+                  <span>สร้างรายการเงินคืน</span>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

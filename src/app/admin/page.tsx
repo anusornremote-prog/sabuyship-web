@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { unstable_rethrow } from "next/navigation"
-import { Users, FileQuestion, FileText, Package, ArrowRight, Clock3, Warehouse, Ship, Truck, CheckCircle2 } from "lucide-react"
+import { Users, FileQuestion, FileText, Package, ArrowRight, Clock3, Warehouse, Ship, Truck, CheckCircle2, LifeBuoy } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { formatBangkokShortDate, getBangkokDateParts } from "@/lib/date-format"
+import { getTicketStatusMeta } from "@/lib/tickets"
 import { DashboardChartsWrapper } from "@/components/admin/DashboardChartsWrapper"
 import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
 
@@ -17,7 +18,8 @@ export default async function AdminOverview() {
   const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
 
   const [pendingResult, waitingResult, shippingResult, activeResult, customersResult,
-    recentInquiriesResult, recentTrackingResult, chartInquiriesResult, chartOrdersResult] = await Promise.all([
+    recentInquiriesResult, recentTrackingResult, chartInquiriesResult, chartOrdersResult,
+    openTicketsCountResult, recentOpenTicketsResult] = await Promise.all([
     supabase.from("inquiries").select("*", { count: 'exact', head: true }).eq("status", "PENDING").is("archived_at", null),
     supabase.from("orders").select("id, quotation:quotation_id(total_price)").eq("status", "WAITING_PAYMENT"),
     supabase.from("orders").select("*", { count: 'exact', head: true }).in("status", ["CHINA_WAREHOUSE", "SHIPPING", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY"]),
@@ -27,9 +29,12 @@ export default async function AdminOverview() {
     supabase.from("tracking_logs").select(`id, status, notes, created_at, order:order_id(order_number)`).order("created_at", { ascending: false }).limit(5),
     supabase.from("inquiries").select("created_at").is("archived_at", null).gte("created_at", thirtyDaysAgoStr),
     supabase.from("orders").select("created_at, quotation:quotation_id(total_price)").gte("created_at", thirtyDaysAgoStr),
+    supabase.from("support_tickets").select("*", { count: 'exact', head: true }).in("status", ["NEW", "IN_PROGRESS", "WAITING_CUSTOMER"]),
+    supabase.from("support_tickets").select(`id, ticket_number, subject, status, last_activity_at, order:order_id(order_number), customer:customer_id(full_name, customer_code)`).in("status", ["NEW", "IN_PROGRESS", "WAITING_CUSTOMER"]).order("last_activity_at", { ascending: false }).limit(3),
   ])
   const results = [pendingResult, waitingResult, shippingResult, activeResult, customersResult,
-    recentInquiriesResult, recentTrackingResult, chartInquiriesResult, chartOrdersResult]
+    recentInquiriesResult, recentTrackingResult, chartInquiriesResult, chartOrdersResult,
+    openTicketsCountResult, recentOpenTicketsResult]
   const firstError = results.find((result) => result.error)?.error
   if (firstError) throw firstError
   const pendingInquiriesCount = pendingResult.count
@@ -41,6 +46,8 @@ export default async function AdminOverview() {
   const recentTracking = recentTrackingResult.data
   const chartInquiries = chartInquiriesResult.data
   const chartOrders = chartOrdersResult.data
+  const openTicketsCount = openTicketsCountResult.count || 0
+  const recentOpenTickets = recentOpenTicketsResult.data || []
 
   const waitingPaymentCount = waitingPaymentOrders?.length || 0
   const waitingPaymentTotal = waitingPaymentOrders?.reduce((sum: number, order: any) => {
@@ -252,6 +259,68 @@ export default async function AdminOverview() {
           </CardContent>
         </Card>
       </div>
+
+      {openTicketsCount > 0 && (
+        <Card className="shadow-sm border-amber-300 bg-amber-50/60 overflow-hidden">
+          <CardHeader className="pb-3 border-b border-amber-200/70">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <LifeBuoy className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-black text-amber-950">
+                    เคสประสานงานสินค้าที่กำลังติดตาม ({openTicketsCount} เคส)
+                  </CardTitle>
+                  <p className="text-xs text-amber-900/80">
+                    ปัญหาจากลูกค้าที่รอตรวจสอบหรือประสานร้านค้าจีน/ขนส่ง
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/admin/tickets"
+                className="inline-flex items-center gap-1 text-xs font-black text-primary hover:underline"
+              >
+                จัดการเคสทั้งหมด <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid gap-2.5 sm:grid-cols-3">
+              {recentOpenTickets.map((ticket: any) => {
+                const orderRow = Array.isArray(ticket.order) ? ticket.order[0] : ticket.order
+                const customerRow = Array.isArray(ticket.customer) ? ticket.customer[0] : ticket.customer
+                const statusMeta = getTicketStatusMeta(ticket.status)
+                return (
+                  <Link
+                    key={ticket.id}
+                    href={`/admin/tickets/${ticket.id}`}
+                    className="rounded-xl border border-amber-200 bg-white hover:border-primary/40 hover:shadow-xs p-3.5 transition-all block"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-extrabold text-primary">
+                        {ticket.ticket_number}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusMeta.badgeClass}`}>
+                        {statusMeta.label}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-900 mt-1.5 line-clamp-1">
+                      {ticket.subject}
+                    </p>
+                    <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between gap-2">
+                      <span className="truncate">
+                        {orderRow?.order_number || "-"} · {customerRow?.customer_code || customerRow?.full_name || "ลูกค้า"}
+                      </span>
+                      <span className="shrink-0">{formatBangkokShortDate(ticket.last_activity_at)}</span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="shadow-sm border-slate-200 overflow-hidden">
         <CardHeader className="pb-3 bg-slate-50/70 border-b border-slate-100">

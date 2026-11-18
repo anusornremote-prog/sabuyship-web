@@ -16,6 +16,14 @@ Never replace production environment values with staging values. Do not place an
 
 ## Completed Work
 
+### Ticket-to-Admin & Refund End-to-End Integration (2026-11-18)
+- Added `POST /api/admin/refunds` (`src/app/api/admin/refunds/route.ts`) protected by `requireAdmin()` so admins can create pass-through refund entries directly from an order or support ticket (automatically tagging `[เคส TKT-...]` in `refunds.reason`, writing `CREATE_TICKET_REFUND` in `admin_audit_logs`, and posting a customer-visible timeline update on the ticket).
+- Added linked `refunds` summary query in `GET /api/tickets/[id]` and customer close-case `PATCH /api/tickets/[id]` (`action: "CLOSE"`) with admin LINE broadcast.
+- Added `?order_id=` filter in `GET /api/admin/tickets` and built `<AdminOrderTicketsCard />` (`src/components/tickets/AdminOrderTicketsCard.tsx`), mounted inside `src/app/admin/orders/[id]/page.tsx` to flag active coordination tickets before shipment/status transitions.
+- Added open Support Tickets summary queue strip to `src/app/admin/page.tsx` when open tickets exist (`NEW`, `IN_PROGRESS`, `WAITING_CUSTOMER`).
+- Added `"สร้างรายการคืนเงินจากเคสนี้"` modal & linked refunds summary inside `src/app/admin/tickets/[id]/page.tsx`, `"เปิดเคสใหม่"` order-picker dialog in `src/app/dashboard/tickets/page.tsx`, and `"ปิดเคส (เสร็จสิ้นแล้ว)"` `ConfirmDialog` in `src/app/dashboard/tickets/[id]/page.tsx`.
+- Verified with `npm run test:auth-safety` PASS, `npm run schema:check` PASS, `npm run typecheck` PASS, and `npm run build` PASS (63/63 routes).
+
 ### Product Issue Coordination / Support Ticket System (2026-11-18)
 - Added database migration `supabase/migrations/202611180000_support_tickets.sql` and applied idempotently to both Staging (`rhillakurearebtzjwyr`) and Production (`kzqbzrfcdrnghwjpmany`):
   - `public.support_tickets` (`NEW`, `IN_PROGRESS`, `WAITING_CUSTOMER`, `RESOLVED`, `CLOSED` across categories `MISSING_ITEM`, `DAMAGED_TRANSIT`, `NOT_AS_DESCRIBED`, `OTHER`, explicit `coordinator_scope_acknowledged_at`, indexes, and strict RLS).

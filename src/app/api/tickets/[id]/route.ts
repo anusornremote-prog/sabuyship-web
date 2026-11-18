@@ -133,7 +133,15 @@ export async function GET(
       updatesQuery = updatesQuery.eq("is_internal", false)
     }
 
-    const { data: updates, error: updatesError } = await updatesQuery
+    const [{ data: updates, error: updatesError }, { data: orderRefunds }] = await Promise.all([
+      updatesQuery,
+      adminClient
+        .from("refunds")
+        .select("id, amount, status, reason, payment_reference, created_at, paid_at")
+        .eq("order_id", ticket.order_id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ])
     if (updatesError) throw updatesError
 
     const allPaths: string[] = [
@@ -192,6 +200,7 @@ export async function GET(
         evidence_signed: signedEvidence,
       },
       updates: signedUpdates,
+      refunds: orderRefunds || [],
     })
   } catch (error) {
     console.error("Failed to fetch support ticket detail:", error)
@@ -336,6 +345,96 @@ export async function POST(
     console.error("Failed to post customer ticket reply:", error)
     return NextResponse.json(
       { error: "ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { id } = await params
+    const ticketId = decodeURIComponent(id).trim()
+    if (!UUID_REGEX.test(ticketId)) {
+      return NextResponse.json({ error: "รหัสเคสไม่ถูกต้อง" }, { status: 400 })
+    }
+
+    const body = await request.json().catch(() => null)
+    if (!body || body.action !== "CLOSE") {
+      return NextResponse.json({ error: "คำขอไม่ถูกต้อง" }, { status: 400 })
+    }
+
+    const adminClient = createAdminClient()
+    const { data: ticket, error: ticketError } = await adminClient
+      .from("support_tickets")
+      .select("id, ticket_number, customer_id, status, order:order_id(order_number)")
+      .eq("id", ticketId)
+      .maybeSingle()
+
+    if (ticketError) throw ticketError
+    if (!ticket || ticket.customer_id !== user.id) {
+      return NextResponse.json({ error: "ไม่พบเคสประสานงานนี้" }, { status: 404 })
+    }
+
+    if (ticket.status === "CLOSED") {
+      return NextResponse.json({ success: true, status: "CLOSED" })
+    }
+
+    const nowIso = new Date().toISOString()
+    const [{ error: updErr }, { error: logErr }] = await Promise.all([
+      adminClient
+        .from("support_tickets")
+        .update({
+          status: "CLOSED",
+          closed_at: nowIso,
+          last_activity_at: nowIso,
+          updated_at: nowIso,
+        })
+        .eq("id", ticket.id),
+      adminClient.from("ticket_updates").insert({
+        ticket_id: ticket.id,
+        author_id: user.id,
+        author_role: "SYSTEM",
+        message: "ลูกค้ายืนยันปิดเคส (เสร็จสิ้นการประสานงานแล้ว)",
+        attachments: [],
+        is_internal: false,
+        status_from: ticket.status,
+        status_to: "CLOSED",
+      }),
+    ])
+
+    if (updErr) throw updErr
+    if (logErr) throw logErr
+
+    const orderRow = Array.isArray(ticket.order) ? ticket.order[0] : ticket.order
+    await sendAdminNotification(
+      [
+        `✅ ลูกค้ากดปิดเคส ${ticket.ticket_number}`,
+        `ออเดอร์: ${orderRow?.order_number || "-"}`,
+        `ดูเคส: https://www.sabuyship.com/admin/tickets/${ticket.id}`,
+      ].join("\n")
+    )
+
+    return NextResponse.json({
+      success: true,
+      status: "CLOSED",
+      message: "ปิดเคสเรียบร้อยแล้ว",
+    })
+  } catch (error) {
+    console.error("Failed to close customer ticket:", error)
+    return NextResponse.json(
+      { error: "ไม่สามารถปิดเคสได้ กรุณาลองใหม่อีกครั้ง" },
       { status: 500 }
     )
   }

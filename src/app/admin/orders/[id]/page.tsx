@@ -9,6 +9,7 @@ import { notFound, redirect, unstable_rethrow } from "next/navigation"
 import { PaymentStepper } from "@/components/orders/PaymentStepper"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
+import { AdminOrderTicketsCard } from "@/components/tickets/AdminOrderTicketsCard"
 import { AdminOrderActions } from "./AdminOrderActions"
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -475,6 +476,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               )}
             </CardContent>
           </Card>
+
+          <AdminOrderTicketsCard orderId={order.id} />
 
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-slate-100 mb-4">

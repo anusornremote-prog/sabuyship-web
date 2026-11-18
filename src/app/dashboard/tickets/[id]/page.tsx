@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
@@ -75,6 +76,8 @@ export default function CustomerTicketDetailPage() {
   const [videoUrl, setVideoUrl] = useState("")
   const [replyPhotos, setReplyPhotos] = useState<Array<{ id: string; file: File; previewUrl: string }>>([])
   const [sending, setSending] = useState(false)
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false)
+  const [closing, setClosing] = useState(false)
 
   const loadTicket = useCallback(async () => {
     if (!ticketId) return
@@ -229,7 +232,7 @@ export default function CustomerTicketDetailPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/dashboard/tickets">
             <Button
@@ -254,7 +257,49 @@ export default function CustomerTicketDetailPage() {
             </h1>
           </div>
         </div>
+
+        {!isClosed && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setCloseDialogOpen(true)}
+            className="min-h-11 rounded-xl cursor-pointer font-bold text-slate-700 border-slate-300 hover:bg-slate-100 self-start sm:self-auto"
+          >
+            <CheckCircle2 className="w-4 h-4 mr-1.5 text-emerald-600" aria-hidden="true" />
+            <span>ปิดเคส (เสร็จสิ้นแล้ว)</span>
+          </Button>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={closeDialogOpen}
+        onOpenChange={setCloseDialogOpen}
+        title="ยืนยันปิดเคสประสานงาน"
+        description={`ต้องการปิดเคส ${ticket.ticket_number} ใช่หรือไม่? หากปิดเคสแล้วจะไม่สามารถส่งข้อความเพิ่มเติมในเคสนี้ได้`}
+        confirmLabel="ยืนยันปิดเคส"
+        loading={closing}
+        onConfirm={async () => {
+          setClosing(true)
+          try {
+            const res = await fetch(`/api/tickets/${encodeURIComponent(ticket.id)}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "CLOSE" }),
+            })
+            const json = await res.json().catch(() => ({}))
+            if (!res.ok) {
+              throw new Error(json.error || "ไม่สามารถปิดเคสได้")
+            }
+            toast.success("ปิดเคสเรียบร้อยแล้ว")
+            setCloseDialogOpen(false)
+            await loadTicket()
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด")
+          } finally {
+            setClosing(false)
+          }
+        }}
+      />
 
       {/* Status Guidance Banner */}
       <div
