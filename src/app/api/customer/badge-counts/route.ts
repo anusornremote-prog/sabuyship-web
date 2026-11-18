@@ -14,7 +14,8 @@ export async function GET() {
     const [
       { data: profile, error: profileError },
       { count: inquiriesCount, error: inquiriesError },
-      { data: ordersData, error: ordersError }
+      { data: ordersData, error: ordersError },
+      { count: ticketsCount, error: ticketsError },
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -31,12 +32,18 @@ export async function GET() {
         .from("orders")
         .select("status, shipping_company, payment_round_1_status, payment_round_2_status, payment_round_3_status, consolidated_into_id")
         .eq("customer_id", user.id)
-        .in("status", ["WAITING_PAYMENT", "PAYMENT_REJECTED", "CHINA_WAREHOUSE", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY", "DELIVERED"])
+        .in("status", ["WAITING_PAYMENT", "PAYMENT_REJECTED", "CHINA_WAREHOUSE", "THAILAND_WAREHOUSE", "OUT_FOR_DELIVERY", "DELIVERED"]),
+      supabase
+        .from("support_tickets")
+        .select("*", { count: "exact", head: true })
+        .eq("customer_id", user.id)
+        .eq("status", "WAITING_CUSTOMER"),
     ])
 
     if (profileError) throw profileError
     if (inquiriesError) throw inquiriesError
     if (ordersError) throw ordersError
+    if (ticketsError) throw ticketsError
 
     let ordersCount = 0
     if (ordersData) {
@@ -53,6 +60,7 @@ export async function GET() {
     return NextResponse.json({
       inquiriesCount: inquiriesCount || 0,
       ordersCount: ordersCount || 0,
+      ticketsCount: ticketsCount || 0,
       hasPhone: isValidThaiPhone(profile?.phone)
     }, { status: 200 })
 

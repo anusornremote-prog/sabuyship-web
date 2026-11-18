@@ -32,10 +32,19 @@ export async function GET() {
 
     if (trackingError) throw trackingError
 
+    // 4. Open support tickets requiring admin follow-up
+    const { count: ticketsCount, error: ticketsError } = await supabase
+      .from("support_tickets")
+      .select("*", { count: "exact", head: true })
+      .in("status", ["NEW", "IN_PROGRESS"])
+
+    if (ticketsError) throw ticketsError
+
     return NextResponse.json({
       inquiriesCount: inquiriesCount || 0,
       ordersCount: paymentsCount || 0,
-      trackingCount: trackingCount || 0
+      trackingCount: trackingCount || 0,
+      ticketsCount: ticketsCount || 0,
     }, { status: 200 })
 
   } catch (error: any) {

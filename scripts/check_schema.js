@@ -46,6 +46,8 @@ const schemaContract = {
   exchange_rate_history: 'id,old_rate,new_rate,reason,changed_by,created_at',
   shipment_import_batches: 'id,file_name,total_rows,imported_rows,failed_rows,result,created_by,created_at',
   notification_logs: 'id,recipient_type,recipient_profile_id,channel,status,error_code,created_at',
+  support_tickets: 'id,ticket_number,order_id,customer_id,category,subject,description,evidence_urls,video_url,status,coordinator_scope_acknowledged_at,resolution_note,assigned_admin_id,last_activity_at,resolved_at,closed_at,created_at,updated_at',
+  ticket_updates: 'id,ticket_id,author_id,author_role,message,attachments,is_internal,status_from,status_to,created_at',
 }
 
 async function run() {
@@ -82,7 +84,7 @@ async function run() {
 
   const { data: buckets, error: bucketError } = await adminClient.storage.listBuckets()
   const bucketNames = new Set((buckets || []).map((bucket) => bucket.name))
-  for (const name of ['inquiries', 'payment_slips']) {
+  for (const name of ['inquiries', 'payment_slips', 'ticket_attachments']) {
     if (bucketError || !bucketNames.has(name)) {
       failed = true
       console.error(`FAIL storage bucket: ${name}`)

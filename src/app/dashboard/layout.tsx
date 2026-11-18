@@ -12,8 +12,7 @@ import {
   MapPin, 
   Home, 
   User, 
-
-
+  LifeBuoy,
   ShoppingCart
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
@@ -31,7 +30,8 @@ export default function DashboardLayout({
   const [showPhoneModal, setShowPhoneModal] = useState(false)
   const [badgeCounts, setBadgeCounts] = useState({
     inquiriesCount: 0,
-    ordersCount: 0
+    ordersCount: 0,
+    ticketsCount: 0,
   })
 
   useEffect(() => {
@@ -42,7 +42,8 @@ export default function DashboardLayout({
           const data = await res.json()
           setBadgeCounts({
             inquiriesCount: data.inquiriesCount || 0,
-            ordersCount: data.ordersCount || 0
+            ordersCount: data.ordersCount || 0,
+            ticketsCount: data.ticketsCount || 0,
           })
           setShowPhoneModal(data.hasPhone === false)
         }
@@ -63,6 +64,7 @@ export default function DashboardLayout({
   const getPageTitle = () => {
     if (pathname === '/dashboard') return 'ภาพรวมบัญชี'
     if (pathname.startsWith('/dashboard/orders')) return 'คำสั่งซื้อของฉัน'
+    if (pathname.startsWith('/dashboard/tickets')) return 'ศูนย์ประสานงาน'
     if (pathname.startsWith('/dashboard/addresses')) return 'สมุดที่อยู่สำหรับจัดส่ง'
     if (pathname.startsWith('/dashboard/profile')) return 'ข้อมูลส่วนตัว'
     return 'ระบบลูกค้า Sabuy Ship'
@@ -120,6 +122,25 @@ export default function DashboardLayout({
             {(badgeCounts.ordersCount + badgeCounts.inquiriesCount) > 0 ? (
               <span className="bg-red-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full">
                 {badgeCounts.ordersCount + badgeCounts.inquiriesCount}
+              </span>
+            ) : null}
+          </Link>
+
+          <Link 
+            href="/dashboard/tickets" 
+            className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              pathname.startsWith('/dashboard/tickets') 
+                ? 'bg-blue-50 text-primary shadow-2xs' 
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <LifeBuoy className="h-4 w-4" aria-hidden="true" />
+              <span>ศูนย์ประสานงาน</span>
+            </div>
+            {badgeCounts.ticketsCount > 0 ? (
+              <span className="bg-orange-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full">
+                {badgeCounts.ticketsCount}
               </span>
             ) : null}
           </Link>
@@ -236,6 +257,24 @@ export default function DashboardLayout({
                 pathname.startsWith('/dashboard/orders') ? 'bg-white text-primary' : 'bg-red-500 text-white'
               }`}>
                 {badgeCounts.ordersCount + badgeCounts.inquiriesCount}
+              </span>
+            )}
+          </Link>
+          <Link 
+            href="/dashboard/tickets" 
+            className={`whitespace-nowrap flex min-h-10 items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all scroll-snap-align-start active:scale-95 ${
+              pathname.startsWith('/dashboard/tickets') 
+                ? 'bg-primary text-white shadow-xs shadow-primary/30 font-black' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+            }`}
+          >
+            <LifeBuoy className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>ประสานงาน</span>
+            {badgeCounts.ticketsCount > 0 && (
+              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                pathname.startsWith('/dashboard/tickets') ? 'bg-white text-primary' : 'bg-orange-500 text-white'
+              }`}>
+                {badgeCounts.ticketsCount}
               </span>
             )}
           </Link>

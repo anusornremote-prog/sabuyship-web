@@ -10,6 +10,7 @@ import { PaymentStepper } from "@/components/orders/PaymentStepper"
 import { ConfirmReceiptButton } from "@/components/orders/ConfirmReceiptButton"
 import { CopyTrackingButton } from "@/components/orders/CopyTrackingButton"
 import { OrderDetailErrorCard } from "@/components/orders/OrderDetailErrorCard"
+import { OrderTicketsCard } from "@/components/tickets/OrderTicketsCard"
 import { getCustomerOrderStatusBadge, getCustomerOrderStatusText } from "@/lib/order-status"
 import { formatBangkokDateTime } from "@/lib/date-format"
 
@@ -569,6 +570,8 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               )}
             </CardContent>
           </Card>
+
+          <OrderTicketsCard orderId={order.id} orderNumber={order.order_number} />
 
           <Card className="shadow-sm sticky top-6">
             <CardHeader>

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, CircleDollarSign, ShieldCheck, Bell, FileSpreadsheet } from "lucide-react"
+import { Users, FileQuestion, Package, Truck, LayoutDashboard, LogOut, Settings, CircleDollarSign, ShieldCheck, Bell, FileSpreadsheet, LifeBuoy } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
@@ -21,7 +21,8 @@ export default function AdminLayout({
   const [badgeCounts, setBadgeCounts] = useState({
     inquiriesCount: 0,
     ordersCount: 0,
-    trackingCount: 0
+    trackingCount: 0,
+    ticketsCount: 0,
   })
 
   useEffect(() => {
@@ -47,7 +48,8 @@ export default function AdminLayout({
           setBadgeCounts({
             inquiriesCount: data.inquiriesCount || 0,
             ordersCount: data.ordersCount || 0,
-            trackingCount: data.trackingCount || 0
+            trackingCount: data.trackingCount || 0,
+            ticketsCount: data.ticketsCount || 0,
           })
         }
       } catch (error) {
@@ -71,6 +73,7 @@ export default function AdminLayout({
     if (pathname.startsWith('/admin/inquiries')) return 'คำขอราคา'
     if (pathname.startsWith('/admin/orders')) return 'คำสั่งซื้อ'
     if (pathname.startsWith('/admin/tracking')) return 'Tracking พัสดุ'
+    if (pathname.startsWith('/admin/tickets')) return 'เคสประสานงานสินค้า'
     if (pathname.startsWith('/admin/imports')) return 'ประวัติการนำเข้า Excel'
     if (pathname.startsWith('/admin/refunds')) return 'เงินคืน'
     if (pathname.startsWith('/admin/customers')) return 'จัดการลูกค้า'
@@ -85,6 +88,7 @@ export default function AdminLayout({
     { href: "/admin/inquiries", icon: FileQuestion, label: "คำขอราคา", badge: badgeCounts.inquiriesCount },
     { href: "/admin/orders", icon: Package, label: "คำสั่งซื้อ", badge: badgeCounts.ordersCount },
     { href: "/admin/tracking", icon: Truck, label: "Tracking", badge: badgeCounts.trackingCount },
+    { href: "/admin/tickets", icon: LifeBuoy, label: "เคสประสานงาน", badge: badgeCounts.ticketsCount },
     { href: "/admin/imports", icon: FileSpreadsheet, label: "ประวัติ Excel" },
     { href: "/admin/refunds", icon: CircleDollarSign, label: "เงินคืน" },
     { href: "/admin/customers", icon: Users, label: "ลูกค้า" },

@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-11-17 (Asia/Bangkok)
+Last updated: 2026-11-18 (Asia/Bangkok)
 
 ## Repository State
 
@@ -15,6 +15,25 @@ Last updated: 2026-11-17 (Asia/Bangkok)
 Never replace production environment values with staging values. Do not place any API keys in this document.
 
 ## Completed Work
+
+### Product Issue Coordination / Support Ticket System (2026-11-18)
+- Added database migration `supabase/migrations/202611180000_support_tickets.sql` and applied idempotently to both Staging (`rhillakurearebtzjwyr`) and Production (`kzqbzrfcdrnghwjpmany`):
+  - `public.support_tickets` (`NEW`, `IN_PROGRESS`, `WAITING_CUSTOMER`, `RESOLVED`, `CLOSED` across categories `MISSING_ITEM`, `DAMAGED_TRANSIT`, `NOT_AS_DESCRIBED`, `OTHER`, explicit `coordinator_scope_acknowledged_at`, indexes, and strict RLS).
+  - `public.ticket_updates` (public updates vs `is_internal` admin-only notes, indexes, and RLS preventing customers from reading internal notes or updating closed tickets).
+  - Private storage bucket `ticket_attachments` (5 MB limit, customer/admin folder RLS, served via server-signed URLs).
+- Added shared constants, validation, ticket-number generator (`globalThis.crypto.getRandomValues`), and batch URL signing helpers in `src/lib/tickets.ts` plus client image compression/upload helper `src/lib/ticket-upload.ts`.
+- Added API endpoints:
+  - `src/app/api/tickets/route.ts` (`GET`, `POST` with order ownership check, mandatory coordinator-scope acknowledgment, `tracking_logs` entry, and `sendAdminNotification` broadcast)
+  - `src/app/api/tickets/[id]/route.ts` (`GET` signed URLs + updates, `POST` customer follow-up auto-reopening `WAITING_CUSTOMER` -> `IN_PROGRESS` + admin LINE alert)
+  - `src/app/api/admin/tickets/route.ts` (`GET` filterable admin queue + status counts)
+  - `src/app/api/admin/tickets/[id]/route.ts` (`PATCH` status workflow, internal/public updates, optional `sendCustomerNotification`, `admin_audit_logs`, and `tracking_logs`)
+  - Updated `src/app/api/admin/badge-counts/route.ts`, `src/app/api/customer/badge-counts/route.ts`, and `src/app/api/admin/customers/[id]/route.ts` (cleanly deletes customer `support_tickets`, `ticket_updates`, and `ticket_attachments` storage files).
+- Built UI components & pages following `ui-ux-pro-max` UX/accessibility guidelines (mobile-first `90dvh` dialogs, `min-h-11` touch targets, calm blue coordinator-scope policy notices, zero emojis as structural icons):
+  - `src/components/tickets/TicketBadges.tsx`, `src/components/tickets/CreateTicketModal.tsx`, `src/components/tickets/OrderTicketsCard.tsx`, `src/components/tickets/TicketEvidenceGallery.tsx`, `src/components/tickets/TicketActivityFeed.tsx`
+  - Customer routes: `src/app/dashboard/tickets/page.tsx`, `src/app/dashboard/tickets/[id]/page.tsx`, mounted `<OrderTicketsCard />` in `src/app/dashboard/orders/[id]/page.tsx`, and added sidebar/mobile nav links in `src/app/dashboard/layout.tsx`.
+  - Admin routes: `src/app/admin/tickets/page.tsx`, `src/app/admin/tickets/[id]/page.tsx`, and added sidebar/mobile nav links + badge count in `src/app/admin/layout.tsx`.
+- Extended `scripts/check_schema.js` contract with `support_tickets`, `ticket_updates`, and `ticket_attachments` bucket.
+- Verified with `npm run test:auth-safety` PASS, `npm run schema:check` PASS, `npm run typecheck` PASS (0 unused locals/files), and `npm run build` PASS (62/62 routes).
 
 ### Liability & Full-Support Coordination Terms Update (2026-11-18)
 - Centralized `TERMS_VERSION = "2026-11-18"` and `TERMS_UPDATED_LABEL_TH = "18 พฤศจิกายน 2026"` in `src/lib/constants.ts`, consumed by `src/app/(public)/terms/page.tsx`, `src/app/dashboard/orders/AddressSelectionModal.tsx`, and `src/app/api/order/route.ts`.

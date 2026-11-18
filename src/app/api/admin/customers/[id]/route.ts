@@ -170,7 +170,7 @@ export async function DELETE(
 
     const allOrderIds = Array.from(orderIdSet)
 
-    // 2. Collect storage object paths from payments & inquiries
+    // 2. Collect storage object paths from payments, inquiries & support tickets
     let slipPaths: string[] = []
     if (allOrderIds.length > 0) {
       const { data: paymentsData, error: paySelectErr } = await adminClient
@@ -187,14 +187,68 @@ export async function DELETE(
         )
       )
     }
+
+    const ticketSelectQuery =
+      allOrderIds.length > 0
+        ? adminClient
+            .from("support_tickets")
+            .select("id, evidence_urls")
+            .or(`customer_id.eq.${targetId},order_id.in.(${allOrderIds.join(",")})`)
+        : adminClient.from("support_tickets").select("id, evidence_urls").eq("customer_id", targetId)
+
+    const { data: customerTickets, error: ticketSelectErr } = await ticketSelectQuery
+    if (ticketSelectErr) throw ticketSelectErr
+
+    const ticketIds = (customerTickets || []).map((row) => row.id)
+    const ticketAttachmentPaths = new Set<string>()
+    for (const ticket of customerTickets || []) {
+      if (Array.isArray(ticket.evidence_urls)) {
+        for (const raw of ticket.evidence_urls) {
+          const objPath = extractStorageObjectPath(raw, "ticket_attachments")
+          if (objPath) ticketAttachmentPaths.add(objPath)
+        }
+      }
+    }
+
+    if (ticketIds.length > 0) {
+      const { data: ticketUpdateRows, error: ticketUpdateSelectErr } = await adminClient
+        .from("ticket_updates")
+        .select("attachments")
+        .in("ticket_id", ticketIds)
+      if (ticketUpdateSelectErr) throw ticketUpdateSelectErr
+      for (const row of ticketUpdateRows || []) {
+        if (Array.isArray(row.attachments)) {
+          for (const raw of row.attachments) {
+            const objPath = extractStorageObjectPath(raw, "ticket_attachments")
+            if (objPath) ticketAttachmentPaths.add(objPath)
+          }
+        }
+      }
+    }
+
     const inquiryImagePaths = collectInquiryStoragePaths(customerInquiries || [])
+    const ticketPathsList = Array.from(ticketAttachmentPaths)
 
     await Promise.all([
       removeStorageFiles(adminClient, "payment_slips", slipPaths),
       removeStorageFiles(adminClient, "inquiries", inquiryImagePaths),
+      removeStorageFiles(adminClient, "ticket_attachments", ticketPathsList),
     ])
 
     // 3. Delete child records in strict foreign-key order (handles ON DELETE RESTRICT cleanly)
+    if (ticketIds.length > 0) {
+      const { error: ticketUpdatesDelErr } = await adminClient
+        .from("ticket_updates")
+        .delete()
+        .in("ticket_id", ticketIds)
+      if (ticketUpdatesDelErr) throw ticketUpdatesDelErr
+
+      const { error: ticketsDelErr } = await adminClient
+        .from("support_tickets")
+        .delete()
+        .in("id", ticketIds)
+      if (ticketsDelErr) throw ticketsDelErr
+    }
     const { error: refundByCustErr } = await adminClient.from("refunds").delete().eq("customer_id", targetId)
     if (refundByCustErr) throw refundByCustErr
 
@@ -282,7 +336,8 @@ export async function DELETE(
         had_auth_user: Boolean(authLookup?.user),
         deleted_orders: allOrderIds.length,
         deleted_inquiries: inquiryIds.length,
-        deleted_storage_files: slipPaths.length + inquiryImagePaths.length,
+        deleted_tickets: ticketIds.length,
+        deleted_storage_files: slipPaths.length + inquiryImagePaths.length + ticketPathsList.length,
       },
       reason: reason || "ลบบัญชีลูกค้า/ข้อมูลทดสอบแบบสะอาดจากหน้า Admin",
     })
@@ -293,7 +348,8 @@ export async function DELETE(
       deleted: {
         orders: allOrderIds.length,
         inquiries: inquiryIds.length,
-        storageFiles: slipPaths.length + inquiryImagePaths.length,
+        tickets: ticketIds.length,
+        storageFiles: slipPaths.length + inquiryImagePaths.length + ticketPathsList.length,
       },
     })
   } catch (error) {
